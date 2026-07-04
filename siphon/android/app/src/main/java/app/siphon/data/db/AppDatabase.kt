@@ -15,7 +15,7 @@ class Converters {
     fun stringToStatus(value: String): DownloadStatus = DownloadStatus.valueOf(value)
 }
 
-@Database(entities = [DownloadEntity::class], version = 1, exportSchema = true)
+@Database(entities = [DownloadEntity::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 

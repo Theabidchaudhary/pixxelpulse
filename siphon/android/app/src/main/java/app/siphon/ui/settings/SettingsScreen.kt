@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -182,7 +183,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
 }
 
 @Composable
-private fun SettingsGroup(title: String, content: @Composable Column.() -> Unit) {
+private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SectionLabel(title)
         Surface(
