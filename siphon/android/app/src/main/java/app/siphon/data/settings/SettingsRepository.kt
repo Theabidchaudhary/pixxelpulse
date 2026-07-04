@@ -25,6 +25,8 @@ data class SiphonSettings(
     val clipboardDetection: Boolean = true,
     val notificationsEnabled: Boolean = true,
     val languageTag: String = "", // empty = system default
+    /** Empty = use the build's default (BuildConfig.SIPHON_API_BASE_URL). */
+    val apiBaseUrl: String = "",
 )
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "siphon_settings")
@@ -39,6 +41,7 @@ class SettingsRepository(private val context: Context) {
         val clipboard = booleanPreferencesKey("clipboard_detection")
         val notifications = booleanPreferencesKey("notifications_enabled")
         val language = stringPreferencesKey("language_tag")
+        val apiBaseUrl = stringPreferencesKey("api_base_url")
     }
 
     val settings: Flow<SiphonSettings> = context.dataStore.data.map { prefs ->
@@ -51,6 +54,7 @@ class SettingsRepository(private val context: Context) {
             clipboardDetection = prefs[Keys.clipboard] ?: true,
             notificationsEnabled = prefs[Keys.notifications] ?: true,
             languageTag = prefs[Keys.language] ?: "",
+            apiBaseUrl = prefs[Keys.apiBaseUrl] ?: "",
         )
     }
 
@@ -76,4 +80,8 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[Keys.notifications] = enabled }
 
     suspend fun setLanguageTag(tag: String) = context.dataStore.edit { it[Keys.language] = tag }
+
+    /** Pass a blank string to clear the override and fall back to the build default. */
+    suspend fun setApiBaseUrl(url: String) =
+        context.dataStore.edit { it[Keys.apiBaseUrl] = url.trim().trimEnd('/') }
 }

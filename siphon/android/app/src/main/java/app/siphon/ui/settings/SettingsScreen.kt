@@ -13,9 +13,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -23,11 +28,16 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,6 +47,7 @@ import app.siphon.R
 import app.siphon.data.settings.TargetDir
 import app.siphon.data.settings.ThemeMode
 import app.siphon.ui.components.SectionLabel
+import app.siphon.ui.theme.SiphonColors
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) {
@@ -88,6 +99,76 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
                         )
                     }
                 }
+            }
+        }
+
+        // Server (API connection)
+        SettingsGroup(stringResource(R.string.settings_server)) {
+            var apiUrlText by remember(settings.apiBaseUrl) { mutableStateOf(settings.apiBaseUrl) }
+            val connectionState by viewModel.connectionTestState.collectAsState()
+
+            Text(stringResource(R.string.settings_api_url), style = MaterialTheme.typography.titleSmall)
+            OutlinedTextField(
+                value = apiUrlText,
+                onValueChange = {
+                    apiUrlText = it
+                    viewModel.resetConnectionTestState()
+                },
+                placeholder = { Text(BuildConfig.SIPHON_API_BASE_URL) },
+                singleLine = true,
+                shape = MaterialTheme.shapes.small,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                stringResource(R.string.settings_api_url_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Button(
+                    onClick = {
+                        viewModel.setApiBaseUrl(apiUrlText)
+                        viewModel.resetConnectionTestState()
+                    },
+                    shape = MaterialTheme.shapes.small,
+                ) { Text(stringResource(R.string.action_save)) }
+                TextButton(
+                    onClick = { viewModel.testConnection(apiUrlText.ifBlank { BuildConfig.SIPHON_API_BASE_URL }) },
+                ) { Text(stringResource(R.string.action_test_connection)) }
+            }
+            when (connectionState) {
+                ConnectionTestState.TESTING -> Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Text(
+                        stringResource(R.string.connection_testing),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                ConnectionTestState.SUCCESS -> Text(
+                    "✓ " + stringResource(R.string.connection_success),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SiphonColors.Success,
+                )
+                ConnectionTestState.FAILED -> Text(
+                    stringResource(R.string.connection_failed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                ConnectionTestState.IDLE -> Text(
+                    stringResource(R.string.settings_api_url_help),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
 

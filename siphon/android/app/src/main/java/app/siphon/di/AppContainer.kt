@@ -1,6 +1,7 @@
 package app.siphon.di
 
 import android.content.Context
+import app.siphon.BuildConfig
 import app.siphon.data.db.AppDatabase
 import app.siphon.data.remote.SiphonApi
 import app.siphon.data.repo.DownloadRepository
@@ -26,11 +27,20 @@ class AppContainer(context: Context) {
             .build()
     }
 
-    val api: SiphonApi by lazy { SiphonApi(okHttpClient) }
-
     val database: AppDatabase by lazy { AppDatabase.build(appContext) }
 
     val settings: SettingsRepository by lazy { SettingsRepository(appContext) }
+
+    /**
+     * Base URL resolves fresh on every request: a user-entered override in
+     * Settings (Render/Railway free tier, self-hosted, etc.) wins, otherwise
+     * the build's baked-in default.
+     */
+    val api: SiphonApi by lazy {
+        SiphonApi(okHttpClient) {
+            settings.current().apiBaseUrl.ifBlank { BuildConfig.SIPHON_API_BASE_URL }
+        }
+    }
 
     val mediaRepository: MediaRepository by lazy { MediaRepository(api) }
 

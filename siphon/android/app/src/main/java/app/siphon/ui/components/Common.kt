@@ -1,6 +1,7 @@
 package app.siphon.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -40,12 +42,16 @@ val Platform.brandColor: Color
         Platform.FACEBOOK -> Color(0xFF5B8DEF)
     }
 
-/** Colored-dot chip row showing supported platforms; active one glows. */
+/**
+ * Colored-dot chip row showing supported platforms; active one glows.
+ * Scrolls horizontally rather than squeezing chips — five platform badges
+ * plus spacing don't reliably fit narrow screens at natural size.
+ */
 @Composable
 fun PlatformChipsRow(active: Platform?, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Platform.entries.forEach { platform ->
             val isActive = platform == active

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,8 +37,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -184,21 +187,24 @@ fun HomeScreen(
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SectionLabel(stringResource(R.string.quick_actions))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AssistChip(
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                QuickActionChip(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.quick_open_downloads),
+                    icon = Icons.Filled.Download,
                     onClick = onOpenDownloads,
-                    label = { Text(stringResource(R.string.quick_open_downloads)) },
-                    leadingIcon = { Icon(Icons.Filled.Download, contentDescription = null) },
                 )
-                AssistChip(
+                QuickActionChip(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.quick_paste_fetch),
+                    icon = Icons.Filled.ContentPaste,
                     onClick = { readClipboard(context)?.let(viewModel::fetch) },
-                    label = { Text(stringResource(R.string.quick_paste_fetch)) },
-                    leadingIcon = { Icon(Icons.Filled.ContentPaste, contentDescription = null) },
                 )
-                AssistChip(
+                QuickActionChip(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.quick_clear_finished),
+                    icon = Icons.Filled.DeleteSweep,
                     onClick = viewModel::clearFinished,
-                    label = { Text(stringResource(R.string.quick_clear_finished)) },
-                    leadingIcon = { Icon(Icons.Filled.DeleteSweep, contentDescription = null) },
                 )
             }
         }
@@ -242,4 +248,15 @@ fun HomeScreen(
 private fun readClipboard(context: Context): String? {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     return clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
+}
+
+/** Equal-width quick action pill; label always stays single-line so it can never balloon vertically. */
+@Composable
+private fun QuickActionChip(text: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    AssistChip(
+        onClick = onClick,
+        modifier = modifier,
+        label = { Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp)) },
+    )
 }

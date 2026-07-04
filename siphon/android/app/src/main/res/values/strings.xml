@@ -60,6 +60,15 @@
     <string name="theme_system">System</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_api_url">API base URL</string>
+    <string name="settings_api_url_hint">Include https:// — leave blank to use the built-in default</string>
+    <string name="settings_api_url_help">Point Siphon at any Siphon API instance — your own server, or a free host like Render — without reinstalling the app.</string>
+    <string name="action_save">Save</string>
+    <string name="action_test_connection">Test connection</string>
+    <string name="connection_testing">Testing…</string>
+    <string name="connection_success">Connected</string>
+    <string name="connection_failed">Couldn\'t reach this server. Check the URL and that it\'s running.</string>
     <string name="settings_storage">Storage</string>
     <string name="settings_location">Download location</string>
     <string name="location_downloads">Downloads folder</string>

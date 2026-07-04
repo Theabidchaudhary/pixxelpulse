@@ -64,11 +64,11 @@ class MediaRepository(private val api: SiphonApi) {
                 ),
             )
         } else {
-            ResolveOutcome.Media(dto.toMedia(api))
+            ResolveOutcome.Media(dto.toMedia(api.baseUrl()))
         }
     }
 
-    private fun ResolveResponseDto.toMedia(api: SiphonApi): ResolvedMedia = ResolvedMedia(
+    private fun ResolveResponseDto.toMedia(base: String): ResolvedMedia = ResolvedMedia(
         platform = platform,
         kind = kind ?: "video",
         sourceUrl = sourceUrl,
@@ -76,11 +76,11 @@ class MediaRepository(private val api: SiphonApi) {
         uploader = uploader,
         durationSeconds = durationSeconds?.toLong(),
         thumbnailUrl = thumbnailUrl,
-        video = video.map { it.toFormat(api) },
-        audio = audio.map { it.toFormat(api) },
+        video = video.map { it.toFormat(base) },
+        audio = audio.map { it.toFormat(base) },
     )
 
-    private fun ResolvedFormatDto.toFormat(api: SiphonApi): MediaFormat = MediaFormat(
+    private fun ResolvedFormatDto.toFormat(base: String): MediaFormat = MediaFormat(
         id = id,
         kind = kind,
         container = container,
@@ -88,7 +88,7 @@ class MediaRepository(private val api: SiphonApi) {
         sizeBytes = sizeBytes,
         sizeIsEstimate = sizeIsEstimate,
         directUrl = directUrl,
-        downloadUrl = api.absoluteUrl(downloadUrl),
+        downloadUrl = SiphonApi.absoluteUrl(downloadUrl, base),
         requiresProcessing = requiresProcessing,
     )
 }
