@@ -63,8 +63,14 @@ server {
 }
 ```
 
-If you host web and API on different origins instead, set `ALLOWED_ORIGINS`
-on the API and make the web fetch base configurable.
+If you host web and API on different origins instead (e.g. Render, Netlify +
+a standalone API host — see `docs/hosting-quickstart.md` §0.5 for a concrete
+walkthrough), set two things:
+
+- API: `ALLOWED_ORIGINS` to the web app's exact origin.
+- Web: `VITE_API_BASE_URL` at build time to the API's absolute origin
+  (`VITE_API_BASE_URL=https://api.example.com npm run build`, or as a build
+  env var on your hosting platform). See `web/.env.example`.
 
 ## Android
 

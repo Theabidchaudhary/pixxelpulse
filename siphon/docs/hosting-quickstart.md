@@ -6,9 +6,62 @@ Docker or Node + yt-dlp + ffmpeg) and the **web app** (static files). Static-onl
 hosts (GitHub Pages, plain Netlify) are **not enough by themselves** — the web
 app is a frontend for the API.
 
+**Important if an AI assistant is running these commands for you in a cloud
+session:** `http://localhost:...` only works in a browser on the *same
+computer* that ran the command. A command run inside an isolated cloud
+container (like a Claude Code web session) is not reachable from your own
+browser — there is no clickable link that will work. Either run section 0
+yourself on your own machine, or skip straight to section 0.5 for a real
+public URL with no local setup at all.
+
 ---
 
-## 0. Test locally first
+## 0.5. Fastest way to a real public URL (~10 min, free, no server rental)
+
+This gets you an actual `https://…` link you can open on any device, using
+[Render](https://render.com)'s free tier — no VPS, no credit card required to
+start, deploy via their dashboard from your GitHub repo.
+
+**A. Deploy the API**
+1. render.com → sign in with GitHub → **New +** → **Web Service**.
+2. Connect the `pixxelpulse` repo.
+3. **Root Directory**: `siphon/backend`. **Runtime**: Docker (it will detect
+   the `Dockerfile` automatically). **Instance type**: Free.
+4. Environment variables: add `SIGNING_SECRET` (any long random string —
+   or click "Generate") and `ALLOWED_ORIGINS` = `*` for now (tighten in step C).
+5. Create the service. First build takes a few minutes (installs yt-dlp +
+   ffmpeg). Note its URL, e.g. `https://siphon-api-xxxx.onrender.com`.
+6. Confirm it's alive: open `https://siphon-api-xxxx.onrender.com/healthz` —
+   should show `{"status":"ok"}`.
+
+**B. Deploy the web app**
+1. render.com → **New +** → **Static Site** → same repo.
+2. **Root Directory**: `siphon/web`. **Build Command**: `npm ci && npm run build`.
+   **Publish Directory**: `dist`.
+3. Environment variables: add `VITE_API_BASE_URL` = the API URL from step A
+   (e.g. `https://siphon-api-xxxx.onrender.com`) — this tells the web app
+   where to send requests since it's on a different domain than the API.
+4. Create the site. When it finishes you get a URL like
+   `https://siphon-web-xxxx.onrender.com` — **open it, paste a video link,
+   test it for real.**
+
+**C. Lock down CORS** (optional but recommended once it works): go back to the
+API service's environment variables and set `ALLOWED_ORIGINS` to your exact
+web URL from step B instead of `*`, then save (triggers a redeploy).
+
+Free-tier caveats: the API service spins down after 15 minutes idle (first
+request after that takes ~30s to wake up) and has limited RAM, so very large
+1080p+ muxes may be slow or fail — fine for testing, not for real traffic.
+[Railway](https://railway.app) works the same way (Docker-aware "Deploy from
+GitHub", root directory setting) if you'd rather try that instead.
+
+Once you're happy and want a permanent setup with your own domain, follow
+section 3+ below for a VPS + nginx + free TLS, which has no idle spin-down and
+no resource ceiling.
+
+---
+
+## 0. Test locally on your own machine
 
 ```bash
 # Terminal 1 — API (or use Docker, see below)
