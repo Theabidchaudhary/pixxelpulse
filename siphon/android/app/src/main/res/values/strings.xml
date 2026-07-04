@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Siphon</string>
+    <string name="share_target_label">Save with Siphon</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_downloads">Downloads</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home -->
+    <string name="home_headline">Save any video</string>
+    <string name="home_sub">Paste a link from YouTube, Instagram, TikTok, X or Facebook.</string>
+    <string name="url_hint">Paste a video link…</string>
+    <string name="action_paste">Paste</string>
+    <string name="action_fetch">Fetch</string>
+    <string name="clipboard_detected">Link in clipboard</string>
+    <string name="current_downloads">Current downloads</string>
+    <string name="quick_actions">Quick actions</string>
+    <string name="quick_open_downloads">All downloads</string>
+    <string name="quick_paste_fetch">Paste &amp; fetch</string>
+    <string name="quick_clear_finished">Clear finished</string>
+
+    <!-- Formats sheet -->
+    <string name="sheet_video">Video · MP4</string>
+    <string name="sheet_audio">Audio</string>
+    <string name="sheet_loading">Reading link…</string>
+    <string name="sheet_error_generic">Couldn\'t read this link. It may be private or removed.</string>
+    <string name="download_started">Download started</string>
+
+    <!-- Downloads -->
+    <string name="downloads_title">Downloads</string>
+    <string name="downloads_search_hint">Search downloads</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_queued">Queued</string>
+    <string name="filter_completed">Completed</string>
+    <string name="filter_failed">Failed</string>
+    <string name="filter_paused">Paused</string>
+    <string name="sort_newest">Newest first</string>
+    <string name="sort_oldest">Oldest first</string>
+    <string name="sort_title">Title A–Z</string>
+    <string name="sort_size">Largest first</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_open_file">Open file</string>
+    <string name="action_open_folder">Open folder</string>
+    <string name="downloads_empty">Nothing here yet. Save your first video from Home or the share sheet.</string>
+    <string name="delete_dialog_title">Delete download?</string>
+    <string name="delete_dialog_message">This removes the entry from history. The saved file is kept on your device.</string>
+    <string name="delete_dialog_also_file">Also delete the file</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="settings_storage">Storage</string>
+    <string name="settings_location">Download location</string>
+    <string name="location_downloads">Downloads folder</string>
+    <string name="location_movies">Movies folder</string>
+    <string name="location_music">Music folder</string>
+    <string name="location_custom">Custom folder…</string>
+    <string name="settings_downloading">Downloading</string>
+    <string name="settings_parallel">Parallel downloads</string>
+    <string name="settings_clipboard">Clipboard detection</string>
+    <string name="settings_clipboard_sub">Offer to fetch links you\'ve copied when you open Siphon</string>
+    <string name="settings_notifications">Download notifications</string>
+    <string name="settings_notifications_sub">Progress and completion alerts</string>
+    <string name="settings_language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="settings_about">About</string>
+    <string name="about_version">Version</string>
+    <string name="about_disclaimer">Siphon is for saving content you own or have permission to download. Respect each platform\'s terms and creators\' rights.</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_downloads">Downloads</string>
+    <string name="notif_channel_downloads_desc">Download progress and completion</string>
+    <string name="notif_downloading">Downloading</string>
+    <plurals name="notif_active_count">
+        <item quantity="one">%d download in progress</item>
+        <item quantity="other">%d downloads in progress</item>
+    </plurals>
+    <string name="notif_complete">Download complete</string>
+    <string name="notif_failed">Download failed</string>
+</resources>

@@ -1,0 +1,21 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      NODE_ENV: production
+      PORT: "8787"
+      HOST: 0.0.0.0
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173}
+      SIGNING_SECRET: ${SIGNING_SECRET:?set SIGNING_SECRET in .env}
+      TOKEN_TTL_SECONDS: "1800"
+      MAX_CONCURRENT_EXTRACTIONS: "4"
+      MAX_CONCURRENT_STREAMS: "6"
+      RATE_LIMIT_MAX: "30"
+      RATE_LIMIT_WINDOW_MINUTES: "1"
+      LOG_LEVEL: info
+    tmpfs:
+      # yt-dlp work area; sized generously for parallel 1080p muxes
+      - /tmp:size=8g
+    restart: unless-stopped
