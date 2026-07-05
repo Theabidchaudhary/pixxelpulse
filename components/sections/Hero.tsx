@@ -52,7 +52,7 @@ export default function Hero() {
             <motion.span
               className="block"
               initial={reduce ? { opacity: 0 } : { y: "108%" }}
-              animate={reduce ? { opacity: 1 } : { y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.1, delay: 0.25, ease }}
             >
               We edit videos people
@@ -62,7 +62,7 @@ export default function Hero() {
             <motion.span
               className="text-gradient block pb-2"
               initial={reduce ? { opacity: 0 } : { y: "108%" }}
-              animate={reduce ? { opacity: 1 } : { y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.1, delay: 0.38, ease }}
             >
               can&apos;t scroll past.

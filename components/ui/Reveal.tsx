@@ -60,7 +60,9 @@ export function RevealText({
         className="block"
         variants={{
           hidden: reduce ? { opacity: 0 } : { y: "110%" },
-          visible: reduce ? { opacity: 1 } : { y: 0 },
+          // Always resolve both axes: SSR renders the non-reduced initial
+          // (y 110%), so a reduced-motion client must still reset y to 0.
+          visible: { opacity: 1, y: 0 },
         }}
         transition={{ duration: 0.9, delay: delay / 1000, ease: [0.16, 1, 0.3, 1] }}
       >
