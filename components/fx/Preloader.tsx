@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const LETTERS = "pixxelpulse".split("");
+const LETTERS = "orvix".split("");
 
 export default function Preloader() {
   const [show, setShow] = useState(false);

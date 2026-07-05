@@ -3,7 +3,7 @@ import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Pixxelpulse collects, uses, and protects your information.",
+  description: "How Orvix collects, uses, and protects your information.",
   alternates: { canonical: "/privacy" },
   robots: { index: false },
 };
@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <h1 className="text-h2 mb-10">Privacy Policy</h1>
       <div className="space-y-6 leading-[1.8] text-fg-soft">
         <p>
-          Pixxelpulse (&ldquo;we&rdquo;, &ldquo;us&rdquo;) respects your privacy. This policy
+          Orvix (&ldquo;we&rdquo;, &ldquo;us&rdquo;) respects your privacy. This policy
           explains what we collect through {site.url} and why.
         </p>
         <h2 className="text-h3 pt-4 text-fg">What we collect</h2>

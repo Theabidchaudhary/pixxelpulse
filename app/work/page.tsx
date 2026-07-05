@@ -8,7 +8,7 @@ import { JsonLd, breadcrumbJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Work — Video Editing & Motion Design Portfolio",
   description:
-    "165+ published projects across short-form, long-form, and motion design — YouTube videos, Reels, ads, documentaries, and brand animation by Pixxelpulse.",
+    "165+ published projects across short-form, long-form, and motion design — YouTube videos, Reels, ads, documentaries, and brand animation by Orvix.",
   alternates: { canonical: "/work" },
 };
 

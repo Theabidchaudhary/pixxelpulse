@@ -52,7 +52,7 @@ export async function submitContact(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.LEAD_FROM ?? "Pixxelpulse Website <onboarding@resend.dev>",
+          from: process.env.LEAD_FROM ?? "Orvix Website <onboarding@resend.dev>",
           to: [to],
           reply_to: email,
           subject: `New project inquiry — ${projectType} — ${name}`,

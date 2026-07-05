@@ -2,11 +2,11 @@
  * Global site settings — edit everything here without touching components.
  */
 export const site = {
-  name: "Pixxelpulse",
+  name: "Orvix",
   tagline: "Post-production that moves people.",
   url: "https://www.pixxelpulse.com",
   description:
-    "Pixxelpulse is a premium video editing agency for creators, startups, and brands — 1,300+ videos delivered across 40+ niches, in as fast as 48 hours.",
+    "Orvix is a premium video editing agency for creators, startups, and brands — 1,300+ videos delivered across 40+ niches, in as fast as 48 hours.",
   email: "hello@pixxelpulse.com",
   phone: "+44 741 308 9165",
   whatsapp: "https://wa.me/447413089165",

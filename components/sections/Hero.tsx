@@ -71,7 +71,7 @@ export default function Hero() {
         </h1>
 
         <motion.p {...up(0.6)} className="text-lead mt-8 max-w-xl">
-          Pixxelpulse is the post-production partner behind 1,300+ videos for creators, startups,
+          Orvix is the post-production partner behind 1,300+ videos for creators, startups,
           and brands in 40+ niches — delivered in as fast as 48 hours.
         </motion.p>
 

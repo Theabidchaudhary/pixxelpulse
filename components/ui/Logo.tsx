@@ -1,27 +1,23 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The pixxelpulse wordmark — the double-x carries a gradient pulse line
- * through its intersection.
+ * The Orvix wordmark — interim brand mark: lowercase display type with a
+ * gradient pulse dot. Final logo lands once the brand name is locked.
  */
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "relative inline-flex items-baseline font-display text-[1.35rem] font-semibold lowercase tracking-tight text-fg",
+        "relative inline-flex items-baseline gap-[3px] font-display text-[1.4rem] font-semibold lowercase tracking-tight text-fg",
         className
       )}
     >
-      pi
-      <span className="relative inline-block tracking-[-0.08em]">
-        xx
-        <span
-          aria-hidden
-          className="absolute left-[8%] right-[8%] top-1/2 h-[2px] -translate-y-1/2 rounded-full"
-          style={{ background: "var(--gradient-pulse)" }}
-        />
-      </span>
-      elpulse
+      orvix
+      <span
+        aria-hidden
+        className="mb-[3px] inline-block size-[7px] self-end rounded-full"
+        style={{ background: "var(--gradient-pulse)" }}
+      />
     </span>
   );
 }

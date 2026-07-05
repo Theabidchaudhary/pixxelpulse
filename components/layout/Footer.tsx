@@ -34,7 +34,7 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <PulseGlyph className="size-8" />
               <span className="font-display text-lg font-semibold lowercase tracking-tight">
-                pixxelpulse
+                orvix
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-fg-soft">
@@ -115,7 +115,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-16 flex flex-col gap-4 border-t border-line pt-8 text-xs text-fg-faint sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Pixxelpulse. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Orvix. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="transition-colors hover:text-fg-soft">
               Privacy

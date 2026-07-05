@@ -9,7 +9,7 @@ import { JsonLd, breadcrumbJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Insights — Video Editing, Retention & Content Strategy",
   description:
-    "Practical writing on video editing, YouTube retention, short-form strategy, and running a modern content pipeline — from the Pixxelpulse team.",
+    "Practical writing on video editing, YouTube retention, short-form strategy, and running a modern content pipeline — from the Orvix team.",
   alternates: { canonical: "/blog" },
 };
 

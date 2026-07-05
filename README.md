@@ -1,4 +1,4 @@
-# Pixxelpulse — Premium Creative Agency Website
+# Orvix — Premium Creative Agency Website
 
 The new pixxelpulse.com: a dark, premium Next.js site for a video editing & motion design agency.
 Design system, strategy, and architecture are documented in [`docs/BLUEPRINT.md`](docs/BLUEPRINT.md).

@@ -64,7 +64,7 @@ export function videoJsonLd(p: { title: string; youtubeId: string; slug: string;
     "@context": "https://schema.org",
     "@type": "VideoObject",
     name: p.title,
-    description: `${p.title} — ${p.format} video edited by Pixxelpulse.`,
+    description: `${p.title} — ${p.format} video edited by Orvix.`,
     thumbnailUrl: `https://i.ytimg.com/vi/${p.youtubeId}/hqdefault.jpg`,
     embedUrl: `https://www.youtube-nocookie.com/embed/${p.youtubeId}`,
     url: absoluteUrl(`/work/${p.slug}`),

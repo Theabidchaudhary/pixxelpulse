@@ -30,7 +30,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "PixxelPulse has been a game-changer. Incredible speed without sacrificing quality — I finally feel confident hitting publish every week.",
+      "Orvix has been a game-changer. Incredible speed without sacrificing quality — I finally feel confident hitting publish every week.",
     name: "Sarah Mitchell",
     role: "Content Creator",
   },

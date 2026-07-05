@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     url: site.url,
     title: `${site.name} — Premium Video Editing Agency`,
     description: site.description,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Pixxelpulse — post-production that moves people" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Orvix — post-production that moves people" }],
   },
   twitter: {
     card: "summary_large_image",

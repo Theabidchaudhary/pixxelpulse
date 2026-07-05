@@ -55,7 +55,7 @@ export default function Nav() {
           className="mx-auto flex h-[var(--nav-h)] max-w-[1440px] items-center justify-between px-6 lg:px-12"
           aria-label="Main"
         >
-          <Link href="/" aria-label="Pixxelpulse — home" className="relative z-[130]">
+          <Link href="/" aria-label="Orvix — home" className="relative z-[130]">
             <Wordmark />
           </Link>
 

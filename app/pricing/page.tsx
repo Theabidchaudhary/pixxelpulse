@@ -11,7 +11,7 @@ import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Pricing — Video Editing Subscriptions & Project Rates",
   description:
-    "Three ways to work with Pixxelpulse: per-project quotes, monthly video editing subscriptions, and white-label agency retainers. 48–72h turnaround standard.",
+    "Three ways to work with Orvix: per-project quotes, monthly video editing subscriptions, and white-label agency retainers. 48–72h turnaround standard.",
   alternates: { canonical: "/pricing" },
 };
 

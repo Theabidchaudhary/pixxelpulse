@@ -3,7 +3,7 @@ import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The terms that govern working with Pixxelpulse.",
+  description: "The terms that govern working with Orvix.",
   alternates: { canonical: "/terms" },
   robots: { index: false },
 };

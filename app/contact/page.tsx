@@ -10,7 +10,7 @@ import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Contact — Start a Project",
   description:
-    "Tell us about your project and get a reply within 12 hours. Book a call or send a brief — video editing, motion design, and post-production by Pixxelpulse.",
+    "Tell us about your project and get a reply within 12 hours. Book a call or send a brief — video editing, motion design, and post-production by Orvix.",
   alternates: { canonical: "/contact" },
 };
 
