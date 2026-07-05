@@ -15,9 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
-import androidx.compose.material.icons.filled.DeleteSweep
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -190,12 +189,6 @@ fun HomeScreen(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 QuickActionChip(
                     modifier = Modifier.weight(1f),
-                    text = stringResource(R.string.quick_open_downloads),
-                    icon = Icons.Filled.Download,
-                    onClick = onOpenDownloads,
-                )
-                QuickActionChip(
-                    modifier = Modifier.weight(1f),
                     text = stringResource(R.string.quick_paste_fetch),
                     icon = Icons.Filled.ContentPaste,
                     onClick = { readClipboard(context)?.let(viewModel::fetch) },
@@ -203,8 +196,11 @@ fun HomeScreen(
                 QuickActionChip(
                     modifier = Modifier.weight(1f),
                     text = stringResource(R.string.quick_clear_finished),
-                    icon = Icons.Filled.DeleteSweep,
-                    onClick = viewModel::clearFinished,
+                    icon = Icons.Filled.Clear,
+                    onClick = {
+                        viewModel.onUrlChange("")
+                        viewModel.dismissResult()
+                    },
                 )
             }
         }

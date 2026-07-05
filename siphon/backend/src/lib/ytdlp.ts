@@ -50,6 +50,29 @@ export interface RunResult {
 
 const EXTRACTION_TIMEOUT_MS = 45_000;
 
+export const BROWSER_USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+/** Extra yt-dlp flags per-platform that meaningfully improve extraction success. */
+export function platformArgs(url: string): string[] {
+  if (/youtube\.com|youtu\.be/i.test(url)) {
+    return [
+      '--extractor-args', 'youtube:player_client=all',
+      '--no-check-formats',
+    ];
+  }
+  if (/tiktok\.com/i.test(url)) {
+    return ['--add-header', 'Referer:https://www.tiktok.com/'];
+  }
+  if (/twitter\.com|x\.com/i.test(url)) {
+    return ['--add-header', 'Referer:https://x.com/'];
+  }
+  if (/instagram\.com/i.test(url)) {
+    return ['--add-header', 'Referer:https://www.instagram.com/'];
+  }
+  return [];
+}
+
 /**
  * Run yt-dlp with the given args and collect stdout. Rejects with a typed
  * ApiError on non-zero exit so route handlers never leak raw stderr to
@@ -102,10 +125,13 @@ export function runYtDlp(args: string[], timeoutMs = EXTRACTION_TIMEOUT_MS): Pro
 
 export async function fetchInfo(url: string, opts: { playlist: boolean }): Promise<YtDlpInfo> {
   const args = [
-    '--dump-single-json',
+    '--user-agent', BROWSER_USER_AGENT,
+    '--add-header', 'Accept-Language:en-US,en;q=0.9',
     '--no-warnings',
     '--no-call-home',
     '--no-check-certificates',
+    ...platformArgs(url),
+    '--dump-single-json',
     ...(opts.playlist ? ['--flat-playlist'] : ['--no-playlist']),
     '--',
     url,
@@ -128,10 +154,24 @@ function classifyExtractionError(stderr: string): ApiError {
   if (
     lower.includes('video unavailable') ||
     lower.includes('this post is unavailable') ||
-    lower.includes('removed') ||
-    lower.includes('404')
+    lower.includes('content not available') ||
+    lower.includes('has been removed') ||
+    lower.includes('no longer available') ||
+    lower.includes('http error 404') ||
+    lower.includes(': 404')
   ) {
     return ApiError.mediaUnavailable();
+  }
+  if (
+    lower.includes('private video') ||
+    lower.includes('login required') ||
+    lower.includes('sign in to confirm') ||
+    lower.includes('age-restricted') ||
+    lower.includes('members-only') ||
+    lower.includes('this content isn') ||
+    lower.includes('account required')
+  ) {
+    return ApiError.extractionFailed({ reason: 'requires-auth' });
   }
   return ApiError.extractionFailed({ stderr: stderr.slice(0, 500) });
 }

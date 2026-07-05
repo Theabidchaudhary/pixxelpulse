@@ -18,8 +18,8 @@
     <string name="current_downloads">Current downloads</string>
     <string name="quick_actions">Quick actions</string>
     <string name="quick_open_downloads">All downloads</string>
-    <string name="quick_paste_fetch">Paste &amp; fetch</string>
-    <string name="quick_clear_finished">Clear finished</string>
+    <string name="quick_paste_fetch">Paste</string>
+    <string name="quick_clear_finished">Clear</string>
 
     <!-- Formats sheet -->
     <string name="sheet_video">Video · MP4</string>

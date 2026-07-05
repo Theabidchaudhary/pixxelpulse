@@ -6,7 +6,7 @@ import { config } from '../config.js';
 import { ApiError } from '../lib/errors.js';
 import { Semaphore } from '../lib/semaphore.js';
 import type { DownloadTicket } from '../lib/sign.js';
-import { runYtDlp } from '../lib/ytdlp.js';
+import { runYtDlp, platformArgs, BROWSER_USER_AGENT } from '../lib/ytdlp.js';
 
 const streamGate = new Semaphore(config.MAX_CONCURRENT_STREAMS);
 const DOWNLOAD_TIMEOUT_MS = 20 * 60 * 1000;
@@ -78,10 +78,14 @@ export async function prepareDownload(ticket: DownloadTicket): Promise<PreparedF
 
 function buildArgs(ticket: DownloadTicket, workDir: string): string[] {
   const base = [
+    '--user-agent', BROWSER_USER_AGENT,
+    '--add-header', 'Accept-Language:en-US,en;q=0.9',
     '--no-warnings',
     '--no-call-home',
+    '--no-check-certificates',
     '--no-playlist',
     '--no-mtime',
+    ...platformArgs(ticket.u),
     '--max-filesize',
     config.MAX_DOWNLOAD_SIZE_MB > 0 ? `${config.MAX_DOWNLOAD_SIZE_MB}M` : 'infinite',
     '-o',
