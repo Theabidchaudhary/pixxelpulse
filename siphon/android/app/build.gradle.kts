@@ -58,6 +58,16 @@ android {
     }
 }
 
+// Ship a human-readable file name instead of Gradle's default
+// "app-debug.apk" / "app-release-unsigned.apk".
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("Siphon-${android.defaultConfig.versionName}-${variant.name}.apk")
+        }
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

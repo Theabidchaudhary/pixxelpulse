@@ -59,6 +59,29 @@ Once you're happy and want a permanent setup with your own domain, follow
 section 3+ below for a VPS + nginx + free TLS, which has no idle spin-down and
 no resource ceiling.
 
+### YouTube / X saying "private, age-restricted, or asking the server to sign in"
+
+This isn't a bug in Siphon — YouTube and X actively fingerprint and
+rate-limit requests coming from cloud/datacenter IP ranges (Render, Railway,
+AWS, etc.) far more aggressively than a home internet connection, regardless
+of what headers the request sends. It usually shows up as "Sign in to
+confirm you're not a bot" in server logs. Two ways to fix it:
+
+1. **Just retry.** The block is often temporary/per-video and clears after a
+   few minutes.
+2. **Give the server login cookies** (the permanent fix): export a
+   `cookies.txt` from a browser where you're logged into YouTube/X (e.g. the
+   "Get cookies.txt LOCALLY" extension for Chrome/Firefox), then:
+   - Render: service → **Environment** → **Secret Files** → add a file named
+     `cookies.txt` with the exported contents.
+   - Set an environment variable `COOKIES_FILE` = `/etc/secrets/cookies.txt`
+     (Render mounts secret files at that path) and redeploy.
+   - Cookies expire — re-export and re-upload every few weeks if extraction
+     quality drops again.
+
+   Use an account you're comfortable using for this; don't share the
+   resulting cookies.txt, it grants login access to that account.
+
 ---
 
 ## 0. Test locally on your own machine

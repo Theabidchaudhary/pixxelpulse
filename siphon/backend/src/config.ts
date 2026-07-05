@@ -10,6 +10,15 @@ const envSchema = z.object({
     .default('siphon-dev-secret-do-not-use-in-prod'),
   TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(1800),
   YTDLP_PATH: z.string().default('yt-dlp'),
+  /**
+   * Path to a Netscape-format cookies.txt exported from a logged-in browser.
+   * YouTube and X aggressively bot-block cloud/datacenter IPs (Render,
+   * Railway, AWS, ...) regardless of headers; supplying cookies is the only
+   * reliable workaround for "Sign in to confirm you're not a bot" and
+   * similar login-gated errors. Optional — everything still works for
+   * platforms/videos that don't require it.
+   */
+  COOKIES_FILE: z.string().optional(),
   MAX_CONCURRENT_EXTRACTIONS: z.coerce.number().int().positive().default(4),
   MAX_CONCURRENT_STREAMS: z.coerce.number().int().positive().default(6),
   RESOLVE_CACHE_TTL_SECONDS: z.coerce.number().int().nonnegative().default(300),

@@ -53,22 +53,43 @@ const EXTRACTION_TIMEOUT_MS = 45_000;
 export const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
+/**
+ * Cookies exported from a logged-in browser (Netscape cookies.txt format).
+ * This is the only reliable fix for "Sign in to confirm you're not a bot"
+ * (YouTube) and similar login walls (X/Twitter) that cloud-hosted IPs hit
+ * far more often than home connections. Configure via the COOKIES_FILE env
+ * var; harmless no-op when unset.
+ */
+function cookieArgs(): string[] {
+  return config.COOKIES_FILE ? ['--cookies', config.COOKIES_FILE] : [];
+}
+
 /** Extra yt-dlp flags per-platform that meaningfully improve extraction success. */
 export function platformArgs(url: string): string[] {
   if (/youtube\.com|youtu\.be/i.test(url)) {
     return [
-      '--extractor-args', 'youtube:player_client=all',
+      // mweb/tv rarely need a PO token and are the current most reliable
+      // combo for cloud IPs; "web" is kept last as a broad fallback.
+      '--extractor-args', 'youtube:player_client=mweb,tv,web;player_skip=webpage',
       '--no-check-formats',
+      ...cookieArgs(),
     ];
   }
   if (/tiktok\.com/i.test(url)) {
     return ['--add-header', 'Referer:https://www.tiktok.com/'];
   }
   if (/twitter\.com|x\.com/i.test(url)) {
-    return ['--add-header', 'Referer:https://x.com/'];
+    return [
+      '--add-header', 'Referer:https://x.com/',
+      // The syndication API is the unauthenticated embed endpoint; it works
+      // for far more tweets from datacenter IPs than the logged-out graphql
+      // path, which X increasingly gates behind a login wall.
+      '--extractor-args', 'twitter:api=syndication',
+      ...cookieArgs(),
+    ];
   }
   if (/instagram\.com/i.test(url)) {
-    return ['--add-header', 'Referer:https://www.instagram.com/'];
+    return ['--add-header', 'Referer:https://www.instagram.com/', ...cookieArgs()];
   }
   return [];
 }
@@ -169,9 +190,11 @@ function classifyExtractionError(stderr: string): ApiError {
     lower.includes('age-restricted') ||
     lower.includes('members-only') ||
     lower.includes('this content isn') ||
-    lower.includes('account required')
+    lower.includes('account required') ||
+    lower.includes('rate-limit') ||
+    lower.includes('http error 429')
   ) {
-    return ApiError.extractionFailed({ reason: 'requires-auth' });
+    return ApiError.requiresLogin();
   }
   return ApiError.extractionFailed({ stderr: stderr.slice(0, 500) });
 }

@@ -7,6 +7,7 @@ export type ErrorCode =
   | 'INVALID_URL'
   | 'UNSUPPORTED_PLATFORM'
   | 'EXTRACTION_FAILED'
+  | 'REQUIRES_LOGIN'
   | 'MEDIA_UNAVAILABLE'
   | 'TOKEN_INVALID'
   | 'TOKEN_EXPIRED'
@@ -53,6 +54,14 @@ export class ApiError extends Error {
       'We could not read this link. It may be private, region-locked or removed.',
       502,
       details,
+    );
+  }
+
+  static requiresLogin() {
+    return new ApiError(
+      'REQUIRES_LOGIN',
+      'This video is private, age-restricted, or the platform is asking the server to sign in. It may work later, or the server operator can add login cookies to fix this permanently.',
+      422,
     );
   }
 
