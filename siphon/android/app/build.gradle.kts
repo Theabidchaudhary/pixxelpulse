@@ -59,12 +59,15 @@ android {
 }
 
 // Ship a human-readable file name instead of Gradle's default
-// "app-debug.apk" / "app-release-unsigned.apk".
+// "app-debug.apk" / "app-release-unsigned.apk". outputFileName is only
+// settable on the internal impl class, not the public VariantOutput type.
 androidComponents {
     onVariants { variant ->
-        variant.outputs.forEach { output ->
-            output.outputFileName.set("Siphon-${android.defaultConfig.versionName}-${variant.name}.apk")
-        }
+        variant.outputs
+            .filterIsInstance<com.android.build.api.variant.impl.VariantOutputImpl>()
+            .forEach { output ->
+                output.outputFileName.set("Siphon-${android.defaultConfig.versionName}-${variant.name}.apk")
+            }
     }
 }
 
