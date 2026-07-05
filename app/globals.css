@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+@theme {
+  /* — Backgrounds — */
+  --color-ink-950: #060709;
+  --color-ink-900: #0a0c10;
+  --color-ink-800: #10131a;
+  --color-ink-700: #181c26;
+
+  /* — Text — */
+  --color-fg: #f5f6f8;
+  --color-fg-soft: #9aa1b0;
+  --color-fg-faint: #5c6372;
+
+  /* — Brand accents — */
+  --color-pulse-violet: #7c6af7;
+  --color-pulse-blue: #4d8dff;
+  --color-pulse-cyan: #53d8ff;
+
+  /* — Lines & glass — */
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-glass: rgba(255, 255, 255, 0.04);
+
+  /* — Type — */
+  --font-display: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-sans: var(--font-geist), "Geist", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
+
+  /* — Motion — */
+  --ease-pulse: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-marquee: marquee 44s linear infinite;
+  --animate-pulse-line: pulse-line 2.8s var(--ease-inout) infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes pulse-line {
+    0%, 100% { transform: scaleX(0.2); opacity: 0.4; }
+    50% { transform: scaleX(1); opacity: 1; }
+  }
+}
+
+:root {
+  --gradient-pulse: linear-gradient(120deg, #7c6af7 0%, #4d8dff 55%, #53d8ff 100%);
+  --nav-h: 76px;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background: var(--color-ink-950);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01" on, "cv01" on;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+::selection {
+  background: rgba(124, 106, 247, 0.35);
+  color: #fff;
+}
+
+/* ————— Typography utilities ————— */
+
+.text-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+  font-size: clamp(2.75rem, 1.2rem + 6.2vw, 6.75rem);
+}
+.text-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  text-wrap: balance;
+  font-size: clamp(2rem, 1.1rem + 3.2vw, 3.9rem);
+}
+.text-h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-size: clamp(1.35rem, 1.1rem + 1.1vw, 1.9rem);
+}
+.text-lead {
+  font-size: clamp(1.05rem, 1rem + 0.35vw, 1.3rem);
+  line-height: 1.65;
+  color: var(--color-fg-soft);
+  text-wrap: pretty;
+}
+.text-label {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-fg-faint);
+}
+
+.text-gradient {
+  background: var(--gradient-pulse);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ————— Surfaces ————— */
+
+.panel {
+  background: var(--color-ink-800);
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+}
+.panel-hover {
+  transition: border-color 0.5s var(--ease-pulse), background-color 0.5s var(--ease-pulse),
+    transform 0.5s var(--ease-pulse), box-shadow 0.5s var(--ease-pulse);
+}
+.panel-hover:hover {
+  border-color: var(--color-line-strong);
+  background: var(--color-ink-700);
+}
+
+.glass {
+  background: rgba(10, 12, 16, 0.72);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* Film-grain noise (SVG feTurbulence, tiled) */
+.noise::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+/* Radial section glow */
+.glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Timeline divider motif */
+.playhead-rule {
+  position: relative;
+  height: 1px;
+  background: var(--color-line);
+}
+.playhead-rule::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--color-pulse-violet);
+  box-shadow: 0 0 12px rgba(124, 106, 247, 0.9);
+}
+
+/* Focus visibility */
+:focus-visible {
+  outline: 2px solid var(--color-pulse-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Reduced motion: kill everything decorative */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
