@@ -16,6 +16,8 @@
   --color-pulse-violet: #7c6af7;
   --color-pulse-blue: #4d8dff;
   --color-pulse-cyan: #53d8ff;
+  --color-pulse-magenta: #f062c0;
+  --color-pulse-orange: #ff9d5c;
 
   /* — Lines & glass — */
   --color-line: rgba(255, 255, 255, 0.08);
@@ -33,6 +35,7 @@
 
   --animate-marquee: marquee 44s linear infinite;
   --animate-pulse-line: pulse-line 2.8s var(--ease-inout) infinite;
+  --animate-float: float 7s var(--ease-inout) infinite;
 
   @keyframes marquee {
     from { transform: translateX(0); }
@@ -42,10 +45,22 @@
     0%, 100% { transform: scaleX(0.2); opacity: 0.4; }
     50% { transform: scaleX(1); opacity: 1; }
   }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--float-x, 0px), var(--float-y, -16px)) rotate(var(--float-r, -2deg)); }
+  }
 }
 
 :root {
   --gradient-pulse: linear-gradient(120deg, #7c6af7 0%, #4d8dff 55%, #53d8ff 100%);
+  --gradient-aurora: linear-gradient(
+    100deg,
+    #4d8dff 0%,
+    #7c6af7 28%,
+    #f062c0 55%,
+    #ff9d5c 78%,
+    #53d8ff 100%
+  );
   --nav-h: 76px;
   color-scheme: dark;
 }
@@ -122,6 +137,12 @@ body {
 
 .text-gradient {
   background: var(--gradient-pulse);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-aurora {
+  background: var(--gradient-aurora);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

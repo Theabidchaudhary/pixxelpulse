@@ -4,6 +4,7 @@ import { services } from "@/content/services";
 import { PulseGlyph } from "@/components/ui/Logo";
 import Reveal from "@/components/ui/Reveal";
 import { ArrowIcon } from "@/components/ui/Button";
+import GiantWordmark from "@/components/ui/GiantWordmark";
 
 export default function Footer() {
   return (
@@ -114,7 +115,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-line pt-8 text-xs text-fg-faint sm:flex-row sm:items-center sm:justify-between">
+        <GiantWordmark />
+
+        <div className="mt-4 flex flex-col gap-4 border-t border-line pt-8 text-xs text-fg-faint sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Orvix. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="transition-colors hover:text-fg-soft">

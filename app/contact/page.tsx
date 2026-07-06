@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/sections/ContactForm";
+import BookingPanel from "@/components/sections/BookingPanel";
 import Accordion from "@/components/ui/Accordion";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import { site } from "@/content/site";
 import { faqs } from "@/content/faqs";
+import { team } from "@/content/team";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+
+const lead = team[0];
 
 export const metadata: Metadata = {
   title: "Contact — Start a Project",
@@ -37,56 +41,75 @@ export default function ContactPage() {
               eyebrow="Contact"
               heading={
                 <>
-                  Let&apos;s talk about <span className="text-gradient">your footage.</span>
+                  Ready for your <span className="text-gradient">dream video?</span>
                 </>
               }
-              lead="Send the brief — the goal, the platform, the deadline. We reply within 12 hours with next steps and an honest read on fit."
+              lead="Book a call, message us on WhatsApp, or send a brief by email. Whatever you prefer — you'll hear back within 12 hours."
             />
 
-            <Reveal delay={200} className="mt-12 space-y-5">
-              <div>
-                <p className="text-label mb-2">Email</p>
-                <a href={`mailto:${site.email}`} className="font-display text-xl font-medium tracking-tight text-fg transition-colors hover:text-pulse-cyan">
+            <Reveal delay={180} className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+              {[
+                "Free first consultation",
+                "Free scope & quote",
+                "No obligation",
+                "A dedicated editor",
+              ].map((line) => (
+                <p key={line} className="flex items-center gap-2 text-fg-soft">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 text-pulse-cyan" aria-hidden>
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M5 8.2l2 2 4-4.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {line}
+                </p>
+              ))}
+            </Reveal>
+
+            <Reveal delay={260} className="panel mt-10 flex items-center gap-4 p-5">
+              <span
+                className="flex size-12 shrink-0 items-center justify-center rounded-full font-display text-base font-semibold text-ink-950"
+                style={{ background: "var(--gradient-aurora)" }}
+                aria-hidden
+              >
+                {lead.name[0]}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-fg">{lead.name}</p>
+                <p className="text-xs text-fg-faint">{lead.role}</p>
+              </div>
+              <div className="ml-auto space-y-1 text-right text-xs text-fg-soft">
+                <a href={`mailto:${site.email}`} className="block transition-colors hover:text-fg">
                   {site.email}
                 </a>
-              </div>
-              <div>
-                <p className="text-label mb-2">WhatsApp</p>
-                <a href={site.whatsapp} target="_blank" rel="noopener noreferrer" className="font-display text-xl font-medium tracking-tight text-fg transition-colors hover:text-pulse-cyan">
+                <a href={site.whatsapp} target="_blank" rel="noopener noreferrer" className="block transition-colors hover:text-fg">
                   {site.phone}
                 </a>
               </div>
-              <div className="pt-2">
-                <p className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 font-mono text-xs text-fg-soft">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-pulse-cyan opacity-60" />
-                    <span className="relative inline-flex size-2 rounded-full bg-pulse-cyan" />
-                  </span>
-                  {site.availability}
-                </p>
-              </div>
             </Reveal>
 
-            {site.bookingUrl && (
-              <Reveal delay={280} className="mt-10">
-                <a
-                  href={site.bookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-line-strong px-7 py-3.5 text-[0.95rem] font-medium text-fg transition-all hover:border-white/40 hover:bg-white/5"
-                >
-                  Prefer to talk? Book a 20-min call
-                </a>
-              </Reveal>
-            )}
+            <Reveal delay={320} className="mt-6">
+              <p className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 font-mono text-xs text-fg-soft">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-pulse-cyan opacity-60" />
+                  <span className="relative inline-flex size-2 rounded-full bg-pulse-cyan" />
+                </span>
+                {site.availability}
+              </p>
+            </Reveal>
           </div>
 
           <Reveal delay={150}>
-            <div className="panel relative p-7 lg:p-10">
-              <ContactForm />
-            </div>
+            <BookingPanel />
           </Reveal>
         </div>
+
+        <Reveal delay={100} className="mt-16 lg:mt-24">
+          <div className="panel relative p-7 lg:p-10">
+            <p className="text-h3 mb-8">
+              Prefer to leave a <span className="text-gradient">message instead?</span>
+            </p>
+            <ContactForm />
+          </div>
+        </Reveal>
 
         <div className="mx-auto mt-28 max-w-3xl lg:mt-40">
           <SectionHeading eyebrow="FAQ" heading="Quick answers first." className="mb-12" />

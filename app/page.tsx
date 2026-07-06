@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import NicheMarquee from "@/components/sections/NicheMarquee";
-import FeaturedWork from "@/components/sections/FeaturedWork";
-import ServicesGrid from "@/components/sections/ServicesGrid";
 import ProcessTimeline from "@/components/sections/ProcessTimeline";
+import ProvenSystem from "@/components/sections/ProvenSystem";
+import DreamOutcomes from "@/components/sections/DreamOutcomes";
+import ServicesGrid from "@/components/sections/ServicesGrid";
+import StatsStrip from "@/components/sections/StatsStrip";
+import FeastForEyes from "@/components/sections/FeastForEyes";
+import ImpactStats from "@/components/sections/ImpactStats";
+import PricingTeaser from "@/components/sections/PricingTeaser";
+import QualityPromises from "@/components/sections/QualityPromises";
+import ComparisonTable from "@/components/sections/ComparisonTable";
 import Testimonials from "@/components/sections/Testimonials";
 import Accordion from "@/components/ui/Accordion";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -22,9 +29,16 @@ export default function HomePage() {
     <>
       <Hero />
       <NicheMarquee />
-      <FeaturedWork projects={featuredProjects} />
-      <ServicesGrid />
       <ProcessTimeline />
+      <ProvenSystem />
+      <DreamOutcomes projects={featuredProjects} />
+      <ServicesGrid />
+      <StatsStrip />
+      <FeastForEyes projects={featuredProjects} />
+      <ImpactStats />
+      <PricingTeaser />
+      <QualityPromises />
+      <ComparisonTable />
       <Testimonials />
 
       {/* FAQ */}
