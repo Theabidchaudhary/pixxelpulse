@@ -20,11 +20,11 @@ function IconTile({ color, children }: { color: string; children: React.ReactNod
 export default function HeartIntro({ projects }: { projects: Project[] }) {
   const photo = projects[0];
   return (
-    <section className="relative overflow-hidden pb-36 pt-10 lg:pb-48">
+    <section className="relative pb-32 pt-4 lg:pb-40">
       {/* Green wash rising from the bottom, like the reference */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-260px] h-[560px] opacity-[0.5] blur-[100px]"
-        style={{ background: "radial-gradient(ellipse 70% 100% at 50% 100%, #17694f 0%, transparent 70%)" }}
+        className="pointer-events-none absolute inset-x-0 bottom-[-220px] h-[560px] opacity-[0.55] blur-[100px]"
+        style={{ background: "radial-gradient(ellipse 70% 100% at 50% 100%, #1a7a5c 0%, transparent 70%)" }}
         aria-hidden
       />
 

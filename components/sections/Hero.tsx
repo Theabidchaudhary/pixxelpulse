@@ -131,21 +131,21 @@ export default function Hero() {
   });
 
   return (
-    <section className="relative flex min-h-[100svh] items-center overflow-hidden pt-[var(--nav-h)]">
-      {/* Dot matrix */}
+    <section className="relative flex min-h-[80svh] items-center pt-[var(--nav-h)] lg:min-h-[84svh]">
+      {/* Dot matrix — clearly visible like the reference */}
       <div
         aria-hidden
-        className="dot-grid absolute inset-0 opacity-60"
-        style={{ maskImage: "radial-gradient(ellipse 100% 90% at 50% 30%, black 20%, transparent 78%)" }}
+        className="dot-grid absolute inset-0 opacity-80"
+        style={{ maskImage: "radial-gradient(ellipse 110% 100% at 50% 32%, black 30%, transparent 85%)" }}
       />
-      {/* Bottom aurora wash */}
+      {/* Bottom aurora wash bleeding into the next section */}
       <div
-        className="glow bottom-[-320px] left-1/2 h-[520px] w-[1200px] -translate-x-1/2 opacity-[0.32]"
+        className="glow bottom-[-360px] left-1/2 h-[640px] w-[1500px] -translate-x-1/2 opacity-[0.5]"
         style={{ background: "var(--gradient-aurora)" }}
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-16 px-6 py-24 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-12">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-16 px-6 pb-8 pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-12">
         <div>
           <h1 className="text-display">
             <motion.span {...up(0.15)} className="serif text-gradient block pb-1 pr-2">
@@ -182,7 +182,7 @@ export default function Hero() {
             </span>
           </motion.div>
 
-          <motion.p {...up(0.58)} className="mt-7 max-w-md text-[0.98rem] leading-[1.75] text-fg-soft">
+          <motion.p {...up(0.58)} className="mt-7 max-w-md text-[1.05rem] leading-[1.7] text-fg-soft">
             Professional <strong className="font-semibold text-fg">short-form, YouTube &amp; brand videos</strong>{" "}
             — 1,300+ delivered across 40+ niches. First cut in just 48–72 hours{" "}
             <strong className="font-semibold text-fg">— clear scope, no strings attached.</strong>

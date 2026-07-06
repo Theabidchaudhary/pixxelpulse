@@ -18,12 +18,25 @@ function Stars() {
 
 export default function StatsStrip() {
   return (
-    <section className="relative mx-auto max-w-[1240px] px-6 py-20 lg:px-10 lg:py-28">
-      <div className="grid items-center gap-14 lg:grid-cols-3 lg:gap-0">
+    <section className="relative py-16 lg:py-24">
+      {/* Deep green glow behind the counter, like the reference */}
+      <div className="glow left-[-140px] top-1/2 h-[460px] w-[620px] -translate-y-1/2 opacity-[0.3]" style={{ background: "#0e5c42" }} aria-hidden />
+
+      <div className="relative mx-auto grid max-w-[1240px] items-center gap-14 px-6 lg:grid-cols-3 lg:gap-0 lg:px-10">
         {/* Projects delivered */}
         <Reveal className="text-center lg:border-r lg:border-line lg:px-10">
-          <p className="serif text-mint text-6xl lg:text-7xl">1,300+</p>
-          <p className="mt-4 text-sm text-fg-soft">Projects successfully delivered</p>
+          <p
+            className="serif text-[4.6rem] leading-none lg:text-[6.2rem]"
+            style={{
+              background: "linear-gradient(100deg, #2fbf8f 0%, #4c8dff 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            1,300+
+          </p>
+          <p className="mt-4 text-base text-fg">Projects successfully delivered</p>
         </Reveal>
 
         {/* Rating */}
@@ -37,8 +50,8 @@ export default function StatsStrip() {
             </svg>
             <Stars />
           </div>
-          <p className="mt-4 text-xs text-fg-faint">What our clients say:</p>
-          <p className="mt-1 text-sm text-fg-soft">4.9 out of 5 across 50+ reviews</p>
+          <p className="mt-4 text-sm text-fg-soft">What our clients say:</p>
+          <p className="mt-1 text-base font-medium text-fg">4.9 out of 5 across 50+ reviews</p>
         </Reveal>
 
         {/* Self-quote card */}
@@ -60,7 +73,7 @@ export default function StatsStrip() {
                 <path d="M6.5 11c1.9 0 3.5 1.6 3.5 3.5S8.4 18 6.5 18 3 16.4 3 14.5c0-3.6 2-6.8 5-8.5l1 1.6c-1.6 1-2.8 2.4-3.3 4 .3-.1.5-.1.8-.1zm11 0c1.9 0 3.5 1.6 3.5 3.5S19.4 18 17.5 18 14 16.4 14 14.5c0-3.6 2-6.8 5-8.5l1 1.6c-1.6 1-2.8 2.4-3.3 4 .3-.1.5-.1.8-.1z" />
               </svg>
             </span>
-            <p className="serif text-[1.25rem] leading-snug text-fg">
+            <p className="serif text-[1.45rem] leading-snug text-fg">
               We cut videos that <span className="text-heart">pay off</span>. Not just ones that look good.
             </p>
             <div className="mt-5 flex items-center justify-center gap-3">

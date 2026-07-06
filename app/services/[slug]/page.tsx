@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { services, getService } from "@/content/services";
@@ -50,7 +51,7 @@ export default async function ServicePage({
   const next = services[(idx + 1) % services.length];
 
   return (
-    <article className="relative overflow-x-clip">
+    <PageStage variant="blue">
       <JsonLd
         data={[
           serviceJsonLd(s),
@@ -61,11 +62,6 @@ export default async function ServicePage({
             { name: s.title, path: `/services/${s.slug}` },
           ]),
         ]}
-      />
-      <div
-        className="glow left-1/2 top-[-220px] h-[440px] w-[800px] -translate-x-1/2 opacity-[0.16]"
-        style={{ background: "var(--gradient-pulse)" }}
-        aria-hidden
       />
 
       {/* Hero */}
@@ -156,6 +152,6 @@ export default async function ServicePage({
           </p>
         </Link>
       </section>
-    </article>
+    </PageStage>
   );
 }

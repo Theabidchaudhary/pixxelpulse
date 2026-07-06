@@ -63,13 +63,8 @@ function Mark({ ok }: { ok: boolean }) {
 
 export default function ComparisonTable() {
   return (
-    <section className="relative overflow-hidden py-24 lg:py-36">
-      {/* Blue/purple wash at the bottom like the reference */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[480px] opacity-[0.5] blur-[80px]"
-        style={{ background: "radial-gradient(ellipse 55% 90% at 30% 100%, #1c4f9e 0%, transparent 70%), radial-gradient(ellipse 55% 90% at 75% 100%, #5b2f9e 0%, transparent 70%)" }}
-        aria-hidden
-      />
+    <section className="relative pb-[calc(var(--cap)+4rem)] pt-20 lg:pt-28">
+      {/* The block-level blue→purple wash fills the rounded bottom behind this table */}
 
       <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
@@ -103,7 +98,7 @@ export default function ComparisonTable() {
                   className={
                     r.hero
                       ? "grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center rounded-2xl border border-white/25 px-5 py-5 shadow-[0_16px_50px_rgba(76,141,255,0.3)]"
-                      : "grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center rounded-2xl border border-line bg-ink-900/40 px-5 py-5"
+                      : "grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center rounded-2xl border border-line bg-ink-900/70 px-5 py-5"
                   }
                   style={
                     r.hero
@@ -127,10 +122,10 @@ export default function ComparisonTable() {
                       )}
                     </span>
                     <div>
-                      <p className={`font-display text-[0.95rem] font-bold ${r.hero ? "text-white" : "text-fg"}`}>
+                      <p className={`font-display text-[1.05rem] font-bold ${r.hero ? "text-white" : "text-fg"}`}>
                         {r.name}
                       </p>
-                      <p className={`mt-0.5 text-[0.72rem] leading-relaxed ${r.hero ? "text-white/85" : "text-fg-faint"}`}>
+                      <p className={`mt-0.5 text-[0.8rem] leading-relaxed ${r.hero ? "text-white/90" : "text-fg-soft"}`}>
                         {r.description}
                       </p>
                     </div>

@@ -110,7 +110,7 @@ function QuadrantCell({ q, active, onHover }: { q: Quadrant; active: boolean; on
             {q.tag}
           </span>
         </p>
-        <h3 className="mt-4 font-display text-[1.05rem] font-bold sm:text-[1.15rem]">
+        <h3 className="mt-4 font-display text-[1.15rem] font-bold sm:text-[1.3rem]">
           {q.accentFirst ? (
             <>
               <span className="serif" style={{ color: q.color }}>{q.titleAccent}</span> {q.titleTail}
@@ -121,7 +121,7 @@ function QuadrantCell({ q, active, onHover }: { q: Quadrant; active: boolean; on
             </>
           )}
         </h3>
-        <p className="mt-2.5 max-w-[260px] text-[0.84rem] leading-relaxed text-fg-soft">{q.body}</p>
+        <p className="mt-2.5 max-w-[280px] text-[0.92rem] leading-relaxed text-fg-soft">{q.body}</p>
       </div>
     </div>
   );
@@ -132,9 +132,13 @@ export default function ProvenSystem() {
   const tilt = hovered === null ? [0, 0] : quadrants[hovered].tilt;
 
   return (
-    <section className="relative overflow-hidden py-24 lg:py-36">
-      <div className="glow left-[-180px] top-1/3 h-[420px] w-[420px] opacity-[0.13]" style={{ background: "#b45f2e" }} aria-hidden />
-      <div className="glow right-[-180px] top-1/4 h-[420px] w-[420px] opacity-[0.13]" style={{ background: "#8b3d75" }} aria-hidden />
+    <section className="relative py-20 lg:py-28">
+      {/* Strong ambient glows like the reference: violet top-left, warm orange
+          bottom-left, teal right */}
+      <div className="glow left-[-220px] top-[4%] h-[560px] w-[560px] opacity-[0.3]" style={{ background: "#5b2f9e" }} aria-hidden />
+      <div className="glow bottom-[-6%] left-[-200px] h-[520px] w-[520px] opacity-[0.32]" style={{ background: "#c4622a" }} aria-hidden />
+      <div className="glow right-[-220px] top-[28%] h-[560px] w-[560px] opacity-[0.28]" style={{ background: "#17694f" }} aria-hidden />
+      <div className="glow right-[-160px] top-[-4%] h-[400px] w-[400px] opacity-[0.2]" style={{ background: "#8b3d75" }} aria-hidden />
 
       <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">

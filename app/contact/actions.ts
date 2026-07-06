@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import nodemailer from "nodemailer";
 import { site } from "@/content/site";
 
 const schema = z.object({
@@ -18,6 +19,11 @@ export type ContactState = {
   error?: string;
   fieldErrors?: Record<string, string>;
 };
+
+// Gmail SMTP — same account/app-password flow the previous PHPMailer site used.
+// Override via env (GMAIL_USER / GMAIL_APP_PASSWORD / LEAD_EMAIL) in production.
+const GMAIL_USER = process.env.GMAIL_USER ?? "Theabidchaudhary@gmail.com";
+const GMAIL_APP_PASSWORD = (process.env.GMAIL_APP_PASSWORD ?? "xsfo tkur xuwf msmv").replace(/\s+/g, "");
 
 export async function submitContact(
   _prev: ContactState,
@@ -39,44 +45,36 @@ export async function submitContact(
   if (raw.company_website) return { ok: true };
 
   const { name, email, projectType, budget, message } = parsed.data;
+  const to = process.env.LEAD_EMAIL ?? GMAIL_USER ?? site.email;
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.LEAD_EMAIL ?? site.email;
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // STARTTLS
+      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+    });
 
-  if (apiKey) {
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.LEAD_FROM ?? "Orvix Website <onboarding@resend.dev>",
-          to: [to],
-          reply_to: email,
-          subject: `New project inquiry — ${projectType} — ${name}`,
-          text: [
-            `Name: ${name}`,
-            `Email: ${email}`,
-            `Project type: ${projectType}`,
-            `Budget: ${budget || "not specified"}`,
-            "",
-            message,
-          ].join("\n"),
-        }),
-      });
-      if (!res.ok) throw new Error(`Resend ${res.status}`);
-    } catch (e) {
-      console.error("Lead email failed:", e);
-      return {
-        ok: false,
-        error: `Something went wrong sending your message. Email us directly at ${to}.`,
-      };
-    }
-  } else {
-    // No email provider configured yet — log so the lead isn't silently lost in dev.
-    console.log("[lead]", { name, email, projectType, budget, message });
+    await transporter.sendMail({
+      from: `"${site.name} Website" <${GMAIL_USER}>`,
+      to,
+      replyTo: email,
+      subject: `New project inquiry — ${projectType} — ${name}`,
+      text: [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Project type: ${projectType}`,
+        `Budget: ${budget || "not specified"}`,
+        "",
+        message,
+      ].join("\n"),
+    });
+  } catch (e) {
+    console.error("Lead email failed:", e);
+    return {
+      ok: false,
+      error: `Something went wrong sending your message. Email us directly at ${site.email}.`,
+    };
   }
 
   return { ok: true };

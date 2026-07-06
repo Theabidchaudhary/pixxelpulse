@@ -20,18 +20,17 @@ const cardMeta = [
 
 export default function PricingTeaser() {
   return (
-    <section className="relative overflow-hidden py-24 lg:py-36">
-      {/* Deep violet/blue stage glow */}
+    <section className="relative pb-20 pt-[calc(var(--cap)+3.5rem)] lg:pb-28 lg:pt-[calc(var(--cap)+5rem)]">
+      {/* Extra violet/blue stage glow on top of the block wash */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.65]"
+        className="pointer-events-none absolute inset-0 opacity-[0.55]"
         style={{
           background:
-            "radial-gradient(ellipse 60% 55% at 50% 8%, rgba(103,63,190,0.55) 0%, transparent 65%), radial-gradient(ellipse 45% 50% at 12% 40%, rgba(28,79,158,0.45) 0%, transparent 70%), radial-gradient(ellipse 45% 50% at 88% 42%, rgba(103,63,190,0.35) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 55% at 50% 8%, rgba(113,66,214,0.6) 0%, transparent 65%), radial-gradient(ellipse 45% 50% at 10% 42%, rgba(34,90,190,0.5) 0%, transparent 70%), radial-gradient(ellipse 45% 50% at 90% 44%, rgba(120,58,200,0.42) 0%, transparent 70%)",
           filter: "blur(30px)",
         }}
         aria-hidden
       />
-      <div className="dot-grid absolute inset-0 opacity-30" style={{ maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 75%)" }} aria-hidden />
 
       <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
@@ -72,10 +71,10 @@ export default function PricingTeaser() {
                     </span>
                   </span>
 
-                  <h3 className="font-display text-[1.3rem] font-bold">{p.name}</h3>
-                  <p className="mt-1 text-[0.82rem] text-fg-soft">{p.tag}</p>
+                  <h3 className="font-display text-[1.45rem] font-bold">{p.name}</h3>
+                  <p className="mt-1 text-[0.9rem] text-fg-soft">{p.tag}</p>
 
-                  <p className="serif mt-5 text-[1.9rem]" style={{ color: meta.color }}>
+                  <p className="serif mt-5 text-[2.5rem]" style={{ color: meta.color }}>
                     {p.price.toLowerCase().startsWith("from") ? (
                       <>
                         <span className="text-[0.62em]">from </span>
@@ -85,11 +84,11 @@ export default function PricingTeaser() {
                       p.price.toLowerCase()
                     )}
                   </p>
-                  <p className="text-xs text-fg-faint">{p.unit}</p>
+                  <p className="text-sm text-fg-soft">{p.unit}</p>
 
                   <ul className="mt-6 flex-1 space-y-2.5">
                     {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-[0.84rem] text-fg-soft">
+                      <li key={f} className="flex items-start gap-2.5 text-[0.92rem] text-fg">
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0" style={{ color: meta.color }} aria-hidden>
                           <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" />
                           <path d="M5 8.2l2 2 4-4.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />

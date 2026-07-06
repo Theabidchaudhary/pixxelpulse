@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import InlinePlayer from "@/components/media/InlinePlayer";
@@ -52,7 +53,7 @@ export default async function ProjectPage({
   const next = idx >= 0 ? featuredProjects[(idx + 1) % featuredProjects.length] : featuredProjects[0];
 
   return (
-    <article className="relative overflow-x-clip">
+    <PageStage variant="violet">
       <JsonLd
         data={[
           videoJsonLd(p),
@@ -156,6 +157,6 @@ export default async function ProjectPage({
           </p>
         </Link>
       </div>
-    </article>
+    </PageStage>
   );
 }

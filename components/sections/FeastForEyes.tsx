@@ -61,32 +61,34 @@ function TabletScreen({ shot }: { shot?: Project }) {
 export default function FeastForEyes({ projects }: { projects: Project[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "center center"] });
-  const rotateX = useTransform(scrollYProgress, [0, 1], [38, 10]);
-  const y = useTransform(scrollYProgress, [0, 1], [90, 0]);
+  // Track the whole section so the tablet keeps rising as you scroll past,
+  // eventually covering the heading — like the reference.
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const rotateX = useTransform(scrollYProgress, [0, 0.45], [38, 0], { clamp: true });
+  const y = useTransform(scrollYProgress, [0, 1], [170, -300]);
   const shot = projects[2];
 
   return (
-    <section className="relative overflow-hidden py-24 lg:py-36">
-      {/* Warm orange→pink floor wash */}
+    <section ref={ref} className="relative pb-24 pt-14 lg:pb-32 lg:pt-16">
+      {/* Warm orange→maroon floor wash reaching into the rounded bottom corners */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] opacity-[0.55]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] opacity-[0.8]"
         style={{
           background:
-            "radial-gradient(ellipse 46% 74% at 24% 88%, rgba(255,138,79,0.5) 0%, transparent 70%), radial-gradient(ellipse 46% 74% at 78% 88%, rgba(240,85,159,0.42) 0%, transparent 70%)",
-          filter: "blur(48px)",
+            "radial-gradient(ellipse 48% 80% at 20% 96%, rgba(216,112,58,0.6) 0%, transparent 70%), radial-gradient(ellipse 48% 80% at 80% 96%, rgba(178,60,110,0.5) 0%, transparent 70%), radial-gradient(ellipse 60% 55% at 50% 100%, rgba(120,42,60,0.5) 0%, transparent 75%)",
+          filter: "blur(52px)",
         }}
         aria-hidden
       />
 
       <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
-        <Reveal className="mx-auto max-w-2xl text-center">
+        <Reveal className="relative z-0 mx-auto max-w-3xl text-center">
           <h2 className="text-h2">
             …and a <span className="serif text-heart">feast for the eyes</span>
           </h2>
         </Reveal>
 
-        <div ref={ref} className="mx-auto mt-10 max-w-4xl lg:mt-14" style={{ perspective: "1800px" }}>
+        <div className="relative z-10 mx-auto mt-8 max-w-4xl lg:mt-10" style={{ perspective: "1800px" }}>
           <motion.div
             style={reduce ? undefined : { rotateX, y, transformStyle: "preserve-3d" }}
             className="relative mx-auto aspect-[16/10.2] w-full rounded-[22px] bg-[#17171c] p-[1.1%] shadow-[0_60px_120px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:rounded-[30px]"

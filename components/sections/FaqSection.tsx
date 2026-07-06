@@ -12,14 +12,14 @@ export default function FaqSection() {
   const right = faqs.slice(Math.ceil(faqs.length / 2));
 
   return (
-    <section className="relative overflow-hidden py-24 lg:py-32">
+    <section className="relative pb-[calc(var(--cap)+4rem)] pt-20 lg:pt-28">
       <JsonLd data={faqJsonLd(faqs)} />
-      {/* Purple → pink → orange wash flowing into the footer */}
+      {/* Vivid purple → pink → orange wash filling the rounded bottom, like the reference */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-260px] h-[560px] opacity-[0.55] blur-[80px]"
+        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[680px] opacity-[0.85] blur-[70px]"
         style={{
           background:
-            "radial-gradient(ellipse 45% 90% at 18% 100%, #5b2f9e 0%, transparent 70%), radial-gradient(ellipse 45% 90% at 55% 100%, #a03d7c 0%, transparent 70%), radial-gradient(ellipse 40% 90% at 88% 100%, #b45f2e 0%, transparent 70%)",
+            "radial-gradient(ellipse 45% 90% at 12% 100%, #6d3fd4 0%, transparent 68%), radial-gradient(ellipse 45% 90% at 50% 100%, #d14a9a 0%, transparent 68%), radial-gradient(ellipse 42% 90% at 88% 100%, #e07038 0%, transparent 68%)",
         }}
         aria-hidden
       />

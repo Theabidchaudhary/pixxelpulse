@@ -108,7 +108,7 @@ function PromiseCard({ p }: { p: Promise_ }) {
               </svg>
             </span>
           </span>
-          <p className="font-display text-[0.86rem] font-bold leading-snug text-fg">
+          <p className="font-display text-[0.95rem] font-bold leading-snug text-fg">
             {p.lead} <span className="serif block" style={{ color: p.color }}>{p.accent}</span>
           </p>
         </div>
@@ -133,7 +133,7 @@ function PromiseCard({ p }: { p: Promise_ }) {
               <p className="text-label !text-[0.6rem]" style={{ color: p.color }}>
                 {p.label}
               </p>
-              <p className="mt-2.5 text-[0.8rem] leading-relaxed text-fg-soft">{p.body}</p>
+              <p className="mt-2.5 text-[0.88rem] leading-relaxed text-fg">{p.body}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -144,8 +144,12 @@ function PromiseCard({ p }: { p: Promise_ }) {
 
 export default function QualityPromises() {
   return (
-    <section className="relative overflow-hidden py-24 lg:py-36">
-      <div className="dot-grid absolute inset-0 opacity-25" style={{ maskImage: "radial-gradient(ellipse 60% 60% at 50% 55%, black 20%, transparent 75%)" }} aria-hidden />
+    <section className="relative py-20 lg:py-28">
+      {/* Strong ambient glows: blue left, magenta/purple right — like the reference */}
+      <div className="glow left-[-240px] top-[30%] h-[560px] w-[560px] opacity-[0.3]" style={{ background: "#1c4f9e" }} aria-hidden />
+      <div className="glow right-[-240px] top-[20%] h-[600px] w-[600px] opacity-[0.32]" style={{ background: "#7a2f8e" }} aria-hidden />
+      <div className="glow bottom-[-10%] right-[10%] h-[420px] w-[420px] opacity-[0.22]" style={{ background: "#b03d75" }} aria-hidden />
+      <div className="dot-grid absolute inset-0 opacity-45" style={{ maskImage: "radial-gradient(ellipse 70% 70% at 50% 55%, black 25%, transparent 80%)" }} aria-hidden />
 
       <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
@@ -161,11 +165,11 @@ export default function QualityPromises() {
         <Reveal className="relative mx-auto mt-10 hidden h-[560px] max-w-3xl lg:block">
           {/* Orbit ring */}
           <div className="absolute left-1/2 top-1/2 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line" aria-hidden />
-          {/* Center glyph */}
+          {/* Center glyph — bright colorful mark like the reference logo */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" aria-hidden>
-            <div className="relative flex size-24 items-center justify-center rounded-full border border-line bg-ink-900/80">
-              <div className="glow left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 opacity-40" style={{ background: "var(--gradient-aurora)", filter: "blur(30px)" }} />
-              <PulseGlyph className="relative size-10" />
+            <div className="relative flex size-28 items-center justify-center">
+              <div className="glow left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 opacity-80" style={{ background: "var(--gradient-aurora)", filter: "blur(34px)" }} />
+              <PulseGlyph className="relative size-16 drop-shadow-[0_0_24px_rgba(240,85,159,0.6)]" />
             </div>
           </div>
 

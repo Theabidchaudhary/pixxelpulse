@@ -10,9 +10,9 @@
   --color-cream-2: #e8e5df;
 
   /* — Text — */
-  --color-fg: #f6f5f3;
-  --color-fg-soft: #a8a8b3;
-  --color-fg-faint: #66666f;
+  --color-fg: #f8f7f5;
+  --color-fg-soft: #c9c9d4;
+  --color-fg-faint: #8e8e9a;
 
   /* — Brand accents — */
   --color-pulse-violet: #8b6cf6;
@@ -82,7 +82,14 @@
     #ffb46b 100%
   );
   --nav-h: 88px;
+  /* Corner radius of the rounded band caps + overlap distance between blocks */
+  --cap: 3rem;
   color-scheme: dark;
+}
+@media (min-width: 1024px) {
+  :root {
+    --cap: 4.5rem;
+  }
 }
 
 html {
@@ -133,30 +140,33 @@ body {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.06;
+  line-height: 1.04;
   text-wrap: balance;
-  font-size: clamp(2.6rem, 1.2rem + 5.4vw, 5.6rem);
+  font-size: clamp(2.9rem, 1.1rem + 6.2vw, 6.3rem);
 }
 .text-h2 {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.015em;
-  line-height: 1.12;
+  line-height: 1.1;
   text-wrap: balance;
-  font-size: clamp(1.9rem, 1.1rem + 2.9vw, 3.4rem);
+  font-size: clamp(2.2rem, 1.1rem + 3.8vw, 4.2rem);
 }
 .text-h3 {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.2;
-  font-size: clamp(1.3rem, 1.05rem + 1vw, 1.75rem);
+  font-size: clamp(1.45rem, 1.1rem + 1.3vw, 2rem);
 }
 .text-lead {
-  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.08rem);
-  line-height: 1.7;
-  color: var(--color-fg-soft);
+  font-size: clamp(1.02rem, 0.95rem + 0.4vw, 1.2rem);
+  line-height: 1.65;
+  color: #eceaf2;
   text-wrap: pretty;
+}
+.band-light .text-lead {
+  color: #3c3c44;
 }
 .text-label {
   font-family: var(--font-sans);
@@ -172,8 +182,8 @@ body {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  letter-spacing: 0;
-  font-size: 1.08em;
+  letter-spacing: 0.005em;
+  font-size: 1.16em;
   line-height: 1;
 }
 
@@ -258,36 +268,36 @@ body {
   will-change: transform;
 }
 
-/* Faint dot matrix used across Amphora's dark sections */
+/* Bright dot matrix used across Amphora's dark sections — clearly visible */
 .dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.13) 1px, transparent 1.4px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.34) 1.2px, transparent 1.7px);
   background-size: 26px 26px;
 }
 .band-light .dot-grid,
 .dot-grid-dark {
-  background-image: radial-gradient(rgba(10, 10, 12, 0.16) 1px, transparent 1.4px);
+  background-image: radial-gradient(rgba(10, 10, 12, 0.26) 1.2px, transparent 1.7px);
   background-size: 26px 26px;
 }
 
-/* ————— Rounded band caps —————
-   Dark sections sit on the cream base and curve into light bands. */
+/* ————— Rounded band caps + block stacking —————
+   Dark gradient blocks curve into the light bands and overlap them by
+   var(--cap), so the section's own background reaches into the curve.
+   Light bands slide underneath (lower z, sticky where pinned). */
 .cap-b {
-  border-bottom-left-radius: 3rem;
-  border-bottom-right-radius: 3rem;
+  border-bottom-left-radius: var(--cap);
+  border-bottom-right-radius: var(--cap);
 }
 .cap-t {
-  border-top-left-radius: 3rem;
-  border-top-right-radius: 3rem;
+  border-top-left-radius: var(--cap);
+  border-top-right-radius: var(--cap);
 }
-@media (min-width: 1024px) {
-  .cap-b {
-    border-bottom-left-radius: 4.5rem;
-    border-bottom-right-radius: 4.5rem;
-  }
-  .cap-t {
-    border-top-left-radius: 4.5rem;
-    border-top-right-radius: 4.5rem;
-  }
+.block-dark {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-ink-950);
+}
+.overlap-up {
+  margin-top: calc(-1 * var(--cap));
 }
 
 /* ————— Electric border (popular pricing card) ————— */

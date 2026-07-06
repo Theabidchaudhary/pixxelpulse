@@ -91,12 +91,12 @@ function StepCard({ step }: { step: (typeof steps)[number] }) {
           </svg>
         </span>
       </span>
-      <h3 className="font-display text-[1.02rem] font-bold">
+      <h3 className="font-display text-[1.12rem] font-bold">
         {step.titleLead && <>{step.titleLead} </>}
         <span className={`serif ${step.accentClass}`}>{step.titleAccent}</span>
         {"titleTail" in step && step.titleTail ? <> {step.titleTail}</> : null}
       </h3>
-      <p className="mt-2 text-[0.84rem] leading-relaxed text-fg-soft">{step.body}</p>
+      <p className="mt-2 text-[0.92rem] leading-relaxed text-fg-soft">{step.body}</p>
     </div>
   );
 }
@@ -223,11 +223,7 @@ function MobileProcess({ lgHidden = true }: { lgHidden?: boolean }) {
 export default function ProcessTimeline() {
   const reduce = useReducedMotion();
   return (
-    <section className="relative overflow-hidden pb-16 pt-24 lg:pb-24 lg:pt-32">
-      {/* Ambient washes: blue top, orange mid-left, green tail — like the reference */}
-      <div className="glow left-[8%] top-[-140px] h-[440px] w-[640px] opacity-[0.22]" style={{ background: "#1c4f9e" }} aria-hidden />
-      <div className="glow right-[4%] top-[6%] h-[380px] w-[420px] opacity-[0.14]" style={{ background: "#8b6cf6" }} aria-hidden />
-      <div className="glow left-[-160px] top-[44%] h-[460px] w-[460px] opacity-[0.14]" style={{ background: "#b45f2e" }} aria-hidden />
+    <section className="relative pb-14 pt-[calc(var(--cap)+3.5rem)] lg:pb-20 lg:pt-[calc(var(--cap)+5rem)]">
 
       <div className="relative">
         <Heading />

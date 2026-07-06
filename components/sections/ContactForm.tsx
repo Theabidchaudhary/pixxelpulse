@@ -145,8 +145,11 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full px-8 py-4 text-[0.92rem] font-bold text-white transition-all duration-500 hover:shadow-[0_0_44px_rgba(240,85,159,0.5)] disabled:opacity-60"
-        style={{ background: "var(--gradient-aurora)" }}
+        className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-white/15 px-8 py-4 text-[0.95rem] font-bold text-white transition-all duration-500 hover:border-white/30 hover:shadow-[0_0_44px_rgba(178,60,110,0.45)] disabled:opacity-60"
+        style={{
+          background: "linear-gradient(96deg, #2b3f63 0%, #3a3158 52%, #5e3050 100%)",
+          boxShadow: "0 0 30px rgba(94,48,80,0.35)",
+        }}
       >
         {pending ? "Sending…" : "Send message"}
         {!pending && (

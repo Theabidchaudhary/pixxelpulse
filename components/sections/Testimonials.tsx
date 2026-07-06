@@ -61,16 +61,18 @@ export default function Testimonials() {
 
   return (
     <section className="band-light relative bg-cream">
-      <div className="h-12 rounded-b-[3rem] bg-ink-950 lg:h-14 lg:rounded-b-[4.5rem]" aria-hidden />
-
-      <div className="relative space-y-5 overflow-hidden py-16 lg:py-20">
+      <div className="mx-auto max-w-2xl px-6 pt-[calc(var(--cap)+3rem)] text-center">
+        <h2 className="text-h2 text-[#121214]">
+          What <span className="serif" style={{ color: "#8b3dd4" }}>our clients</span> say
+        </h2>
+        <p className="text-lead mt-4">How we turn footage into results, together.</p>
+      </div>
+      <div className="relative mt-12 space-y-5 overflow-hidden pb-[calc(var(--cap)+3rem)]">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-cream to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-cream to-transparent" />
         <Row items={rowA} />
         <Row items={rowB} reverse />
       </div>
-
-      <div className="h-12 rounded-t-[3rem] bg-ink-950 lg:h-14 lg:rounded-t-[4.5rem]" aria-hidden />
     </section>
   );
 }

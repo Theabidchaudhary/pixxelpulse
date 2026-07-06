@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import Testimonials from "@/components/sections/Testimonials";
@@ -31,13 +32,8 @@ const values = [
 
 export default function AboutPage() {
   return (
-    <div className="relative overflow-x-clip">
+    <PageStage variant="teal">
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "About", path: "/about" }])} />
-      <div
-        className="glow left-1/2 top-[-220px] h-[440px] w-[800px] -translate-x-1/2 opacity-[0.16]"
-        style={{ background: "var(--gradient-pulse)" }}
-        aria-hidden
-      />
 
       <header className="relative mx-auto max-w-[1440px] px-6 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pt-[calc(var(--nav-h)+5.5rem)]">
         <SectionHeading
@@ -131,6 +127,6 @@ export default function AboutPage() {
           </div>
         </Reveal>
       </section>
-    </div>
+    </PageStage>
   );
 }

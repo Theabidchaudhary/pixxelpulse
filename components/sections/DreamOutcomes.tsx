@@ -67,7 +67,7 @@ export default function DreamOutcomes({ projects }: { projects: Project[] }) {
   const shots = projects.slice(0, outcomes.length);
 
   return (
-    <section className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-36">
+    <section className="relative mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-24">
       <Reveal className="mx-auto max-w-2xl text-center">
         <h2 className="text-h2">
           What should your <span className="serif text-gradient">dream video</span> do?

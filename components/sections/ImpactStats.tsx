@@ -22,9 +22,7 @@ export default function ImpactStats({ projects }: { projects: Project[] }) {
 
   return (
     <section className="band-light relative bg-cream">
-      <div className="h-12 rounded-b-[3rem] bg-ink-950 lg:h-14 lg:rounded-b-[4.5rem]" aria-hidden />
-
-      <div className="mx-auto max-w-[1240px] px-6 py-16 lg:px-10 lg:py-24">
+      <div className="mx-auto max-w-[1240px] px-6 pb-[calc(var(--cap)+4rem)] pt-[calc(var(--cap)+3.5rem)] lg:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-h2">
             … with real <span className="serif text-mint">impact</span>
@@ -137,8 +135,6 @@ export default function ImpactStats({ projects }: { projects: Project[] }) {
           </Reveal>
         </div>
       </div>
-
-      <div className="h-12 rounded-t-[3rem] bg-ink-950 lg:h-14 lg:rounded-t-[4.5rem]" aria-hidden />
     </section>
   );
 }

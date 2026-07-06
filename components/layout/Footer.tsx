@@ -24,11 +24,15 @@ const columns: { title: string; links: { href: string; label: string; external?:
 
 export default function Footer() {
   return (
-    <footer className="band-light relative bg-cream">
-      {/* Dark cap: rounds whatever dark section precedes into the light band */}
-      <div className="h-12 rounded-b-[3rem] bg-ink-950 lg:h-16 lg:rounded-b-[4.5rem]" aria-hidden />
+    <footer className="band-light overlap-up relative z-0 bg-cream">
+      {/* Bright dot matrix across the light band, like the reference footer */}
+      <div
+        className="dot-grid-dark pointer-events-none absolute inset-0 opacity-60"
+        style={{ maskImage: "linear-gradient(180deg, black 0%, rgba(0,0,0,0.35) 100%)" }}
+        aria-hidden
+      />
 
-      <div className="relative mx-auto max-w-[1440px] px-6 pt-14 lg:px-12 lg:pt-20">
+      <div className="relative mx-auto max-w-[1440px] px-6 pt-[calc(var(--cap)+3rem)] lg:px-12">
         <p className="text-right text-xs text-fg-faint">
           © {new Date().getFullYear()} {site.name} was here
         </p>

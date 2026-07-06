@@ -37,25 +37,23 @@ function Row({ items, reverse }: { items: string[]; reverse?: boolean }) {
   );
 }
 
-/** Light "trusted by" band between the dark hero block and the process block. */
+/** Light "trusted by" band between the dark hero block and the process block.
+    The dark blocks above/below overlap it by var(--cap) with rounded corners. */
 export default function NicheMarquee() {
   return (
-    <section className="band-light relative bg-cream">
-      {/* Dark cap curving the hero block into this light band */}
-      <div className="h-12 rounded-b-[3rem] bg-ink-950 lg:h-14 lg:rounded-b-[4.5rem]" aria-hidden />
-
-      <div className="py-12 lg:py-16" aria-label="Industries we edit for">
-        <p className="text-label mb-10 text-center">Together we&apos;ve built great things</p>
-        <div className="relative space-y-6 overflow-hidden">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-cream to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-cream to-transparent" />
-          <Row items={rowA} />
-          <Row items={rowB} reverse />
-        </div>
+    <section
+      className="band-light relative bg-cream pb-[calc(var(--cap)+2.5rem)] pt-[calc(var(--cap)+2rem)]"
+      aria-label="Industries we edit for"
+    >
+      <p className="text-label mb-10 text-center !text-[#3c3c44]">
+        Together we&apos;ve built great things
+      </p>
+      <div className="relative space-y-6 overflow-hidden">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-cream to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-cream to-transparent" />
+        <Row items={rowA} />
+        <Row items={rowB} reverse />
       </div>
-
-      {/* Dark cap opening the next dark block */}
-      <div className="h-12 rounded-t-[3rem] bg-ink-950 lg:h-14 lg:rounded-t-[4.5rem]" aria-hidden />
     </section>
   );
 }
