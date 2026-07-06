@@ -72,7 +72,7 @@ export default async function ServicePage({
       <header className="relative mx-auto max-w-[1440px] px-6 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pt-[calc(var(--nav-h)+5.5rem)]">
         <SectionHeading as="h1" eyebrow={s.heroEyebrow} heading={s.heroHeading} lead={s.heroSub} />
         <Reveal delay={250} className="mt-10 flex flex-wrap gap-4">
-          <Button href="/contact">Book a call</Button>
+          <Button href="/contact">Contact us</Button>
           <Button href="/pricing" variant="ghost">
             See pricing
           </Button>

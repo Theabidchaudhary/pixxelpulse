@@ -2,20 +2,39 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 
-/** Huge fade+blur reveal wordmark for the footer, triggered once scrolled into view. */
+/**
+ * Huge footer wordmark on the light band: gradient first letter, near-black
+ * remaining letters fading toward the bottom edge, cropped at the page end.
+ */
 export default function GiantWordmark() {
   const reduce = useReducedMotion();
   return (
-    <motion.p
-      initial={reduce ? { opacity: 0 } : { opacity: 0, filter: "blur(18px)", scale: 0.94 }}
-      whileInView={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-      viewport={{ once: true, margin: "-15% 0px" }}
-      transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-      className="text-aurora mt-20 select-none text-center font-display font-semibold leading-[0.85] tracking-tight lg:mt-28"
-      style={{ fontSize: "clamp(4rem, 17vw, 13rem)" }}
-      aria-hidden
-    >
-      orvix
-    </motion.p>
+    <div className="relative overflow-hidden" aria-hidden>
+      {/* Soft pastel rainbow wash behind the letter bottoms */}
+      <div
+        className="pointer-events-none absolute inset-x-[-10%] bottom-[-45%] h-[70%] opacity-50 blur-[70px]"
+        style={{ background: "var(--gradient-aurora)" }}
+      />
+      <motion.p
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+        className="relative select-none text-center font-display font-bold lowercase leading-[0.78] tracking-tight"
+        style={{ fontSize: "clamp(5rem, 19.5vw, 17.5rem)", transform: "translateY(6%)" }}
+      >
+        <span className="text-aurora">o</span>
+        <span
+          style={{
+            backgroundImage: "linear-gradient(180deg, #121214 25%, rgba(18,18,20,0.55) 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+          }}
+        >
+          rvix
+        </span>
+      </motion.p>
+    </div>
   );
 }

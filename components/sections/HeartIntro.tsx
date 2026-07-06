@@ -1,0 +1,114 @@
+import type { Project } from "@/lib/content";
+import { projectThumb } from "@/lib/content";
+import Reveal from "@/components/ui/Reveal";
+
+function IconTile({ color, children }: { color: string; children: React.ReactNode }) {
+  return (
+    <span className="relative mb-6 flex size-16 items-center justify-center" aria-hidden>
+      <span className="dot-grid absolute inset-[-14px] opacity-60" style={{ maskImage: "radial-gradient(circle, black 30%, transparent 70%)" }} />
+      <span
+        className="relative flex size-11 items-center justify-center rounded-xl border"
+        style={{ borderColor: `${color}55`, color, boxShadow: `0 0 26px ${color}44, inset 0 0 14px ${color}22` }}
+      >
+        {children}
+      </span>
+    </span>
+  );
+}
+
+/** "Built with heart" — photo + feature cards intro, closing on a green wash. */
+export default function HeartIntro({ projects }: { projects: Project[] }) {
+  const photo = projects[0];
+  return (
+    <section className="relative overflow-hidden pb-36 pt-10 lg:pb-48">
+      {/* Green wash rising from the bottom, like the reference */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-[-260px] h-[560px] opacity-[0.5] blur-[100px]"
+        style={{ background: "radial-gradient(ellipse 70% 100% at 50% 100%, #17694f 0%, transparent 70%)" }}
+        aria-hidden
+      />
+
+      <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-h2">
+            Built with <span className="serif text-heart">heart</span>
+            <br />
+            for your content
+          </h2>
+          <p className="text-lead mx-auto mt-5 max-w-md">
+            Our long-standing quality standards have proven themselves time and again.
+          </p>
+        </Reveal>
+
+        <div className="mt-14 grid gap-5 lg:mt-20 lg:grid-cols-[1.15fr_0.75fr_0.85fr]">
+          {/* Photo card */}
+          <Reveal className="relative min-h-[280px] overflow-hidden rounded-3xl border border-line lg:row-span-2">
+            {photo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={projectThumb(photo, "max")} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-ink-950/60 via-transparent to-transparent" />
+          </Reveal>
+
+          {/* Feature card 1 */}
+          <Reveal delay={100} className="panel relative flex flex-col items-center overflow-hidden rounded-3xl p-9 text-center">
+            <div className="glow left-1/2 top-[-60px] h-40 w-56 -translate-x-1/2 opacity-30" style={{ background: "#ff8a4f" }} aria-hidden />
+            <IconTile color="#ff8a4f">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M12 21s-7-5.3-7-11a7 7 0 0114 0c0 5.7-7 11-7 11z" strokeLinejoin="round" />
+                <circle cx="12" cy="10" r="2.6" />
+              </svg>
+            </IconTile>
+            <h3 className="font-display text-[1.05rem] font-bold">
+              Personal &amp; <span className="serif text-gradient">direct</span>
+            </h3>
+            <p className="mt-2.5 text-sm leading-relaxed text-fg-soft">
+              A direct line to your editor — no ticket queues, no account managers in between.
+            </p>
+          </Reveal>
+
+          {/* Feature card 2 */}
+          <Reveal delay={180} className="panel relative flex flex-col items-center overflow-hidden rounded-3xl p-9 text-center">
+            <div className="glow left-1/2 top-[-60px] h-40 w-56 -translate-x-1/2 opacity-30" style={{ background: "#8b6cf6" }} aria-hidden />
+            <IconTile color="#a78bfa">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4L12 3zM18.5 14l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" strokeLinejoin="round" />
+              </svg>
+            </IconTile>
+            <h3 className="font-display text-[1.05rem] font-bold">
+              <span className="serif text-candy">More</span> than just pretty
+            </h3>
+            <p className="mt-2.5 text-sm leading-relaxed text-fg-soft">
+              Cut to hold attention and convert viewers — not just to look good in the portfolio.
+            </p>
+          </Reveal>
+
+          {/* Wide card */}
+          <Reveal delay={240} className="panel relative overflow-hidden rounded-3xl p-9 lg:col-span-2">
+            <div className="glow bottom-[-90px] left-[10%] h-44 w-[420px] opacity-25" style={{ background: "#2fbf8f" }} aria-hidden />
+            <div className="relative flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+              <span
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl border"
+                style={{ borderColor: "#2fbf8f55", color: "#2fbf8f", boxShadow: "0 0 26px #2fbf8f44, inset 0 0 14px #2fbf8f22" }}
+                aria-hidden
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <path d="M4 17l5-5 4 4 7-8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M15 8h5v5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-display text-[1.05rem] font-bold">
+                  For channels that want to <span className="serif text-mint">grow</span>
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-fg-soft">
+                  For creators, startups, brands and B2B — 1,300+ videos across 40+ niches.
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}

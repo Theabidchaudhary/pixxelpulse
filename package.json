@@ -18,10 +18,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@fontsource/instrument-serif": "^5.2.8",
+    "@fontsource/poppins": "^5.2.7",
     "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "^26.1.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "playwright": "^1.61.1",
     "postcss": "^8.5.16",
     "tailwindcss": "^4.3.2",
     "typescript": "5.9"

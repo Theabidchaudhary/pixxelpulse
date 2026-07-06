@@ -1,112 +1,79 @@
 import Link from "next/link";
 import { site } from "@/content/site";
-import { services } from "@/content/services";
-import { PulseGlyph } from "@/components/ui/Logo";
-import Reveal from "@/components/ui/Reveal";
-import { ArrowIcon } from "@/components/ui/Button";
 import GiantWordmark from "@/components/ui/GiantWordmark";
+
+const columns: { title: string; links: { href: string; label: string; external?: boolean }[] }[] = [
+  {
+    title: "Studio",
+    links: [
+      { href: "/work", label: "Work" },
+      { href: "/services", label: "Services" },
+      { href: "/pricing", label: "Pricing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/blog", label: "Blog" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+    ],
+  },
+];
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-line bg-ink-900">
-      <div
-        className="glow left-1/2 top-[-200px] h-[420px] w-[720px] -translate-x-1/2 opacity-20"
-        style={{ background: "var(--gradient-pulse)" }}
-        aria-hidden
-      />
-      <div className="relative mx-auto max-w-[1440px] px-6 py-20 lg:px-12 lg:py-28">
-        <Reveal>
-          <Link href="/contact" className="group block max-w-4xl">
-            <p className="text-label mb-6">Next step</p>
-            <p className="text-h2">
-              Let&apos;s make something people{" "}
-              <span className="text-gradient">watch twice.</span>
-            </p>
-            <span className="mt-8 inline-flex items-center gap-3 text-lg text-fg-soft transition-colors group-hover:text-fg">
-              Start a project <ArrowIcon className="size-5" />
-            </span>
-          </Link>
-        </Reveal>
+    <footer className="band-light relative bg-cream">
+      {/* Dark cap: rounds whatever dark section precedes into the light band */}
+      <div className="h-12 rounded-b-[3rem] bg-ink-950 lg:h-16 lg:rounded-b-[4.5rem]" aria-hidden />
 
-        <div className="playhead-rule mt-16 lg:mt-24" aria-hidden />
+      <div className="relative mx-auto max-w-[1440px] px-6 pt-14 lg:px-12 lg:pt-20">
+        <p className="text-right text-xs text-fg-faint">
+          © {new Date().getFullYear()} {site.name} was here
+        </p>
 
-        <div className="mt-14 grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
-            <div className="flex items-center gap-3">
-              <PulseGlyph className="size-8" />
-              <span className="font-display text-lg font-semibold lowercase tracking-tight">
-                orvix
-              </span>
-            </div>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-fg-soft">
-              A premium video editing and motion design agency for creators, startups, and brands
-              — since {site.foundingYear}.
-            </p>
-            <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 font-mono text-xs text-fg-soft">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-pulse-cyan opacity-60" />
-                <span className="relative inline-flex size-2 rounded-full bg-pulse-cyan" />
-              </span>
-              {site.availability}
-            </p>
-          </div>
-
-          <nav aria-label="Services">
-            <p className="text-label mb-5">Services</p>
-            <ul className="space-y-3">
-              {services.map((s) => (
-                <li key={s.slug}>
-                  <Link
-                    href={`/services/${s.slug}`}
-                    className="text-sm text-fg-soft transition-colors hover:text-fg"
-                  >
-                    {s.navLabel}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <nav aria-label="Company">
-            <p className="text-label mb-5">Company</p>
-            <ul className="space-y-3">
-              {[
-                { href: "/work", label: "Work" },
-                { href: "/about", label: "About" },
-                { href: "/pricing", label: "Pricing" },
-                { href: "/blog", label: "Blog" },
-                { href: "/contact", label: "Contact" },
-              ].map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-sm text-fg-soft transition-colors hover:text-fg">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+        <div className="mt-2 grid gap-10 pb-6 sm:grid-cols-3 lg:max-w-2xl">
+          {columns.map((col) => (
+            <nav key={col.title} aria-label={col.title}>
+              <ul className="space-y-3">
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <Link
+                      href={l.href}
+                      className="font-display text-[1.05rem] font-bold text-fg transition-colors hover:text-pulse-magenta"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
 
           <div>
-            <p className="text-label mb-5">Connect</p>
-            <ul className="space-y-3">
+            <p className="font-display text-[1.05rem] font-bold text-fg">Contact</p>
+            <ul className="mt-3 space-y-2.5 text-sm text-fg-soft">
               <li>
-                <a href={`mailto:${site.email}`} className="text-sm text-fg-soft transition-colors hover:text-fg">
+                <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 transition-colors hover:text-fg">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <rect x="1.5" y="3" width="13" height="10" rx="2" stroke="currentColor" strokeWidth="1.3" />
+                    <path d="M2 4.5L8 9l6-4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                  </svg>
                   {site.email}
                 </a>
               </li>
               <li>
-                <a href={site.whatsapp} target="_blank" rel="noopener noreferrer" className="text-sm text-fg-soft transition-colors hover:text-fg">
-                  WhatsApp
+                <a href={site.whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition-colors hover:text-fg">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <path d="M3.5 2.5h2l1 3-1.5 1a9 9 0 004.5 4.5l1-1.5 3 1v2a1.5 1.5 0 01-1.6 1.5C6.5 13.6 2.4 9.5 2 4.1A1.5 1.5 0 013.5 2.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  </svg>
+                  {site.phone}
                 </a>
               </li>
               {Object.entries(site.socials).map(([k, v]) => (
                 <li key={k}>
-                  <a
-                    href={v}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm capitalize text-fg-soft transition-colors hover:text-fg"
-                  >
+                  <a href={v} target="_blank" rel="noopener noreferrer" className="capitalize transition-colors hover:text-fg">
                     {k}
                   </a>
                 </li>
@@ -114,21 +81,9 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-
-        <GiantWordmark />
-
-        <div className="mt-4 flex flex-col gap-4 border-t border-line pt-8 text-xs text-fg-faint sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Orvix. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="transition-colors hover:text-fg-soft">
-              Privacy
-            </Link>
-            <Link href="/terms" className="transition-colors hover:text-fg-soft">
-              Terms
-            </Link>
-          </div>
-        </div>
       </div>
+
+      <GiantWordmark />
     </footer>
   );
 }

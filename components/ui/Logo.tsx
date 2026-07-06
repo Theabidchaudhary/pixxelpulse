@@ -1,44 +1,35 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The Orvix wordmark — interim brand mark: lowercase display type with a
- * gradient pulse dot. Final logo lands once the brand name is locked.
+ * The Orvix wordmark — lowercase Poppins with a full-spectrum gradient on the
+ * first letter, matching the brand treatment used across the site.
+ * `tone` picks the letter color for the rest of the word.
  */
-export function Wordmark({ className }: { className?: string }) {
+export function Wordmark({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   return (
     <span
       className={cn(
-        "relative inline-flex items-baseline gap-[3px] font-display text-[1.4rem] font-semibold lowercase tracking-tight text-fg",
+        "relative inline-flex items-baseline font-display text-[1.45rem] font-bold lowercase tracking-tight",
+        tone === "dark" ? "text-[#121214]" : "text-fg",
         className
       )}
     >
-      orvix
-      <span
-        aria-hidden
-        className="mb-[3px] inline-block size-[7px] self-end rounded-full"
-        style={{ background: "var(--gradient-pulse)" }}
-      />
+      <span className="text-aurora">o</span>rvix
     </span>
   );
 }
 
-/** Standalone pulse glyph for favicons / avatars / footer. */
+/** Standalone glyph for avatars / promise-orbit center: gradient ring "o". */
 export function PulseGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <rect x="1" y="1" width="30" height="30" rx="8" stroke="url(#pg)" strokeWidth="1.5" />
-      <path
-        d="M7 16h5l2.5-6 3 12 2.5-6h5"
-        stroke="url(#pg)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <circle cx="16" cy="16" r="13" stroke="url(#pg)" strokeWidth="5.5" />
       <defs>
         <linearGradient id="pg" x1="0" y1="0" x2="32" y2="32">
-          <stop stopColor="#7C6AF7" />
-          <stop offset="0.55" stopColor="#4D8DFF" />
-          <stop offset="1" stopColor="#53D8FF" />
+          <stop stopColor="#4C8DFF" />
+          <stop offset="0.35" stopColor="#8B6CF6" />
+          <stop offset="0.68" stopColor="#F0559F" />
+          <stop offset="1" stopColor="#FF8A4F" />
         </linearGradient>
       </defs>
     </svg>

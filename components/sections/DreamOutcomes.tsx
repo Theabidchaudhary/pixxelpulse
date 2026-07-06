@@ -1,25 +1,65 @@
+import Link from "next/link";
 import type { Project } from "@/lib/content";
 import { projectThumb } from "@/lib/content";
-import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import { cn } from "@/lib/utils";
 
 const outcomes = [
   {
-    heading: "Hook viewers in the first second.",
-    body: "The first frame decides whether they stay. We build every cut backwards from the strongest moment in your footage.",
+    tag: "Short-form",
+    color: "#2fbf8f",
+    heading: (
+      <>
+        Turns scrolls into <span className="serif" style={{ color: "#2fbf8f" }}>followers.</span>
+      </>
+    ),
+    body: "Reels, TikToks and Shorts built to stop the thumb.",
+    checks: ["Hook-first structure", "Platform-native pacing & captions"],
+    cta: "See short-form work",
+    href: "/work",
+    icon: <path d="M8 4h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2zM10 9l4.5 3-4.5 3V9z" strokeLinejoin="round" />,
   },
   {
-    heading: "Keep them watching to the end.",
-    body: "Pacing, sound design, and caption rhythm tuned so retention holds — not just the hook, the whole watch.",
+    tag: "YouTube",
+    color: "#ff8a4f",
+    heading: (
+      <>
+        Grows your channel, <span className="serif" style={{ color: "#ff8a4f" }}>day and night.</span>
+      </>
+    ),
+    body: "Long-form edits that keep people watching to the end.",
+    checks: ["Retention-tuned pacing", "Thumbnails & chapters ready"],
+    cta: "See YouTube work",
+    href: "/work",
+    icon: <path d="M3.5 12c0-3 .3-4.6.8-5.4.5-.8 1.4-1 3-1.1C9 5.4 10.7 5.4 12 5.4s3 0 4.7.1c1.6.1 2.5.3 3 1.1.5.8.8 2.4.8 5.4s-.3 4.6-.8 5.4c-.5.8-1.4 1-3 1.1-1.7.1-3.4.1-4.7.1s-3 0-4.7-.1c-1.6-.1-2.5-.3-3-1.1-.5-.8-.8-2.4-.8-5.4zM10 9l5 3-5 3V9z" strokeLinejoin="round" />,
   },
   {
-    heading: "Turn views into followers and clients.",
-    body: "Clear calls-to-action and on-brand captions that convert attention into a following you can actually monetize.",
+    tag: "Video ads",
+    color: "#4c8dff",
+    heading: (
+      <>
+        Turns ad clicks into <span className="serif" style={{ color: "#4c8dff" }}>customers.</span>
+      </>
+    ),
+    body: "Performance creative that guides viewers straight to the offer.",
+    checks: ["Built for conversion", "Ready for Meta & Google Ads"],
+    cta: "See ad work",
+    href: "/work",
+    icon: <path d="M4 17l5-5 4 4 7-8M15 8h5v5" strokeLinecap="round" strokeLinejoin="round" />,
   },
   {
-    heading: "Make you look consistent, everywhere.",
-    body: "One visual language across every platform — so your channel looks like a brand, not a pile of one-offs.",
+    tag: "Motion design",
+    color: "#a86cf6",
+    heading: (
+      <>
+        Makes your brand <span className="serif" style={{ color: "#a86cf6" }}>unmistakable.</span>
+      </>
+    ),
+    body: "Intros, lower thirds and animation systems in your visual language.",
+    checks: ["On-brand motion system", "Reused across every video"],
+    cta: "See motion work",
+    href: "/services/motion-design-animation",
+    icon: <path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4L12 3zM18.5 14l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" strokeLinejoin="round" />,
   },
 ];
 
@@ -27,51 +67,102 @@ export default function DreamOutcomes({ projects }: { projects: Project[] }) {
   const shots = projects.slice(0, outcomes.length);
 
   return (
-    <section className="relative mx-auto max-w-[1440px] px-6 py-24 lg:px-12 lg:py-40">
-      <SectionHeading
-        eyebrow="Why it matters"
-        heading={
-          <>
-            What should your <span className="text-gradient">dream video</span> do?
-          </>
-        }
-        lead="Editing is a means to an end. Here's what a properly-edited video should be doing for you."
-        align="center"
-        className="mx-auto"
-      />
+    <section className="relative mx-auto max-w-[1240px] px-6 py-24 lg:px-10 lg:py-36">
+      <Reveal className="mx-auto max-w-2xl text-center">
+        <h2 className="text-h2">
+          What should your <span className="serif text-gradient">dream video</span> do?
+        </h2>
+        <p className="text-lead mx-auto mt-5 max-w-md">Pick the type that fits your goal best.</p>
+      </Reveal>
 
-      <div className="mt-16 space-y-16 lg:mt-24 lg:space-y-24">
+      <div className="mt-14 space-y-6 lg:mt-20">
         {outcomes.map((o, i) => {
           const project = shots[i];
           const reverse = i % 2 === 1;
           return (
-            <div
-              key={o.heading}
-              className={cn(
-                "grid items-center gap-8 lg:grid-cols-2 lg:gap-16",
-                reverse && "lg:[&>*:first-child]:order-2"
-              )}
-            >
-              <Reveal className="relative aspect-video overflow-hidden rounded-2xl border border-line bg-ink-800">
-                {project && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={projectThumb(project)}
-                    alt=""
-                    loading="lazy"
-                    className="absolute inset-0 size-full object-cover"
-                  />
+            <Reveal key={o.tag}>
+              <div
+                className={cn(
+                  "panel group relative grid overflow-hidden rounded-3xl lg:grid-cols-2",
+                  reverse && "lg:[&>*:first-child]:order-2"
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent" />
-                <span className="absolute bottom-4 left-4 font-mono text-xs uppercase tracking-[0.14em] text-fg-soft">
-                  0{i + 1}
-                </span>
-              </Reveal>
-              <Reveal delay={120}>
-                <h3 className="text-h3 max-w-md">{o.heading}</h3>
-                <p className="mt-4 max-w-md text-[0.98rem] leading-relaxed text-fg-soft">{o.body}</p>
-              </Reveal>
-            </div>
+              >
+                {/* Image half */}
+                <div className="relative min-h-[240px] overflow-hidden lg:min-h-[330px]">
+                  {project && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={projectThumb(project, "max")}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 size-full object-cover transition-transform duration-700 [transition-timing-function:var(--ease-pulse)] group-hover:scale-[1.04]"
+                    />
+                  )}
+                  <div
+                    className={cn(
+                      "absolute inset-0",
+                      reverse ? "bg-gradient-to-l" : "bg-gradient-to-r",
+                      "from-transparent via-transparent to-ink-800/90"
+                    )}
+                    aria-hidden
+                  />
+                </div>
+
+                {/* Content half */}
+                <div className="relative flex flex-col items-start justify-center p-8 lg:p-12">
+                  {/* Corner arrow chip */}
+                  <Link
+                    href={o.href}
+                    aria-label={o.cta}
+                    className="absolute right-6 top-6 flex size-9 items-center justify-center rounded-lg border border-line text-fg-soft transition-colors hover:border-line-strong hover:text-fg"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
+                      <path d="M4 12L12 4m0 0H5.5M12 4v6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Link>
+
+                  <span className="relative mb-5 inline-flex size-12 items-center justify-center" aria-hidden>
+                    <span className="dot-grid absolute inset-[-10px] opacity-50" style={{ maskImage: "radial-gradient(circle, black 30%, transparent 72%)" }} />
+                    <span
+                      className="relative flex size-10 items-center justify-center rounded-lg border"
+                      style={{ borderColor: `${o.color}55`, color: o.color, boxShadow: `0 0 22px ${o.color}44, inset 0 0 12px ${o.color}22` }}
+                    >
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                        {o.icon}
+                      </svg>
+                    </span>
+                  </span>
+
+                  <p className="text-label !text-[0.66rem]" style={{ color: o.color }}>
+                    {o.tag}
+                  </p>
+                  <h3 className="mt-3 font-display text-[1.45rem] font-bold leading-snug lg:text-[1.7rem]">{o.heading}</h3>
+                  <p className="mt-2.5 text-[0.9rem] text-fg-soft">{o.body}</p>
+
+                  <ul className="mt-5 space-y-2">
+                    {o.checks.map((c) => (
+                      <li key={c} className="flex items-center gap-2.5 text-[0.85rem] text-fg-soft">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ color: o.color }} aria-hidden>
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" />
+                          <path d="M5 8.2l2 2 4-4.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href={o.href}
+                    className="group/cta mt-7 inline-flex items-center gap-2 rounded-full border border-line bg-ink-900/70 px-5.5 py-2.5 text-[0.82rem] font-semibold text-fg transition-all duration-500 hover:border-line-strong hover:bg-ink-700"
+                  >
+                    {o.cta}
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover/cta:-translate-y-0.5 group-hover/cta:translate-x-0.5">
+                      <path d="M4 12L12 4m0 0H5.5M12 4v6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
           );
         })}
       </div>

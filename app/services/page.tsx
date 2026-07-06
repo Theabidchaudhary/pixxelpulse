@@ -35,7 +35,7 @@ export default function ServicesPage() {
           className="mb-6"
         />
         <Reveal delay={200} className="mb-4">
-          <Button href="/contact">Book a call</Button>
+          <Button href="/contact">Contact us</Button>
         </Reveal>
       </div>
       <ServicesGrid />

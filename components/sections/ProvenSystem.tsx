@@ -1,163 +1,199 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
-import SectionHeading from "@/components/ui/SectionHeading";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
 
-const stages = [
+type Quadrant = {
+  tag: string;
+  titleAccent: string;
+  titleTail: string;
+  accentFirst?: boolean;
+  body: string;
+  color: string;
+  /** rotateX / rotateY the panel leans when this corner is hovered */
+  tilt: [number, number];
+  icon: React.ReactNode;
+};
+
+const quadrants: Quadrant[] = [
   {
-    label: "Story system",
-    title: "Every cut starts with the hook.",
-    body: "We storyboard the first 3 seconds before touching a timeline — structure decided, not discovered.",
-    color: "#4d8dff",
+    tag: "Story & pacing",
+    titleAccent: "gripping",
+    titleTail: "watch",
+    body: "Hooks, pacing and structure that spark interest and hold attention with every cut.",
+    color: "#4c8dff",
+    tilt: [5, -5],
+    icon: <path d="M5 4.5h14v11H5zM9 19.5h6M12 15.5v4M9 8l3 2.5L9 13V8z" strokeLinecap="round" strokeLinejoin="round" />,
   },
   {
-    label: "Sound system",
-    title: "Broadcast-clean audio, every time.",
-    body: "Levelled dialogue, ducked music, and sound design mixed for phone speakers and studio monitors alike.",
-    color: "#7c6af7",
+    tag: "Found online",
+    titleAccent: "Built",
+    titleTail: "for the algorithm",
+    accentFirst: true,
+    body: "Titles, captions and cuts tuned for search, suggested feeds and AI platforms.",
+    color: "#e14fa0",
+    tilt: [5, 5],
+    icon: <path d="M11 11m-6.5 0a6.5 6.5 0 1013 0 6.5 6.5 0 10-13 0M15.8 15.8L21 21" strokeLinecap="round" />,
   },
   {
-    label: "Caption system",
-    title: "Kinetic captions, on-brand fonts.",
-    body: "A locked caption style per client — synced, styled, and readable with the sound off.",
-    color: "#f062c0",
+    tag: "Click to customer",
+    titleAccent: "Sells",
+    titleTail: "while you sleep",
+    accentFirst: true,
+    body: "Viewers turn into subscribers and clients — the natural result of a well-built story arc.",
+    color: "#ff8a4f",
+    tilt: [-5, -5],
+    icon: <path d="M4 17l5-5 4 4 7-8M15 8h5v5" strokeLinecap="round" strokeLinejoin="round" />,
   },
   {
-    label: "Delivery system",
-    title: "Exports for every platform, named right.",
-    body: "9:16, 1:1, 16:9 — organized and delivered in publishing-ready batches, not a folder dump.",
-    color: "#ff9d5c",
+    tag: "High performance",
+    titleAccent: "Reliable",
+    titleTail: "on every screen",
+    accentFirst: true,
+    body: "Broadcast-clean audio, every aspect ratio, rock-solid delivery dates on every project.",
+    color: "#2fbf8f",
+    tilt: [-5, 5],
+    icon: <path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z" strokeLinejoin="round" />,
   },
 ];
 
-function StagePanel({
-  stage,
-  index,
-  progress,
-}: {
-  stage: (typeof stages)[number];
-  index: number;
-  progress: MotionValue<number>;
-}) {
-  const seg = 1 / stages.length;
-  const start = index * seg;
-  const end = start + seg;
-  const fadeIn = start + seg * 0.12;
-  const fadeOut = end - seg * 0.12;
-  const opacity = useTransform(progress, [start, fadeIn, fadeOut, end], [0, 1, 1, 0]);
-
+function AxisLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <motion.div style={{ opacity }} className="absolute inset-0 flex flex-col items-start justify-center p-8 sm:p-12">
+    <span className={`text-label pointer-events-none absolute !text-[0.62rem] !tracking-[0.3em] ${className}`}>
+      {children}
+    </span>
+  );
+}
+
+function QuadrantCell({ q, active, onHover }: { q: Quadrant; active: boolean; onHover: (v: boolean) => void }) {
+  return (
+    <div
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
+      onFocus={() => onHover(true)}
+      onBlur={() => onHover(false)}
+      tabIndex={0}
+      className="group relative overflow-hidden p-7 outline-none transition-colors duration-700 sm:p-9"
+    >
+      {/* Colored fill + dot texture, revealed on hover */}
       <div
-        className="absolute inset-0 opacity-[0.14]"
-        style={{ background: `radial-gradient(circle at 20% 20%, ${stage.color}, transparent 65%)` }}
+        className="absolute inset-0 transition-opacity duration-700"
+        style={{
+          opacity: active ? 1 : 0,
+          background: `linear-gradient(135deg, ${q.color}42 0%, ${q.color}14 55%, transparent 100%)`,
+        }}
         aria-hidden
       />
-      <p className="relative font-mono text-xs uppercase tracking-[0.16em]" style={{ color: stage.color }}>
-        {String(index + 1).padStart(2, "0")} · {stage.label}
-      </p>
-      <h3 className="text-h3 relative mt-4 max-w-md">{stage.title}</h3>
-      <p className="text-lead relative mt-4 max-w-sm !text-[0.95rem]">{stage.body}</p>
-    </motion.div>
-  );
-}
-
-function StageDot({ index, progress }: { index: number; progress: MotionValue<number> }) {
-  const seg = 1 / stages.length;
-  const opacity = useTransform(progress, (v) => (v >= index * seg && v < (index + 1) * seg ? 1 : 0.4));
-  return <motion.span className="h-1 w-8 rounded-full bg-line-strong" style={{ opacity }} />;
-}
-
-function DesktopProvenSystem() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-
-  return (
-    <div ref={ref} className="relative hidden h-[280vh] lg:block">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        <div className="relative mx-auto w-full max-w-[1440px] px-6 lg:px-12">
-          <SectionHeading
-            eyebrow="One partner"
-            heading={
-              <>
-                You get a <span className="text-gradient">proven system.</span>
-              </>
-            }
-            lead="Not a freelancer guessing at your brand — four locked systems that make every delivery consistent."
-            align="center"
-            className="mx-auto"
-          />
-
-          <div className="relative mx-auto mt-14 max-w-3xl lg:mt-20">
-            <div className="panel relative overflow-hidden">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 border-b border-line px-5 py-3.5">
-                <span className="size-2.5 rounded-full bg-white/15" />
-                <span className="size-2.5 rounded-full bg-white/15" />
-                <span className="size-2.5 rounded-full bg-white/15" />
-              </div>
-
-              <div className="relative h-[340px] sm:h-[400px]">
-                {stages.map((stage, i) => (
-                  <StagePanel key={stage.label} stage={stage} index={i} progress={scrollYProgress} />
-                ))}
-              </div>
-            </div>
-
-            {/* Progress dots */}
-            <div className="mt-6 flex justify-center gap-2">
-              {stages.map((stage, i) => (
-                <StageDot key={stage.label} index={i} progress={scrollYProgress} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MobileProvenSystem() {
-  return (
-    <div className="mx-auto max-w-[1440px] px-6 py-24 lg:hidden">
-      <SectionHeading
-        eyebrow="One partner"
-        heading={
-          <>
-            You get a <span className="text-gradient">proven system.</span>
-          </>
-        }
-        lead="Not a freelancer guessing at your brand — four locked systems that make every delivery consistent."
-        align="center"
-        className="mx-auto"
+      <div
+        className="dot-grid absolute inset-0 transition-opacity duration-700"
+        style={{ opacity: active ? 0.5 : 0 }}
+        aria-hidden
       />
-      <div className="mt-14 space-y-4">
-        {stages.map((stage, i) => (
-          <Reveal key={stage.label} delay={i * 90} className="panel relative overflow-hidden p-6">
-            <div
-              className="absolute inset-0 opacity-[0.14]"
-              style={{ background: `radial-gradient(circle at 20% 20%, ${stage.color}, transparent 65%)` }}
-              aria-hidden
-            />
-            <p className="relative font-mono text-xs uppercase tracking-[0.16em]" style={{ color: stage.color }}>
-              {String(i + 1).padStart(2, "0")} · {stage.label}
-            </p>
-            <h3 className="text-h3 relative mt-3 text-[1.2rem]">{stage.title}</h3>
-            <p className="relative mt-2 text-[0.9rem] leading-relaxed text-fg-soft">{stage.body}</p>
-          </Reveal>
-        ))}
+
+      <div className="relative transition-opacity duration-500" style={{ opacity: active ? 1 : 0.38 }}>
+        <p className="flex items-center gap-2.5">
+          <span
+            className="flex size-7 items-center justify-center rounded-md border transition-shadow duration-500"
+            style={{
+              borderColor: `${q.color}66`,
+              color: q.color,
+              boxShadow: active ? `0 0 18px ${q.color}55` : "none",
+            }}
+            aria-hidden
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              {q.icon}
+            </svg>
+          </span>
+          <span className="text-label !text-[0.64rem]" style={{ color: active ? q.color : undefined }}>
+            {q.tag}
+          </span>
+        </p>
+        <h3 className="mt-4 font-display text-[1.05rem] font-bold sm:text-[1.15rem]">
+          {q.accentFirst ? (
+            <>
+              <span className="serif" style={{ color: q.color }}>{q.titleAccent}</span> {q.titleTail}
+            </>
+          ) : (
+            <>
+              A <span className="serif" style={{ color: q.color }}>{q.titleAccent}</span> {q.titleTail}
+            </>
+          )}
+        </h3>
+        <p className="mt-2.5 max-w-[260px] text-[0.84rem] leading-relaxed text-fg-soft">{q.body}</p>
       </div>
     </div>
   );
 }
 
 export default function ProvenSystem() {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const tilt = hovered === null ? [0, 0] : quadrants[hovered].tilt;
+
   return (
-    <section className="relative">
-      <DesktopProvenSystem />
-      <MobileProvenSystem />
+    <section className="relative overflow-hidden py-24 lg:py-36">
+      <div className="glow left-[-180px] top-1/3 h-[420px] w-[420px] opacity-[0.13]" style={{ background: "#b45f2e" }} aria-hidden />
+      <div className="glow right-[-180px] top-1/4 h-[420px] w-[420px] opacity-[0.13]" style={{ background: "#8b3d75" }} aria-hidden />
+
+      <div className="relative mx-auto max-w-[1240px] px-6 lg:px-10">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-h2">
+            You get a <span className="serif text-candy">proven system</span>
+          </h2>
+          <p className="text-lead mx-auto mt-5 max-w-md">
+            Every edit meets the demands of both people and platforms.
+          </p>
+        </Reveal>
+
+        {/* Matrix */}
+        <div className="relative mx-auto mt-16 hidden max-w-3xl sm:block lg:mt-20" style={{ perspective: "1400px" }}>
+          <AxisLabel className="left-1/2 top-[-26px] -translate-x-1/2">Attention</AxisLabel>
+          <AxisLabel className="bottom-[-26px] left-1/2 -translate-x-1/2">Performance</AxisLabel>
+          <AxisLabel className="left-[-30px] top-1/2 -translate-y-1/2 rotate-180 [writing-mode:vertical-rl]">
+            Viewers
+          </AxisLabel>
+          <AxisLabel className="right-[-30px] top-1/2 -translate-y-1/2 [writing-mode:vertical-rl]">
+            Algorithm
+          </AxisLabel>
+
+          <motion.div
+            animate={{ rotateX: tilt[0], rotateY: tilt[1] }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
+            style={{ transformStyle: "preserve-3d" }}
+            className="relative grid grid-cols-2 overflow-hidden rounded-2xl border border-line bg-ink-900/70 shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
+          >
+            {/* Cross hairlines */}
+            <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-px bg-line" aria-hidden />
+            <div className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-px bg-line" aria-hidden />
+            {/* Center dot */}
+            <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]" aria-hidden />
+
+            {quadrants.map((q, i) => (
+              <QuadrantCell key={q.tag} q={q} active={hovered === i} onHover={(v) => setHovered(v ? i : null)} />
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Mobile: stacked cards */}
+        <div className="mt-12 space-y-4 sm:hidden">
+          {quadrants.map((q, i) => (
+            <Reveal key={q.tag} delay={i * 90} className="panel relative overflow-hidden p-6">
+              <div
+                className="absolute inset-0 opacity-40"
+                style={{ background: `linear-gradient(135deg, ${q.color}30 0%, transparent 60%)` }}
+                aria-hidden
+              />
+              <p className="text-label relative !text-[0.62rem]" style={{ color: q.color }}>{q.tag}</p>
+              <h3 className="relative mt-2.5 font-display text-[1.05rem] font-bold">
+                {q.accentFirst ? "" : "A "}
+                <span className="serif" style={{ color: q.color }}>{q.titleAccent}</span> {q.titleTail}
+              </h3>
+              <p className="relative mt-2 text-[0.85rem] leading-relaxed text-fg-soft">{q.body}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
