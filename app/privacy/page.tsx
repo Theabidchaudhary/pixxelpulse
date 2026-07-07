@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Orvix collects, uses, and protects your information.",
+  description: "How Orwyx collects, uses, and protects your information.",
   alternates: { canonical: "/privacy" },
   robots: { index: false },
 };
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:pb-36">
+    <PageStage variant="warm">
+      <div className="mx-auto max-w-3xl px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:pb-36">
       <p className="text-label mb-5">Legal</p>
       <h1 className="text-h2 mb-10">Privacy Policy</h1>
       <div className="space-y-6 leading-[1.8] text-fg-soft">
         <p>
-          Orvix (&ldquo;we&rdquo;, &ldquo;us&rdquo;) respects your privacy. This policy
+          Orwyx (&ldquo;we&rdquo;, &ldquo;us&rdquo;) respects your privacy. This policy
           explains what we collect through {site.url} and why.
         </p>
         <h2 className="text-h3 pt-4 text-fg">What we collect</h2>
@@ -45,5 +47,6 @@ export default function PrivacyPage() {
         <p className="pt-4 text-sm text-fg-faint">Last updated: July 2026</p>
       </div>
     </div>
+    </PageStage>
   );
 }

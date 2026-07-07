@@ -145,16 +145,26 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="group inline-flex items-center gap-2 rounded-full bg-fg px-8 py-4 text-[0.95rem] font-medium text-ink-950 transition-all duration-500 hover:shadow-[0_0_40px_rgba(124,106,247,0.45)] disabled:opacity-60"
+        className="btn-sheen group inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-white/15 px-8 py-4 text-[0.95rem] font-bold text-white disabled:opacity-60"
+        style={{
+          background: "linear-gradient(96deg, #2b3f63 0%, #3a3158 52%, #5e3050 100%)",
+          boxShadow: "0 0 30px rgba(94,48,80,0.35)",
+        }}
       >
-        {pending ? "Sending…" : "Send the brief"}
+        {pending ? "Sending…" : "Send message"}
         {!pending && (
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:translate-x-1">
-            <path d="M2 8h11m0 0L8.5 3.5M13 8l-4.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+            <path d="M1.5 8L14 2l-3.5 12-3-4.5L1.5 8z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
           </svg>
         )}
       </button>
-      <p className="text-xs text-fg-faint">We reply within 12 hours. No newsletters, no spam.</p>
+      <p className="flex items-center gap-1.5 text-xs text-fg-faint">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+          <rect x="3" y="7" width="10" height="7" rx="1.5" />
+          <path d="M5.5 7V5a2.5 2.5 0 015 0v2" />
+        </svg>
+        We reply within 12 hours. Your data is never shared with third parties.
+      </p>
     </form>
   );
 }

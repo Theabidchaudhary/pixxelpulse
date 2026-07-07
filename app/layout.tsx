@@ -9,16 +9,21 @@ import CursorGlow from "@/components/fx/CursorGlow";
 import { site } from "@/content/site";
 import { JsonLd, organizationJsonLd } from "@/lib/seo";
 
-const spaceGrotesk = localFont({
-  src: "../public/fonts/space-grotesk-var.woff2",
-  variable: "--font-space-grotesk",
-  weight: "300 700",
+const poppins = localFont({
+  src: [
+    { path: "../public/fonts/poppins-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/poppins-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/poppins-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../public/fonts/poppins-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-poppins",
   display: "swap",
 });
-const geist = localFont({
-  src: "../public/fonts/geist-var.woff2",
-  variable: "--font-geist",
-  weight: "100 900",
+const instrument = localFont({
+  src: "../public/fonts/instrument-serif-latin-400-italic.woff2",
+  variable: "--font-instrument",
+  weight: "400",
+  style: "italic",
   display: "swap",
 });
 const geistMono = localFont({
@@ -48,7 +53,7 @@ export const metadata: Metadata = {
     url: site.url,
     title: `${site.name} — Premium Video Editing Agency`,
     description: site.description,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Orvix — post-production that moves people" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Orwyx — post-production that moves people" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -70,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${geist.variable} ${geistMono.variable}`}
+      className={`${poppins.variable} ${instrument.variable} ${geistMono.variable}`}
     >
       <body className="noise">
         <JsonLd data={organizationJsonLd()} />
@@ -78,7 +83,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CursorGlow />
         <Nav />
         <SmoothScroll>
-          <main id="main">{children}</main>
+          {/* main stacks above the footer, which sits pinned behind the last
+              dark block and is revealed through its rounded bottom cap */}
+          <main id="main" className="relative z-10">
+            {children}
+          </main>
           <Footer />
         </SmoothScroll>
       </body>

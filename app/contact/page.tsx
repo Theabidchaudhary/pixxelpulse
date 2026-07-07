@@ -1,100 +1,51 @@
 import type { Metadata } from "next";
-import ContactForm from "@/components/sections/ContactForm";
-import Accordion from "@/components/ui/Accordion";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Reveal from "@/components/ui/Reveal";
-import { site } from "@/content/site";
-import { faqs } from "@/content/faqs";
-import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+import ContactPanel from "@/components/sections/ContactPanel";
+import FaqSection from "@/components/sections/FaqSection";
+import { JsonLd, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Contact — Start a Project",
   description:
-    "Tell us about your project and get a reply within 12 hours. Book a call or send a brief — video editing, motion design, and post-production by Orvix.",
+    "Tell us about your project and get a reply within 12 hours. Email or WhatsApp — video editing, motion design, and post-production by Orwyx.",
   alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {
   return (
-    <div className="relative overflow-x-clip">
+    <div className="block-dark cap-b z-10">
       <JsonLd
-        data={[
-          breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Contact", path: "/contact" }]),
-          faqJsonLd(faqs),
-        ]}
+        data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Contact", path: "/contact" }])}
       />
+      {/* Warm rust/maroon stage like the reference contact page */}
       <div
-        className="glow left-1/2 top-[-220px] h-[440px] w-[800px] -translate-x-1/2 opacity-[0.16]"
-        style={{ background: "var(--gradient-pulse)" }}
+        className="pointer-events-none absolute inset-x-0 top-0 h-[1200px]"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 640px at 70% -60px, rgba(142,64,46,0.7) 0%, transparent 70%), radial-gradient(ellipse 55% 560px at 10% 140px, rgba(110,42,74,0.65) 0%, transparent 70%), radial-gradient(ellipse 45% 480px at 95% 700px, rgba(110,42,74,0.4) 0%, transparent 70%)",
+        }}
+        aria-hidden
+      />
+      {/* Bright dot matrix backdrop */}
+      <div
+        className="dot-grid absolute inset-x-0 top-0 h-[1100px] opacity-70"
+        style={{ maskImage: "linear-gradient(180deg, black 55%, transparent 100%)" }}
+        aria-hidden
+      />
+      {/* Purple/pink/orange wash flowing into the footer */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[720px] opacity-[0.95] blur-[62px]"
+        style={{
+          background:
+            "radial-gradient(ellipse 45% 90% at 12% 100%, #7a4ae8 0%, transparent 68%), radial-gradient(ellipse 45% 90% at 50% 100%, #e055a8 0%, transparent 68%), radial-gradient(ellipse 42% 90% at 88% 100%, #f08040 0%, transparent 68%)",
+        }}
         aria-hidden
       />
 
-      <div className="relative mx-auto max-w-[1440px] px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pb-36 lg:pt-[calc(var(--nav-h)+5.5rem)]">
-        <div className="grid gap-16 lg:grid-cols-[1fr_1.15fr] lg:gap-24">
-          <div>
-            <SectionHeading
-              as="h1"
-              eyebrow="Contact"
-              heading={
-                <>
-                  Let&apos;s talk about <span className="text-gradient">your footage.</span>
-                </>
-              }
-              lead="Send the brief — the goal, the platform, the deadline. We reply within 12 hours with next steps and an honest read on fit."
-            />
-
-            <Reveal delay={200} className="mt-12 space-y-5">
-              <div>
-                <p className="text-label mb-2">Email</p>
-                <a href={`mailto:${site.email}`} className="font-display text-xl font-medium tracking-tight text-fg transition-colors hover:text-pulse-cyan">
-                  {site.email}
-                </a>
-              </div>
-              <div>
-                <p className="text-label mb-2">WhatsApp</p>
-                <a href={site.whatsapp} target="_blank" rel="noopener noreferrer" className="font-display text-xl font-medium tracking-tight text-fg transition-colors hover:text-pulse-cyan">
-                  {site.phone}
-                </a>
-              </div>
-              <div className="pt-2">
-                <p className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 font-mono text-xs text-fg-soft">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-pulse-cyan opacity-60" />
-                    <span className="relative inline-flex size-2 rounded-full bg-pulse-cyan" />
-                  </span>
-                  {site.availability}
-                </p>
-              </div>
-            </Reveal>
-
-            {site.bookingUrl && (
-              <Reveal delay={280} className="mt-10">
-                <a
-                  href={site.bookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-line-strong px-7 py-3.5 text-[0.95rem] font-medium text-fg transition-all hover:border-white/40 hover:bg-white/5"
-                >
-                  Prefer to talk? Book a 20-min call
-                </a>
-              </Reveal>
-            )}
-          </div>
-
-          <Reveal delay={150}>
-            <div className="panel relative p-7 lg:p-10">
-              <ContactForm />
-            </div>
-          </Reveal>
-        </div>
-
-        <div className="mx-auto mt-28 max-w-3xl lg:mt-40">
-          <SectionHeading eyebrow="FAQ" heading="Quick answers first." className="mb-12" />
-          <Reveal>
-            <Accordion items={faqs} />
-          </Reveal>
-        </div>
+      <div className="relative pb-6 pt-[calc(var(--nav-h)+3rem)] lg:pt-[calc(var(--nav-h)+4.5rem)]">
+        <ContactPanel as="h1" />
       </div>
+
+      <FaqSection />
     </div>
   );
 }

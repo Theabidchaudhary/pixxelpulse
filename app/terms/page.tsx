@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The terms that govern working with Orvix.",
+  description: "The terms that govern working with Orwyx.",
   alternates: { canonical: "/terms" },
   robots: { index: false },
 };
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:pb-36">
+    <PageStage variant="warm">
+      <div className="mx-auto max-w-3xl px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:pb-36">
       <p className="text-label mb-5">Legal</p>
       <h1 className="text-h2 mb-10">Terms of Service</h1>
       <div className="space-y-6 leading-[1.8] text-fg-soft">
@@ -41,5 +43,6 @@ export default function TermsPage() {
         <p className="pt-4 text-sm text-fg-faint">Last updated: July 2026</p>
       </div>
     </div>
+    </PageStage>
   );
 }

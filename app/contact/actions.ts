@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import nodemailer from "nodemailer";
 import { site } from "@/content/site";
 
 const schema = z.object({
@@ -18,6 +19,11 @@ export type ContactState = {
   error?: string;
   fieldErrors?: Record<string, string>;
 };
+
+// Gmail SMTP — same account/app-password flow the previous PHPMailer site used.
+// Override via env (GMAIL_USER / GMAIL_APP_PASSWORD / LEAD_EMAIL) in production.
+const GMAIL_USER = process.env.GMAIL_USER ?? "Theabidchaudhary@gmail.com";
+const GMAIL_APP_PASSWORD = (process.env.GMAIL_APP_PASSWORD ?? "xsfo tkur xuwf msmv").replace(/\s+/g, "");
 
 export async function submitContact(
   _prev: ContactState,
@@ -39,45 +45,62 @@ export async function submitContact(
   if (raw.company_website) return { ok: true };
 
   const { name, email, projectType, budget, message } = parsed.data;
+  const to = process.env.LEAD_EMAIL ?? GMAIL_USER ?? site.email;
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.LEAD_EMAIL ?? site.email;
+  const mail = {
+    from: `"${site.name} Website" <${GMAIL_USER}>`,
+    to,
+    replyTo: email,
+    subject: `New project inquiry — ${projectType} — ${name}`,
+    text: [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Project type: ${projectType}`,
+      `Budget: ${budget || "not specified"}`,
+      "",
+      message,
+    ].join("\n"),
+  };
 
-  if (apiKey) {
+  // Implicit-TLS 465 first (most reliable from serverless), STARTTLS 587 as
+  // fallback. Tight timeouts so a blocked port fails over quickly instead of
+  // hitting the function's execution limit.
+  const configs = [
+    { host: "smtp.gmail.com", port: 465, secure: true },
+    { host: "smtp.gmail.com", port: 587, secure: false },
+  ];
+
+  let lastError: unknown;
+  for (const cfg of configs) {
     try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.LEAD_FROM ?? "Orvix Website <onboarding@resend.dev>",
-          to: [to],
-          reply_to: email,
-          subject: `New project inquiry — ${projectType} — ${name}`,
-          text: [
-            `Name: ${name}`,
-            `Email: ${email}`,
-            `Project type: ${projectType}`,
-            `Budget: ${budget || "not specified"}`,
-            "",
-            message,
-          ].join("\n"),
-        }),
+      const transporter = nodemailer.createTransport({
+        ...cfg,
+        auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 12000,
       });
-      if (!res.ok) throw new Error(`Resend ${res.status}`);
+      await transporter.sendMail(mail);
+      return { ok: true };
     } catch (e) {
-      console.error("Lead email failed:", e);
-      return {
-        ok: false,
-        error: `Something went wrong sending your message. Email us directly at ${to}.`,
-      };
+      lastError = e;
+      const err = e as { code?: string; responseCode?: number; message?: string };
+      console.error(
+        `Lead email failed via ${cfg.host}:${cfg.port} —`,
+        err.code,
+        err.responseCode,
+        err.message
+      );
+      // Auth failures won't succeed on another port; stop early.
+      if (err.code === "EAUTH" || err.responseCode === 535) break;
     }
-  } else {
-    // No email provider configured yet — log so the lead isn't silently lost in dev.
-    console.log("[lead]", { name, email, projectType, budget, message });
   }
 
-  return { ok: true };
+  const authFailed = (lastError as { code?: string } | undefined)?.code === "EAUTH";
+  return {
+    ok: false,
+    error: authFailed
+      ? `Our mail service is being reconfigured right now. Please email us directly at ${site.email} — we reply within 12 hours.`
+      : `Something went wrong sending your message. Email us directly at ${site.email}.`,
+  };
 }

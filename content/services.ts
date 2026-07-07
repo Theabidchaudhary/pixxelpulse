@@ -62,7 +62,7 @@ export const services: Service[] = [
     seo: {
       title: "Short-Form Video Editing Service — Reels, TikTok & Shorts",
       description:
-        "Premium short-form video editing for creators and brands. Hook-first Reels, TikToks, and Shorts with kinetic captions, delivered in 48–72 hours by Orvix.",
+        "Premium short-form video editing for creators and brands. Hook-first Reels, TikToks, and Shorts with kinetic captions, delivered in 48–72 hours by Orwyx.",
     },
   },
   {
@@ -110,7 +110,7 @@ export const services: Service[] = [
     seo: {
       title: "YouTube Video Editing Service — Long-Form & Retention Editing",
       description:
-        "YouTube and long-form video editing engineered for retention. Full episode edits, documentary post-production, and weekly publishing pipelines by Orvix.",
+        "YouTube and long-form video editing engineered for retention. Full episode edits, documentary post-production, and weekly publishing pipelines by Orwyx.",
     },
   },
   {
@@ -154,7 +154,7 @@ export const services: Service[] = [
     seo: {
       title: "Motion Graphics & Animation Studio — Brand Motion Systems",
       description:
-        "Motion design studio for brands and creators: logo animation, intros, lower thirds, explainer animation, and VFX. Build a motion identity with Orvix.",
+        "Motion design studio for brands and creators: logo animation, intros, lower thirds, explainer animation, and VFX. Build a motion identity with Orwyx.",
     },
   },
   {
@@ -198,7 +198,7 @@ export const services: Service[] = [
     seo: {
       title: "Video Ad Editing & Performance Creative Agency",
       description:
-        "Performance video creative for paid social: UGC-style ads, A/B variant packs, and platform-ratio exports delivered in 48–72 hours by Orvix.",
+        "Performance video creative for paid social: UGC-style ads, A/B variant packs, and platform-ratio exports delivered in 48–72 hours by Orwyx.",
     },
   },
   {
@@ -242,7 +242,7 @@ export const services: Service[] = [
     seo: {
       title: "Podcast Editing Service — Episodes, Clips & Audiograms",
       description:
-        "Podcast post-production that turns one recording into a week of content: full episode edits, 10+ vertical clips, and audiograms. By Orvix.",
+        "Podcast post-production that turns one recording into a week of content: full episode edits, 10+ vertical clips, and audiograms. By Orwyx.",
     },
   },
   {
@@ -253,7 +253,7 @@ export const services: Service[] = [
     heroEyebrow: "Service — White-Label",
     heroHeading: "Your agency's post-production department.",
     heroSub:
-      "Marketing agencies, production studios, and design teams plug Orvix in as invisible editing capacity — NDA-first, SLA-backed, delivered under your brand.",
+      "Marketing agencies, production studios, and design teams plug Orwyx in as invisible editing capacity — NDA-first, SLA-backed, delivered under your brand.",
     pain: {
       heading: "Hiring editors is slow. Client demand isn't.",
       body: "Scaling an in-house post team means recruiting, managing, and covering the quiet months. A white-label partner gives you elastic capacity with a fixed quality bar — you sell, we ship.",
@@ -286,7 +286,7 @@ export const services: Service[] = [
     seo: {
       title: "White-Label Video Editing for Agencies — Partner Program",
       description:
-        "White-label video editing and motion design capacity for agencies: dedicated editor pods, NDA-first workflows, and SLA-backed turnaround from Orvix.",
+        "White-label video editing and motion design capacity for agencies: dedicated editor pods, NDA-first workflows, and SLA-backed turnaround from Orwyx.",
     },
   },
 ];

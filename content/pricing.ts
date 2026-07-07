@@ -43,7 +43,7 @@ export const plans: Plan[] = [
       "Pause or scale any month",
       "Priority support channel",
     ],
-    cta: "Book a call",
+    cta: "Contact us",
     highlighted: true,
   },
   {

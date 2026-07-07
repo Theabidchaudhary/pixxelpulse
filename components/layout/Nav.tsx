@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Wordmark } from "@/components/ui/Logo";
-import Magnetic from "@/components/ui/Magnetic";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -13,20 +12,11 @@ const links = [
   { href: "/services", label: "Services" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
-  { href: "/blog", label: "Blog" },
 ];
 
 export default function Nav() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    addEventListener("scroll", onScroll, { passive: true });
-    return () => removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -45,28 +35,21 @@ export default function Nav() {
       >
         Skip to content
       </a>
-      <header
-        className={cn(
-          "fixed inset-x-0 top-0 z-[100] transition-all duration-500",
-          scrolled && !open ? "glass" : "border-b border-transparent"
-        )}
-      >
+      <header className="fixed inset-x-0 top-0 z-[100] px-4 pt-4 sm:px-6 lg:px-8 lg:pt-5">
+        {/* Floating white pill */}
         <nav
-          className="mx-auto flex h-[var(--nav-h)] max-w-[1440px] items-center justify-between px-6 lg:px-12"
+          className="relative mx-auto flex h-[60px] max-w-[1380px] items-center justify-between rounded-full bg-white px-5 shadow-[0_10px_40px_rgba(10,10,12,0.16)] sm:px-7"
           aria-label="Main"
         >
-          <Link href="/" aria-label="Orvix — home" className="relative z-[130]">
-            <Wordmark />
-          </Link>
-
-          <ul className="hidden items-center gap-9 lg:flex">
+          {/* Left links */}
+          <ul className="hidden items-center gap-7 lg:flex">
             {links.map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}
                   className={cn(
-                    "text-[0.92rem] transition-colors duration-300",
-                    pathname.startsWith(l.href) ? "text-fg" : "text-fg-soft hover:text-fg"
+                    "font-display text-[0.78rem] font-bold uppercase tracking-[0.02em] transition-colors duration-300",
+                    pathname.startsWith(l.href) ? "text-[#121214]" : "text-[#121214]/80 hover:text-[#121214]"
                   )}
                 >
                   {l.label}
@@ -75,15 +58,27 @@ export default function Nav() {
             ))}
           </ul>
 
+          {/* Centered wordmark (left-aligned on mobile) */}
+          <Link
+            href="/"
+            aria-label="Orwyx — home"
+            className="relative z-[130] lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2"
+          >
+            <Wordmark tone="dark" />
+          </Link>
+
+          {/* Right CTA */}
           <div className="hidden lg:block">
-            <Magnetic>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 rounded-full bg-fg px-6 py-2.5 text-[0.9rem] font-medium text-ink-950 transition-shadow duration-500 hover:shadow-[0_0_32px_rgba(124,106,247,0.45)]"
-              >
-                Book a call
-              </Link>
-            </Magnetic>
+            <Link
+              href="/contact"
+              className="btn-sheen group inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-[0.82rem] font-bold text-white shadow-[0_4px_20px_rgba(240,85,159,0.4)]"
+              style={{ background: "var(--gradient-aurora)" }}
+            >
+              Contact us
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                <path d="M4 12L12 4m0 0H5.5M12 4v6.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
           </div>
 
           {/* Mobile toggle */}
@@ -96,13 +91,13 @@ export default function Nav() {
             <span className="relative block h-3 w-6">
               <span
                 className={cn(
-                  "absolute left-0 top-0 h-px w-full bg-fg transition-all duration-300",
+                  "absolute left-0 top-0 h-[2px] w-full rounded bg-[#121214] transition-all duration-300",
                   open && "top-1/2 rotate-45"
                 )}
               />
               <span
                 className={cn(
-                  "absolute bottom-0 left-0 h-px w-full bg-fg transition-all duration-300",
+                  "absolute bottom-0 left-0 h-[2px] w-full rounded bg-[#121214] transition-all duration-300",
                   open && "bottom-auto top-1/2 -rotate-45"
                 )}
               />
@@ -115,15 +110,15 @@ export default function Nav() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[120] flex flex-col justify-between bg-ink-950/95 px-6 pb-10 pt-28 backdrop-blur-xl lg:hidden"
+            className="fixed inset-0 z-[120] flex flex-col justify-between bg-white px-8 pb-10 pt-32 lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
           >
             <nav aria-label="Mobile">
-              <ul className="flex flex-col gap-2">
-                {[{ href: "/", label: "Home" }, ...links, { href: "/contact", label: "Contact" }].map(
+              <ul className="flex flex-col gap-3">
+                {[{ href: "/", label: "Home" }, ...links, { href: "/blog", label: "Blog" }, { href: "/contact", label: "Contact" }].map(
                   (l, i) => (
                     <motion.li
                       key={l.href}
@@ -133,7 +128,7 @@ export default function Nav() {
                     >
                       <Link
                         href={l.href}
-                        className="font-display text-4xl font-semibold tracking-tight text-fg"
+                        className="font-display text-4xl font-bold tracking-tight text-[#121214]"
                       >
                         {l.label}
                       </Link>
@@ -146,7 +141,7 @@ export default function Nav() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-label"
+              className="text-label !text-[#92929b]"
             >
               Post-production that moves people.
             </motion.div>

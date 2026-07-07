@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import Link from "next/link";
 import { posts } from "@/content/posts";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -9,20 +10,15 @@ import { JsonLd, breadcrumbJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Insights — Video Editing, Retention & Content Strategy",
   description:
-    "Practical writing on video editing, YouTube retention, short-form strategy, and running a modern content pipeline — from the Orvix team.",
+    "Practical writing on video editing, YouTube retention, short-form strategy, and running a modern content pipeline — from the Orwyx team.",
   alternates: { canonical: "/blog" },
 };
 
 export default function BlogPage() {
   const sorted = [...posts].sort((a, b) => b.date.localeCompare(a.date));
   return (
-    <div className="relative overflow-x-clip">
+    <PageStage variant="pulse">
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Blog", path: "/blog" }])} />
-      <div
-        className="glow left-1/2 top-[-220px] h-[440px] w-[800px] -translate-x-1/2 opacity-[0.16]"
-        style={{ background: "var(--gradient-pulse)" }}
-        aria-hidden
-      />
       <div className="relative mx-auto max-w-[1440px] px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pb-36 lg:pt-[calc(var(--nav-h)+5.5rem)]">
         <SectionHeading
           as="h1"
@@ -60,6 +56,6 @@ export default function BlogPage() {
           ))}
         </div>
       </div>
-    </div>
+    </PageStage>
   );
 }

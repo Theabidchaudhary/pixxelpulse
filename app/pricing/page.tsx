@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import { plans } from "@/content/pricing";
 import { faqs } from "@/content/faqs";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -11,23 +12,18 @@ import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Pricing — Video Editing Subscriptions & Project Rates",
   description:
-    "Three ways to work with Orvix: per-project quotes, monthly video editing subscriptions, and white-label agency retainers. 48–72h turnaround standard.",
+    "Three ways to work with Orwyx: per-project quotes, monthly video editing subscriptions, and white-label agency retainers. 48–72h turnaround standard.",
   alternates: { canonical: "/pricing" },
 };
 
 export default function PricingPage() {
   return (
-    <div className="relative overflow-x-clip">
+    <PageStage variant="violet">
       <JsonLd
         data={[
           breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Pricing", path: "/pricing" }]),
           faqJsonLd(faqs),
         ]}
-      />
-      <div
-        className="glow left-1/2 top-[-220px] h-[440px] w-[800px] -translate-x-1/2 opacity-[0.16]"
-        style={{ background: "var(--gradient-pulse)" }}
-        aria-hidden
       />
       <div className="relative mx-auto max-w-[1440px] px-6 pb-24 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pb-36 lg:pt-[calc(var(--nav-h)+5.5rem)]">
         <SectionHeading
@@ -114,6 +110,6 @@ export default function PricingPage() {
           </Reveal>
         </div>
       </div>
-    </div>
+    </PageStage>
   );
 }

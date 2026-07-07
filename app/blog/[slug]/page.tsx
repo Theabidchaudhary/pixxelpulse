@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { posts, getPost } from "@/content/posts";
@@ -66,7 +67,7 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <article className="relative overflow-x-clip">
+    <PageStage variant="pulse">
       <JsonLd
         data={[
           articleJsonLd(post),
@@ -125,6 +126,6 @@ export default async function PostPage({
           </Link>
         </Reveal>
       </div>
-    </article>
+    </PageStage>
   );
 }

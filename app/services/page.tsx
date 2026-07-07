@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PageStage from "@/components/layout/PageStage";
 import ServicesGrid from "@/components/sections/ServicesGrid";
 import ProcessTimeline from "@/components/sections/ProcessTimeline";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -15,13 +16,8 @@ export const metadata: Metadata = {
 
 export default function ServicesPage() {
   return (
-    <div className="relative overflow-x-clip">
+    <PageStage variant="blue">
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Services", path: "/services" }])} />
-      <div
-        className="glow left-1/2 top-[-220px] h-[440px] w-[800px] -translate-x-1/2 opacity-[0.16]"
-        style={{ background: "var(--gradient-pulse)" }}
-        aria-hidden
-      />
       <div className="relative mx-auto max-w-[1440px] px-6 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pt-[calc(var(--nav-h)+5.5rem)]">
         <SectionHeading
           as="h1"
@@ -35,11 +31,11 @@ export default function ServicesPage() {
           className="mb-6"
         />
         <Reveal delay={200} className="mb-4">
-          <Button href="/contact">Book a call</Button>
+          <Button href="/contact">Contact us</Button>
         </Reveal>
       </div>
       <ServicesGrid />
       <ProcessTimeline />
-    </div>
+    </PageStage>
   );
 }
