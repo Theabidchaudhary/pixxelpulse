@@ -76,22 +76,31 @@ function QuadrantCell({ q, active, onHover }: { q: Quadrant; active: boolean; on
       tabIndex={0}
       className="group relative overflow-hidden p-7 outline-none transition-colors duration-700 sm:p-9"
     >
-      {/* Colored fill + dot texture, revealed on hover */}
+      {/* Colored fill + dot texture — always tinted, blazing on hover */}
       <div
         className="absolute inset-0 transition-opacity duration-700"
         style={{
-          opacity: active ? 1 : 0,
-          background: `linear-gradient(135deg, ${q.color}42 0%, ${q.color}14 55%, transparent 100%)`,
+          opacity: active ? 1 : 0.42,
+          background: `radial-gradient(ellipse 90% 90% at 30% 20%, ${q.color}52 0%, ${q.color}18 55%, transparent 100%)`,
+        }}
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 transition-opacity duration-700"
+        style={{
+          opacity: active ? 0.9 : 0,
+          background: `radial-gradient(ellipse 60% 60% at 50% 45%, ${q.color}30 0%, transparent 70%)`,
+          filter: "blur(24px)",
         }}
         aria-hidden
       />
       <div
         className="dot-grid absolute inset-0 transition-opacity duration-700"
-        style={{ opacity: active ? 0.5 : 0 }}
+        style={{ opacity: active ? 0.55 : 0.14 }}
         aria-hidden
       />
 
-      <div className="relative transition-opacity duration-500" style={{ opacity: active ? 1 : 0.38 }}>
+      <div className="relative transition-opacity duration-500" style={{ opacity: active ? 1 : 0.6 }}>
         <p className="flex items-center gap-2.5">
           <span
             className="flex size-7 items-center justify-center rounded-md border transition-shadow duration-500"

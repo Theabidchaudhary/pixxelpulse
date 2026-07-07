@@ -81,11 +81,26 @@ export default function DreamOutcomes({ projects }: { projects: Project[] }) {
           const reverse = i % 2 === 1;
           return (
             <Reveal key={o.tag}>
+              <div className="relative">
+                {/* Ambient colored glow bleeding out behind the card */}
+                <div
+                  className="glow left-1/2 top-1/2 h-[110%] w-[104%] -translate-x-1/2 -translate-y-1/2 opacity-[0.16] transition-opacity duration-700"
+                  style={{ background: o.color, filter: "blur(90px)" }}
+                  aria-hidden
+                />
               <div
                 className={cn(
-                  "panel group relative grid overflow-hidden rounded-3xl lg:grid-cols-2",
+                  "card-lux panel group relative grid overflow-hidden rounded-3xl lg:grid-cols-2",
                   reverse && "lg:[&>*:first-child]:order-2"
                 )}
+                style={
+                  {
+                    "--card-glow": `${o.color}26`,
+                    "--card-glow-2": `${o.color}12`,
+                    "--card-line": `${o.color}88`,
+                    "--card-shadow": `${o.color}30`,
+                  } as React.CSSProperties
+                }
               >
                 {/* Image half */}
                 <div className="relative min-h-[240px] overflow-hidden lg:min-h-[330px]">
@@ -153,7 +168,8 @@ export default function DreamOutcomes({ projects }: { projects: Project[] }) {
 
                   <Link
                     href={o.href}
-                    className="group/cta mt-7 inline-flex items-center gap-2 rounded-full border border-line bg-ink-900/70 px-5.5 py-2.5 text-[0.82rem] font-semibold text-fg transition-all duration-500 hover:border-line-strong hover:bg-ink-700"
+                    className="btn-sheen group/cta mt-7 inline-flex items-center gap-2 rounded-full border border-line bg-ink-900/70 px-5.5 py-2.5 text-[0.86rem] font-semibold text-fg"
+                    style={{ "--sheen-glow": `${o.color}55` } as React.CSSProperties}
                   >
                     {o.cta}
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover/cta:-translate-y-0.5 group-hover/cta:translate-x-0.5">
@@ -161,6 +177,7 @@ export default function DreamOutcomes({ projects }: { projects: Project[] }) {
                     </svg>
                   </Link>
                 </div>
+              </div>
               </div>
             </Reveal>
           );

@@ -34,7 +34,7 @@ export async function generateMetadata({
   if (!p) return {};
   return {
     title: `${p.title} — ${FORMAT_LABELS[p.format]} Case Study`,
-    description: `${p.title}: ${FORMAT_LABELS[p.format].toLowerCase()} work for the ${p.niches.join(", ").toLowerCase()} space, edited by Orvix.`,
+    description: `${p.title}: ${FORMAT_LABELS[p.format].toLowerCase()} work for the ${p.niches.join(", ").toLowerCase()} space, edited by Orwyx.`,
     alternates: { canonical: `/work/${p.slug}` },
   };
 }

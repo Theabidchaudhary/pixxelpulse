@@ -49,47 +49,75 @@ export default function PricingTeaser() {
               <Reveal key={p.name} delay={i * 100}>
                 <div
                   className={cn(
-                    "relative flex h-full flex-col rounded-2xl border border-line bg-ink-900/80 p-7 backdrop-blur-sm lg:p-8",
-                    p.highlighted && "electric-border border-transparent bg-ink-900"
+                    "relative flex h-full flex-col rounded-2xl border p-7 backdrop-blur-md lg:p-8",
+                    p.highlighted ? "electric-border" : "card-lux overflow-hidden"
                   )}
+                  style={
+                    {
+                      borderColor: p.highlighted ? "transparent" : `${meta.color}3d`,
+                      background: `linear-gradient(165deg, ${meta.color}1a 0%, rgba(255,255,255,0.05) 28%, rgba(14,14,18,0.55) 70%)`,
+                      "--card-glow": `${meta.color}30`,
+                      "--card-glow-2": `${meta.color}14`,
+                      "--card-line": `${meta.color}77`,
+                      "--card-shadow": `${meta.color}33`,
+                    } as React.CSSProperties
+                  }
                 >
+                  {/* Glossy top highlight */}
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-0 h-24 rounded-t-2xl"
+                    style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.1), transparent)" }}
+                    aria-hidden
+                  />
                   {p.highlighted && (
-                    <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-pulse-blue px-4 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_20px_rgba(76,141,255,0.7)]">
+                    <span className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-pulse-blue px-4 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_20px_rgba(76,141,255,0.7)]">
                       Popular
                     </span>
                   )}
 
-                  <span className="relative mb-6 inline-flex size-12 items-center justify-center" aria-hidden>
-                    <span className="dot-grid absolute inset-[-10px] opacity-50" style={{ maskImage: "radial-gradient(circle, black 30%, transparent 72%)" }} />
+                  {/* Icon: soft colored glow + dot grid fading out behind it */}
+                  <span className="relative mb-6 mt-2 inline-flex size-14 items-center justify-center" aria-hidden>
                     <span
-                      className="relative flex size-10 items-center justify-center rounded-lg border"
-                      style={{ borderColor: `${meta.color}55`, color: meta.color, boxShadow: `0 0 22px ${meta.color}44, inset 0 0 12px ${meta.color}22` }}
+                      className="dot-grid absolute inset-[-18px] opacity-70"
+                      style={{ maskImage: "radial-gradient(circle, black 25%, transparent 70%)" }}
+                    />
+                    <span
+                      className="absolute inset-[-14px] rounded-full"
+                      style={{ background: `radial-gradient(circle, ${meta.color}40 0%, transparent 70%)`, filter: "blur(8px)" }}
+                    />
+                    <span
+                      className="relative flex size-11 items-center justify-center rounded-lg border"
+                      style={{
+                        borderColor: `${meta.color}66`,
+                        color: meta.color,
+                        boxShadow: `0 0 30px ${meta.color}55, inset 0 0 16px ${meta.color}2a`,
+                      }}
                     >
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                         {meta.icon}
                       </svg>
                     </span>
                   </span>
 
-                  <h3 className="font-display text-[1.45rem] font-bold">{p.name}</h3>
-                  <p className="mt-1 text-[0.9rem] text-fg-soft">{p.tag}</p>
+                  <h3 className="font-display text-[1.6rem] font-bold">{p.name}</h3>
+                  <p className="mt-1 text-[1rem] text-fg-soft">{p.tag}</p>
 
-                  <p className="serif mt-5 text-[2.5rem]" style={{ color: meta.color }}>
+                  <p className="serif mt-5 text-[2.9rem]" style={{ color: meta.color }}>
                     {p.price.toLowerCase().startsWith("from") ? (
                       <>
-                        <span className="text-[0.62em]">from </span>
+                        <span className="text-[0.6em]">from </span>
                         {p.price.slice(5)}
                       </>
                     ) : (
                       p.price.toLowerCase()
                     )}
                   </p>
-                  <p className="text-sm text-fg-soft">{p.unit}</p>
+                  <p className="text-[0.95rem] text-fg-soft">{p.unit}</p>
 
-                  <ul className="mt-6 flex-1 space-y-2.5">
+                  <ul className="mt-6 flex-1 space-y-3">
                     {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-[0.92rem] text-fg">
-                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0" style={{ color: meta.color }} aria-hidden>
+                      <li key={f} className="flex items-start gap-3 text-[1rem] leading-snug text-fg">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0" style={{ color: meta.color }} aria-hidden>
                           <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" />
                           <path d="M5 8.2l2 2 4-4.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -100,10 +128,11 @@ export default function PricingTeaser() {
 
                   <Link
                     href="/contact"
-                    className="group mt-8 inline-flex items-center justify-center gap-2 rounded-full border border-line bg-ink-950/80 px-6 py-3 text-[0.82rem] font-bold text-fg transition-all duration-500 hover:border-line-strong hover:bg-ink-700"
+                    className="btn-sheen group mt-8 inline-flex items-center justify-center gap-2 rounded-full border border-line bg-ink-950/80 px-6 py-3.5 text-[0.92rem] font-bold text-fg"
+                    style={{ "--sheen-glow": `${meta.color}55` } as React.CSSProperties}
                   >
                     {p.cta === "Book a call" ? "Contact us" : p.cta}
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
                       <path d="M4 12L12 4m0 0H5.5M12 4v6.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </Link>
@@ -114,7 +143,7 @@ export default function PricingTeaser() {
         </div>
 
         <Reveal delay={220} className="mt-10 text-center">
-          <Link href="/pricing" className="text-sm text-fg-soft underline-offset-4 transition-colors hover:text-fg hover:underline">
+          <Link href="/pricing" className="text-[0.95rem] text-fg-soft underline-offset-4 transition-colors hover:text-fg hover:underline">
             See full pricing &amp; features
           </Link>
         </Reveal>

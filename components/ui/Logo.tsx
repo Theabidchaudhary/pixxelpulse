@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The Orvix wordmark — lowercase Poppins with a full-spectrum gradient on the
+ * The Orwyx wordmark — lowercase Poppins with a full-spectrum gradient on the
  * first letter, matching the brand treatment used across the site.
  * `tone` picks the letter color for the rest of the word.
  */
@@ -14,7 +14,7 @@ export function Wordmark({ className, tone = "light" }: { className?: string; to
         className
       )}
     >
-      <span className="text-aurora">o</span>rvix
+      <span className="text-aurora">o</span>rwyx
     </span>
   );
 }

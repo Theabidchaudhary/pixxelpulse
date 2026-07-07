@@ -33,22 +33,34 @@ export default function PageStage({
   return (
     <div className={cn("block-dark cap-b z-10", className)}>
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[1200px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[1400px]"
         style={{ background: tops[variant] }}
+        aria-hidden
+      />
+      {/* Second, softer pass of the same mood repeating down the page so the
+          stage never cuts to flat black — sections blend into each other */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-[380px] top-[1150px] opacity-55"
+        style={{
+          background: tops[variant],
+          backgroundRepeat: "repeat-y",
+          backgroundSize: "100% 1700px",
+          filter: "blur(46px)",
+        }}
+        aria-hidden
+      />
+      {/* Colorful wash rising into the rounded bottom, flowing toward the footer */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[680px] opacity-[0.85] blur-[65px]"
+        style={{
+          background:
+            "radial-gradient(ellipse 45% 90% at 12% 100%, #7a4ae8 0%, transparent 68%), radial-gradient(ellipse 45% 90% at 50% 100%, #e055a8 0%, transparent 68%), radial-gradient(ellipse 42% 90% at 88% 100%, #f08040 0%, transparent 68%)",
+        }}
         aria-hidden
       />
       <div
         className="dot-grid pointer-events-none absolute inset-x-0 top-0 h-[1000px] opacity-60"
         style={{ maskImage: "linear-gradient(180deg, black 55%, transparent 100%)" }}
-        aria-hidden
-      />
-      {/* Colorful wash rising into the rounded bottom, flowing toward the footer */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[620px] opacity-[0.7] blur-[70px]"
-        style={{
-          background:
-            "radial-gradient(ellipse 45% 90% at 12% 100%, #6d3fd4 0%, transparent 68%), radial-gradient(ellipse 45% 90% at 50% 100%, #d14a9a 0%, transparent 68%), radial-gradient(ellipse 42% 90% at 88% 100%, #e07038 0%, transparent 68%)",
-        }}
         aria-hidden
       />
       <div className="relative">{children}</div>

@@ -17,6 +17,9 @@ const legacyRedirects = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Keep nodemailer un-bundled so the contact server action loads it at
+  // runtime exactly as published (avoids ESM-interop bundling breakage).
+  serverExternalPackages: ["nodemailer"],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [{ protocol: "https", hostname: "i.ytimg.com" }],

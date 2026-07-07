@@ -1,6 +1,13 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect } from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import Link from "next/link";
 import { site } from "@/content/site";
 
@@ -24,16 +31,37 @@ function Stars() {
   );
 }
 
-/** Dark analytics-dashboard browser mockup, tilted in perspective. */
+/** Dark analytics-dashboard browser mockup that turns to face the cursor. */
 function BrowserMockup() {
   const bars = [38, 62, 30, 74, 56, 88, 44, 70, 52, 92];
+  const reduce = useReducedMotion();
+  const mx = useMotionValue(0.5);
+  const my = useMotionValue(0.4);
+
+  useEffect(() => {
+    if (reduce) return;
+    const onMove = (e: MouseEvent) => {
+      mx.set(e.clientX / window.innerWidth);
+      my.set(e.clientY / window.innerHeight);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [mx, my, reduce]);
+
+  const rotateY = useSpring(useTransform(mx, [0, 1], [-22, 5]), { stiffness: 60, damping: 16 });
+  const rotateX = useSpring(useTransform(my, [0, 1], [13, -9]), { stiffness: 60, damping: 16 });
+
   return (
     <div style={{ perspective: "1600px" }}>
       <motion.div
-        initial={{ opacity: 0, y: 50, rotateY: -14, rotateX: 8 }}
-        animate={{ opacity: 1, y: 0, rotateY: -9, rotateX: 5 }}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.4, delay: 0.5, ease }}
-        style={{ transformStyle: "preserve-3d" }}
+        style={{
+          transformStyle: "preserve-3d",
+          rotateY: reduce ? -9 : rotateY,
+          rotateX: reduce ? 5 : rotateX,
+        }}
         className="relative w-full max-w-xl rounded-2xl border border-white/10 shadow-[0_40px_90px_rgba(0,0,0,0.55)]"
       >
         <div className="overflow-hidden rounded-2xl bg-[#181a2e]">
@@ -138,12 +166,8 @@ export default function Hero() {
         className="dot-grid absolute inset-0 opacity-80"
         style={{ maskImage: "radial-gradient(ellipse 110% 100% at 50% 32%, black 30%, transparent 85%)" }}
       />
-      {/* Bottom aurora wash bleeding into the next section */}
-      <div
-        className="glow bottom-[-360px] left-1/2 h-[640px] w-[1500px] -translate-x-1/2 opacity-[0.5]"
-        style={{ background: "var(--gradient-aurora)" }}
-        aria-hidden
-      />
+      {/* The colorful fold wash lives at block level (page.tsx) so it sits
+          just below the hero and fades to black before the next heading */}
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-16 px-6 pb-8 pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-12">
         <div>
@@ -191,12 +215,10 @@ export default function Hero() {
           <motion.div {...up(0.72)} className="mt-9">
             <Link
               href="/contact"
-              className="group relative inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[0.92rem] font-bold text-white"
+              className="btn-sheen group relative inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[0.92rem] font-bold text-white"
               style={{
-                background:
-                  "linear-gradient(#16161c, #16161c) padding-box, var(--gradient-aurora) border-box",
-                border: "1.5px solid transparent",
-                boxShadow: "0 0 34px rgba(240,85,159,0.3)",
+                background: "var(--gradient-aurora)",
+                boxShadow: "0 6px 36px rgba(240,85,159,0.45)",
               }}
             >
               Contact us

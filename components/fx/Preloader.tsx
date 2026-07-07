@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const LETTERS = "orvix".split("");
+const LETTERS = "orwyx".split("");
 
 export default function Preloader() {
   const [show, setShow] = useState(false);

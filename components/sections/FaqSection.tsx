@@ -16,10 +16,10 @@ export default function FaqSection() {
       <JsonLd data={faqJsonLd(faqs)} />
       {/* Vivid purple → pink → orange wash filling the rounded bottom, like the reference */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[680px] opacity-[0.85] blur-[70px]"
+        className="pointer-events-none absolute inset-x-0 bottom-[-200px] h-[720px] opacity-[0.95] blur-[62px]"
         style={{
           background:
-            "radial-gradient(ellipse 45% 90% at 12% 100%, #6d3fd4 0%, transparent 68%), radial-gradient(ellipse 45% 90% at 50% 100%, #d14a9a 0%, transparent 68%), radial-gradient(ellipse 42% 90% at 88% 100%, #e07038 0%, transparent 68%)",
+            "radial-gradient(ellipse 45% 90% at 12% 100%, #7a4ae8 0%, transparent 68%), radial-gradient(ellipse 45% 90% at 50% 100%, #e055a8 0%, transparent 68%), radial-gradient(ellipse 42% 90% at 88% 100%, #f08040 0%, transparent 68%)",
         }}
         aria-hidden
       />

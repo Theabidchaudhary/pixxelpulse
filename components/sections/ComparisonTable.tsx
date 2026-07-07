@@ -13,7 +13,7 @@ type Row = {
 
 const rows: Row[] = [
   {
-    name: "Orvix",
+    name: "Orwyx",
     description:
       "Senior-led and built for top quality. Full results and full support, without hiring a single employee of your own.",
     marks: [true, true, true, true, true],
@@ -71,7 +71,7 @@ export default function ComparisonTable() {
           <h2 className="text-h2">
             Freelancer, agency
             <br />
-            or <span className="serif text-gradient">Orvix?</span>
+            or <span className="serif text-gradient">Orwyx?</span>
           </h2>
           <p className="text-lead mx-auto mt-5 max-w-md">
             Every option has its price. And not just in dollars.
@@ -97,13 +97,21 @@ export default function ComparisonTable() {
                   key={r.name}
                   className={
                     r.hero
-                      ? "grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center rounded-2xl border border-white/25 px-5 py-5 shadow-[0_16px_50px_rgba(76,141,255,0.3)]"
-                      : "grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center rounded-2xl border border-line bg-ink-900/70 px-5 py-5"
+                      ? "relative grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center overflow-hidden rounded-2xl border border-white/30 px-5 py-5 shadow-[0_16px_60px_rgba(109,79,216,0.45),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                      : "card-lux grid grid-cols-[minmax(300px,1.4fr)_repeat(5,1fr)] items-center overflow-hidden rounded-2xl border border-line bg-ink-900/70 px-5 py-5"
                   }
                   style={
                     r.hero
-                      ? { background: "linear-gradient(96deg, #2f6bdc 0%, #6d4fd8 45%, #b04fc4 75%, #d15aa8 100%)" }
-                      : undefined
+                      ? {
+                          background:
+                            "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 45%), linear-gradient(96deg, #2f6bdc 0%, #6d4fd8 45%, #b04fc4 75%, #d15aa8 100%)",
+                        }
+                      : ({
+                          "--card-glow": "rgba(109,79,216,0.16)",
+                          "--card-glow-2": "rgba(209,90,168,0.08)",
+                          "--card-line": "rgba(255,255,255,0.24)",
+                          "--card-shadow": "rgba(109,79,216,0.22)",
+                        } as React.CSSProperties)
                   }
                 >
                   <div className="flex items-center gap-4 pr-6">

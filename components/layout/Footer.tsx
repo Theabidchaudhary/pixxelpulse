@@ -24,7 +24,7 @@ const columns: { title: string; links: { href: string; label: string; external?:
 
 export default function Footer() {
   return (
-    <footer className="band-light overlap-up relative z-0 bg-cream">
+    <footer className="band-light sticky bottom-0 z-0 bg-cream">
       {/* Bright dot matrix across the light band, like the reference footer */}
       <div
         className="dot-grid-dark pointer-events-none absolute inset-0 opacity-60"
@@ -32,7 +32,7 @@ export default function Footer() {
         aria-hidden
       />
 
-      <div className="relative mx-auto max-w-[1440px] px-6 pt-[calc(var(--cap)+3rem)] lg:px-12">
+      <div className="relative mx-auto max-w-[1440px] px-6 pt-16 lg:px-12">
         <p className="text-right text-xs text-fg-faint">
           © {new Date().getFullYear()} {site.name} was here
         </p>

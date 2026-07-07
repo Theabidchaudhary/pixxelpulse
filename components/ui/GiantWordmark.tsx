@@ -20,8 +20,8 @@ export default function GiantWordmark() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10% 0px" }}
         transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-        className="relative select-none text-center font-display font-bold lowercase leading-[0.78] tracking-tight"
-        style={{ fontSize: "clamp(5rem, 19.5vw, 17.5rem)", transform: "translateY(6%)" }}
+        className="relative select-none text-center font-display font-bold lowercase leading-[1.02] tracking-tight"
+        style={{ fontSize: "clamp(5rem, 19.5vw, 17.5rem)", transform: "translateY(20%)", marginTop: "-0.16em" }}
       >
         <span className="text-aurora">o</span>
         <span
@@ -32,7 +32,7 @@ export default function GiantWordmark() {
             color: "transparent",
           }}
         >
-          rvix
+          rwyx
         </span>
       </motion.p>
     </div>

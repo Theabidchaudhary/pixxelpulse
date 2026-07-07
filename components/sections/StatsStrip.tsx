@@ -26,7 +26,7 @@ export default function StatsStrip() {
         {/* Projects delivered */}
         <Reveal className="text-center lg:border-r lg:border-line lg:px-10">
           <p
-            className="serif text-[4.6rem] leading-none lg:text-[6.2rem]"
+            className="serif text-[5.2rem] leading-none lg:text-[7rem]"
             style={{
               background: "linear-gradient(100deg, #2fbf8f 0%, #4c8dff 100%)",
               WebkitBackgroundClip: "text",
@@ -36,7 +36,7 @@ export default function StatsStrip() {
           >
             1,300+
           </p>
-          <p className="mt-4 text-base text-fg">Projects successfully delivered</p>
+          <p className="mt-4 text-[1.1rem] font-medium text-fg">Projects successfully delivered</p>
         </Reveal>
 
         {/* Rating */}
@@ -50,8 +50,8 @@ export default function StatsStrip() {
             </svg>
             <Stars />
           </div>
-          <p className="mt-4 text-sm text-fg-soft">What our clients say:</p>
-          <p className="mt-1 text-base font-medium text-fg">4.9 out of 5 across 50+ reviews</p>
+          <p className="mt-4 text-[0.95rem] text-fg-soft">What our clients say:</p>
+          <p className="mt-1 text-[1.1rem] font-semibold text-fg">4.9 out of 5 across 50+ reviews</p>
         </Reveal>
 
         {/* Self-quote card */}
@@ -73,7 +73,7 @@ export default function StatsStrip() {
                 <path d="M6.5 11c1.9 0 3.5 1.6 3.5 3.5S8.4 18 6.5 18 3 16.4 3 14.5c0-3.6 2-6.8 5-8.5l1 1.6c-1.6 1-2.8 2.4-3.3 4 .3-.1.5-.1.8-.1zm11 0c1.9 0 3.5 1.6 3.5 3.5S19.4 18 17.5 18 14 16.4 14 14.5c0-3.6 2-6.8 5-8.5l1 1.6c-1.6 1-2.8 2.4-3.3 4 .3-.1.5-.1.8-.1z" />
               </svg>
             </span>
-            <p className="serif text-[1.45rem] leading-snug text-fg">
+            <p className="serif text-[1.65rem] leading-snug text-fg">
               We cut videos that <span className="text-heart">pay off</span>. Not just ones that look good.
             </p>
             <div className="mt-5 flex items-center justify-center gap-3">
@@ -91,7 +91,7 @@ export default function StatsStrip() {
             </div>
             <Link
               href="/contact"
-              className="group mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-ink-900/80 px-5 py-2.5 text-[0.78rem] font-semibold text-fg transition-colors hover:border-line-strong"
+              className="btn-sheen group mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-ink-900/80 px-5 py-2.5 text-[0.82rem] font-semibold text-fg"
             >
               Contact us
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">

@@ -20,11 +20,14 @@ function IconTile({ color, children }: { color: string; children: React.ReactNod
 export default function HeartIntro({ projects }: { projects: Project[] }) {
   const photo = projects[0];
   return (
-    <section className="relative pb-32 pt-4 lg:pb-40">
-      {/* Green wash rising from the bottom, like the reference */}
+    <section className="relative pb-[calc(var(--cap)+7rem)] pt-28 lg:pt-36">
+      {/* Green wash filling the rounded bottom cap, like the reference */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-220px] h-[560px] opacity-[0.55] blur-[100px]"
-        style={{ background: "radial-gradient(ellipse 70% 100% at 50% 100%, #1a7a5c 0%, transparent 70%)" }}
+        className="pointer-events-none absolute inset-x-0 bottom-[-140px] h-[640px] opacity-[0.75] blur-[80px]"
+        style={{
+          background:
+            "radial-gradient(ellipse 62% 90% at 55% 100%, #157a58 0%, transparent 70%), radial-gradient(ellipse 40% 70% at 8% 100%, #135a8a 0%, transparent 70%), radial-gradient(ellipse 34% 60% at 96% 100%, #14805e 0%, transparent 70%)",
+        }}
         aria-hidden
       />
 
@@ -51,7 +54,7 @@ export default function HeartIntro({ projects }: { projects: Project[] }) {
           </Reveal>
 
           {/* Feature card 1 */}
-          <Reveal delay={100} className="panel relative flex flex-col items-center overflow-hidden rounded-3xl p-9 text-center">
+          <Reveal delay={100} className="card-lux panel relative flex flex-col items-center overflow-hidden rounded-3xl p-9 text-center [--card-glow:rgba(255,138,79,0.22)] [--card-line:rgba(255,138,79,0.55)] [--card-shadow:rgba(255,138,79,0.25)]">
             <div className="glow left-1/2 top-[-60px] h-40 w-56 -translate-x-1/2 opacity-30" style={{ background: "#ff8a4f" }} aria-hidden />
             <IconTile color="#ff8a4f">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
@@ -68,7 +71,7 @@ export default function HeartIntro({ projects }: { projects: Project[] }) {
           </Reveal>
 
           {/* Feature card 2 */}
-          <Reveal delay={180} className="panel relative flex flex-col items-center overflow-hidden rounded-3xl p-9 text-center">
+          <Reveal delay={180} className="card-lux panel relative flex flex-col items-center overflow-hidden rounded-3xl p-9 text-center [--card-glow:rgba(139,108,246,0.24)] [--card-line:rgba(139,108,246,0.55)] [--card-shadow:rgba(139,108,246,0.28)]">
             <div className="glow left-1/2 top-[-60px] h-40 w-56 -translate-x-1/2 opacity-30" style={{ background: "#8b6cf6" }} aria-hidden />
             <IconTile color="#a78bfa">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
@@ -84,7 +87,7 @@ export default function HeartIntro({ projects }: { projects: Project[] }) {
           </Reveal>
 
           {/* Wide card */}
-          <Reveal delay={240} className="panel relative overflow-hidden rounded-3xl p-9 lg:col-span-2">
+          <Reveal delay={240} className="card-lux panel relative overflow-hidden rounded-3xl p-9 lg:col-span-2 [--card-glow:rgba(47,191,143,0.2)] [--card-line:rgba(47,191,143,0.5)] [--card-shadow:rgba(47,191,143,0.24)]">
             <div className="glow bottom-[-90px] left-[10%] h-44 w-[420px] opacity-25" style={{ background: "#2fbf8f" }} aria-hidden />
             <div className="relative flex flex-col items-start gap-5 sm:flex-row sm:items-center">
               <span

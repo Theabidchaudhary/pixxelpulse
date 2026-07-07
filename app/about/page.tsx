@@ -11,7 +11,7 @@ import { JsonLd, breadcrumbJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "About — The Team Behind the Edits",
   description:
-    "Orvix started as one freelance editor in 2018 and grew into a full post-production team. Meet the people behind 1,300+ delivered videos.",
+    "Orwyx started as one freelance editor in 2018 and grew into a full post-production team. Meet the people behind 1,300+ delivered videos.",
   alternates: { canonical: "/about" },
 };
 
@@ -38,13 +38,13 @@ export default function AboutPage() {
       <header className="relative mx-auto max-w-[1440px] px-6 pt-[calc(var(--nav-h)+3.5rem)] lg:px-12 lg:pt-[calc(var(--nav-h)+5.5rem)]">
         <SectionHeading
           as="h1"
-          eyebrow="About Orvix"
+          eyebrow="About Orwyx"
           heading={
             <>
               Built in the edit, <span className="text-gradient">one frame at a time.</span>
             </>
           }
-          lead="Orvix started in December 2018 as one freelance editor taking on projects nobody else wanted to rush. Seven years and 1,300+ videos later, it's a full post-production team trusted by creators, startups, and brands across 40+ industries."
+          lead="Orwyx started in December 2018 as one freelance editor taking on projects nobody else wanted to rush. Seven years and 1,300+ videos later, it's a full post-production team trusted by creators, startups, and brands across 40+ industries."
         />
       </header>
 
@@ -65,7 +65,7 @@ export default function AboutPage() {
             </Reveal>
             <Reveal delay={200}>
               <p className="text-lead">
-                Today Orvix runs as an editor-led studio: every project has a dedicated
+                Today Orwyx runs as an editor-led studio: every project has a dedicated
                 editor, every edit gets a second pair of eyes, and every client gets the same
                 48–72 hour pulse that built our reputation.
               </p>

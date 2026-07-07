@@ -187,7 +187,16 @@ export default function ContactPanel({ as = "h2" }: { as?: "h1" | "h2" }) {
 
       {/* Message form panel */}
       <Reveal delay={120} className="mt-14 lg:mt-20">
-        <div className="grid gap-10 rounded-3xl border border-line bg-gradient-to-br from-ink-800/90 to-ink-900 p-7 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:p-12">
+        <div className="relative grid gap-10 overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-ink-800/90 to-ink-900 p-7 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:p-12">
+          {/* Violet corner light spreading across the panel, like the reference */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 65% at 0% 0%, rgba(139,108,246,0.3) 0%, rgba(139,108,246,0.08) 45%, transparent 70%), radial-gradient(ellipse 40% 50% at 100% 100%, rgba(240,85,159,0.12) 0%, transparent 65%)",
+            }}
+            aria-hidden
+          />
           <div>
             <p className="text-h3">
               Prefer to leave a <span className="serif text-candy">message instead?</span>

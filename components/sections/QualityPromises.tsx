@@ -11,7 +11,8 @@ type Promise_ = {
   label: string;
   body: string;
   color: string;
-  pos: { left: string; top: string };
+  /** Position on the orbit circle, degrees clockwise from 12 o'clock */
+  angle: number;
   panelSide: "left" | "right";
   icon: React.ReactNode;
 };
@@ -23,7 +24,7 @@ const promises: Promise_[] = [
     label: "Guarantee",
     body: "We only deliver once the result truly convinces you. So you take no risk at all.",
     color: "#a86cf6",
-    pos: { left: "50%", top: "6%" },
+    angle: 0,
     panelSide: "right",
     icon: <path d="M12 2.5l2.4 5 5.6.7-4.1 3.8 1.1 5.5-5-2.8-5 2.8 1.1-5.5L4 8.2l5.6-.7 2.4-5zM9 12l2 2 4-4.5" strokeLinecap="round" strokeLinejoin="round" />,
   },
@@ -33,7 +34,7 @@ const promises: Promise_[] = [
     label: "Quality",
     body: "No trainees learning on your account — every project is cut by a senior editor.",
     color: "#f0559f",
-    pos: { left: "79%", top: "34%" },
+    angle: 72,
     panelSide: "right",
     icon: <path d="M6 7a2.5 2.5 0 105 0 2.5 2.5 0 00-5 0zM6 17a2.5 2.5 0 105 0 2.5 2.5 0 00-5 0zM10.5 8.5L20 18M10.5 15.5L20 6" strokeLinecap="round" />,
   },
@@ -43,7 +44,7 @@ const promises: Promise_[] = [
     label: "Ownership",
     body: "Full-resolution masters, exports for every platform, and organized project files — yours forever.",
     color: "#56c8f5",
-    pos: { left: "62%", top: "70%" },
+    angle: 144,
     panelSide: "right",
     icon: <path d="M12 3l7.5 3v6c0 4.5-3.2 7.8-7.5 9-4.3-1.2-7.5-4.5-7.5-9V6L12 3zM9 12l2 2 4-4.5" strokeLinecap="round" strokeLinejoin="round" />,
   },
@@ -53,7 +54,7 @@ const promises: Promise_[] = [
     label: "Collaboration",
     body: "We refine the cut until it truly fits. Design tweaks are included, at no extra cost.",
     color: "#2fbf8f",
-    pos: { left: "28%", top: "64%" },
+    angle: 216,
     panelSide: "left",
     icon: <path d="M4 12a8 8 0 0114-5.3M20 12a8 8 0 01-14 5.3M14 3v4h-4M10 21v-4h4" strokeLinecap="round" strokeLinejoin="round" />,
   },
@@ -63,7 +64,7 @@ const promises: Promise_[] = [
     label: "Pricing",
     body: "One quote before we start. Scope changes get a heads-up first — no surprise invoices.",
     color: "#ff8a4f",
-    pos: { left: "20%", top: "24%" },
+    angle: 288,
     panelSide: "left",
     icon: <path d="M13 3l8 8-9 9-8-8V4a1 1 0 011-1h8zM8.5 8a1 1 0 100-2 1 1 0 000 2z" strokeLinejoin="round" />,
   },
@@ -73,8 +74,6 @@ function PromiseCard({ p }: { p: Promise_ }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="absolute -translate-x-1/2 -translate-y-1/2"
-      style={{ left: p.pos.left, top: p.pos.top }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
       onFocus={() => setOpen(true)}
@@ -85,12 +84,12 @@ function PromiseCard({ p }: { p: Promise_ }) {
           tabIndex={0}
           className="relative w-44 cursor-default rounded-2xl border p-5 text-center outline-none transition-all duration-500"
           style={{
-            borderColor: open ? `${p.color}88` : "rgba(255,255,255,0.08)",
+            borderColor: open ? `${p.color}88` : `${p.color}33`,
             background: open
-              ? `linear-gradient(160deg, ${p.color}26 0%, rgba(19,19,24,0.92) 60%)`
-              : "rgba(19,19,24,0.85)",
-            boxShadow: open ? `0 0 44px ${p.color}44` : "none",
-            opacity: open ? 1 : 0.62,
+              ? `linear-gradient(160deg, ${p.color}30 0%, rgba(19,19,24,0.92) 60%)`
+              : `linear-gradient(160deg, ${p.color}16 0%, rgba(19,19,24,0.88) 60%)`,
+            boxShadow: open ? `0 0 44px ${p.color}55` : `0 0 22px ${p.color}1f`,
+            opacity: open ? 1 : 0.85,
           }}
         >
           <span className="relative mx-auto mb-4 flex size-12 items-center justify-center" aria-hidden>
@@ -161,11 +160,12 @@ export default function QualityPromises() {
           <p className="text-lead mx-auto mt-5 max-w-md">We&apos;re only happy once you are.</p>
         </Reveal>
 
-        {/* Desktop: orbital layout */}
-        <Reveal className="relative mx-auto mt-10 hidden h-[560px] max-w-3xl lg:block">
+        {/* Desktop: orbit — cards slowly circle the logo glyph, staying
+            upright; hovering pauses the orbit and expands the card */}
+        <Reveal className="orbit-zone relative mx-auto mt-24 hidden h-[720px] max-w-3xl lg:block">
           {/* Orbit ring */}
-          <div className="absolute left-1/2 top-1/2 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line" aria-hidden />
-          {/* Center glyph — bright colorful mark like the reference logo */}
+          <div className="absolute left-1/2 top-1/2 size-[430px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line" aria-hidden />
+          {/* Center glyph — the gradient "o" of the wordmark */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" aria-hidden>
             <div className="relative flex size-28 items-center justify-center">
               <div className="glow left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 opacity-80" style={{ background: "var(--gradient-aurora)", filter: "blur(34px)" }} />
@@ -173,9 +173,23 @@ export default function QualityPromises() {
             </div>
           </div>
 
-          {promises.map((p) => (
-            <PromiseCard key={p.label} p={p} />
-          ))}
+          <div className="orbit-rotator absolute left-1/2 top-1/2 size-0">
+            {promises.map((p) => (
+              <div
+                key={p.label}
+                className="absolute left-0 top-0"
+                style={{ transform: `rotate(${p.angle}deg) translateY(-270px)` }}
+              >
+                <div style={{ transform: `rotate(${-p.angle}deg)` }}>
+                  <div className="orbit-counter">
+                    <div className="-translate-x-1/2 -translate-y-1/2">
+                      <PromiseCard p={p} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Reveal>
 
         {/* Mobile / tablet: stacked cards */}

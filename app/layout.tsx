@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     url: site.url,
     title: `${site.name} — Premium Video Editing Agency`,
     description: site.description,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Orvix — post-production that moves people" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Orwyx — post-production that moves people" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -83,7 +83,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CursorGlow />
         <Nav />
         <SmoothScroll>
-          <main id="main">{children}</main>
+          {/* main stacks above the footer, which sits pinned behind the last
+              dark block and is revealed through its rounded bottom cap */}
+          <main id="main" className="relative z-10">
+            {children}
+          </main>
           <Footer />
         </SmoothScroll>
       </body>

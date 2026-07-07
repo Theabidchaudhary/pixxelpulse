@@ -47,35 +47,60 @@ export async function submitContact(
   const { name, email, projectType, budget, message } = parsed.data;
   const to = process.env.LEAD_EMAIL ?? GMAIL_USER ?? site.email;
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false, // STARTTLS
-      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
-    });
+  const mail = {
+    from: `"${site.name} Website" <${GMAIL_USER}>`,
+    to,
+    replyTo: email,
+    subject: `New project inquiry — ${projectType} — ${name}`,
+    text: [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Project type: ${projectType}`,
+      `Budget: ${budget || "not specified"}`,
+      "",
+      message,
+    ].join("\n"),
+  };
 
-    await transporter.sendMail({
-      from: `"${site.name} Website" <${GMAIL_USER}>`,
-      to,
-      replyTo: email,
-      subject: `New project inquiry — ${projectType} — ${name}`,
-      text: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        `Project type: ${projectType}`,
-        `Budget: ${budget || "not specified"}`,
-        "",
-        message,
-      ].join("\n"),
-    });
-  } catch (e) {
-    console.error("Lead email failed:", e);
-    return {
-      ok: false,
-      error: `Something went wrong sending your message. Email us directly at ${site.email}.`,
-    };
+  // Implicit-TLS 465 first (most reliable from serverless), STARTTLS 587 as
+  // fallback. Tight timeouts so a blocked port fails over quickly instead of
+  // hitting the function's execution limit.
+  const configs = [
+    { host: "smtp.gmail.com", port: 465, secure: true },
+    { host: "smtp.gmail.com", port: 587, secure: false },
+  ];
+
+  let lastError: unknown;
+  for (const cfg of configs) {
+    try {
+      const transporter = nodemailer.createTransport({
+        ...cfg,
+        auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 12000,
+      });
+      await transporter.sendMail(mail);
+      return { ok: true };
+    } catch (e) {
+      lastError = e;
+      const err = e as { code?: string; responseCode?: number; message?: string };
+      console.error(
+        `Lead email failed via ${cfg.host}:${cfg.port} —`,
+        err.code,
+        err.responseCode,
+        err.message
+      );
+      // Auth failures won't succeed on another port; stop early.
+      if (err.code === "EAUTH" || err.responseCode === 535) break;
+    }
   }
 
-  return { ok: true };
+  const authFailed = (lastError as { code?: string } | undefined)?.code === "EAUTH";
+  return {
+    ok: false,
+    error: authFailed
+      ? `Our mail service is being reconfigured right now. Please email us directly at ${site.email} — we reply within 12 hours.`
+      : `Something went wrong sending your message. Email us directly at ${site.email}.`,
+  };
 }

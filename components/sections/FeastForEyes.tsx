@@ -18,7 +18,7 @@ function TabletScreen({ shot }: { shot?: Project }) {
           ))}
         </span>
         <span className="font-display text-[0.55rem] font-bold lowercase text-[#121214]">
-          <span className="text-aurora">o</span>rvix
+          <span className="text-aurora">o</span>rwyx
         </span>
         <span className="h-[12px] w-[52px] rounded-full" style={{ background: "var(--gradient-aurora)" }} />
       </div>
@@ -61,11 +61,10 @@ function TabletScreen({ shot }: { shot?: Project }) {
 export default function FeastForEyes({ projects }: { projects: Project[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  // Track the whole section so the tablet keeps rising as you scroll past,
-  // eventually covering the heading — like the reference.
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const rotateX = useTransform(scrollYProgress, [0, 0.45], [38, 0], { clamp: true });
-  const y = useTransform(scrollYProgress, [0, 1], [170, -300]);
+  // The tablet holds its position and simply tilts upright as you scroll —
+  // its top edge rises and hides the heading behind it, like the reference.
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "center 42%"] });
+  const rotateX = useTransform(scrollYProgress, [0, 1], [44, 0], { clamp: true });
   const shot = projects[2];
 
   return (
@@ -88,9 +87,13 @@ export default function FeastForEyes({ projects }: { projects: Project[] }) {
           </h2>
         </Reveal>
 
-        <div className="relative z-10 mx-auto mt-8 max-w-4xl lg:mt-10" style={{ perspective: "1800px" }}>
+        <div className="relative z-10 mx-auto -mt-8 max-w-4xl lg:-mt-14" style={{ perspective: "1800px" }}>
           <motion.div
-            style={reduce ? undefined : { rotateX, y, transformStyle: "preserve-3d" }}
+            style={
+              reduce
+                ? undefined
+                : { rotateX, transformStyle: "preserve-3d", transformOrigin: "50% 100%" }
+            }
             className="relative mx-auto aspect-[16/10.2] w-full rounded-[22px] bg-[#17171c] p-[1.1%] shadow-[0_60px_120px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:rounded-[30px]"
           >
             <TabletScreen shot={shot} />

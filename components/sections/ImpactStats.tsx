@@ -61,7 +61,7 @@ export default function ImpactStats({ projects }: { projects: Project[] }) {
 
               <Link
                 href="/work"
-                className="group mt-8 inline-flex items-center gap-2 rounded-full bg-[#121214] px-6 py-3 text-[0.82rem] font-bold text-white transition-shadow hover:shadow-[0_8px_30px_rgba(18,18,20,0.35)]"
+                className="btn-sheen group mt-8 inline-flex items-center gap-2 rounded-full bg-[#121214] px-6 py-3 text-[0.82rem] font-bold text-white [--sheen-glow:rgba(18,18,20,0.3)]"
               >
                 See the work
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">

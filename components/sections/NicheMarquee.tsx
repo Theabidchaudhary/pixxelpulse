@@ -38,13 +38,11 @@ function Row({ items, reverse }: { items: string[]; reverse?: boolean }) {
 }
 
 /** Light "trusted by" band between the dark hero block and the process block.
-    The dark blocks above/below overlap it by var(--cap) with rounded corners. */
+    Rendered centered inside a full-viewport pinned cream band — the dark
+    blocks slide over it, revealing/hiding it through their rounded caps. */
 export default function NicheMarquee() {
   return (
-    <section
-      className="band-light relative bg-cream pb-[calc(var(--cap)+2.5rem)] pt-[calc(var(--cap)+2rem)]"
-      aria-label="Industries we edit for"
-    >
+    <section className="relative py-6" aria-label="Industries we edit for">
       <p className="text-label mb-10 text-center !text-[#3c3c44]">
         Together we&apos;ve built great things
       </p>

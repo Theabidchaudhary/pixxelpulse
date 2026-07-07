@@ -61,7 +61,7 @@ export default function Nav() {
           {/* Centered wordmark (left-aligned on mobile) */}
           <Link
             href="/"
-            aria-label="Orvix — home"
+            aria-label="Orwyx — home"
             className="relative z-[130] lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2"
           >
             <Wordmark tone="dark" />
@@ -71,7 +71,7 @@ export default function Nav() {
           <div className="hidden lg:block">
             <Link
               href="/contact"
-              className="group inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-[0.82rem] font-bold text-white shadow-[0_4px_20px_rgba(240,85,159,0.4)] transition-all duration-500 hover:shadow-[0_4px_32px_rgba(240,85,159,0.6)]"
+              className="btn-sheen group inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-[0.82rem] font-bold text-white shadow-[0_4px_20px_rgba(240,85,159,0.4)]"
               style={{ background: "var(--gradient-aurora)" }}
             >
               Contact us
