@@ -19,7 +19,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@fontsource/instrument-serif": "^5.2.8",
     "@fontsource/poppins": "^5.2.7",
     "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "^26.1.0",

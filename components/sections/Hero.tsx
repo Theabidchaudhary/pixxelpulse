@@ -175,7 +175,10 @@ export default function Hero() {
             <motion.span {...up(0.15)} className="serif text-gradient block pb-1 pr-2">
               Dream video?
             </motion.span>
-            <motion.span {...up(0.3)} className="block">
+            <motion.span
+              {...up(0.3)}
+              className="block whitespace-nowrap text-[clamp(1.65rem,0.9rem+4vw,6.3rem)]"
+            >
               Consider it <span className="squiggle">done.</span>
             </motion.span>
           </h1>

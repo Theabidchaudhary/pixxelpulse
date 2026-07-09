@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { PulseGlyph } from "@/components/ui/Logo";
 import Reveal from "@/components/ui/Reveal";
+
+/** Orbit radius (px) the promise cards travel — the guide ring and the
+    center glyph must both share this so the "o" is the true anchor point. */
+const ORBIT_RADIUS = 270;
 
 type Promise_ = {
   lead: string;
@@ -163,13 +166,22 @@ export default function QualityPromises() {
         {/* Desktop: orbit — cards slowly circle the logo glyph, staying
             upright; hovering pauses the orbit and expands the card */}
         <Reveal className="orbit-zone relative mx-auto mt-24 hidden h-[720px] max-w-3xl lg:block">
-          {/* Orbit ring */}
-          <div className="absolute left-1/2 top-1/2 size-[430px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line" aria-hidden />
-          {/* Center glyph — the gradient "o" of the wordmark */}
+          {/* Orbit ring — radius matches the cards' own translateY below, so
+              the ring, the "o", and the orbit path share one true center */}
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-line"
+            style={{ width: ORBIT_RADIUS * 2, height: ORBIT_RADIUS * 2 }}
+            aria-hidden
+          />
+          {/* Center glyph — the exact gradient "o" from the wordmark, anchor point of the orbit */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" aria-hidden>
             <div className="relative flex size-28 items-center justify-center">
               <div className="glow left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 opacity-80" style={{ background: "var(--gradient-aurora)", filter: "blur(34px)" }} />
-              <PulseGlyph className="relative size-16 drop-shadow-[0_0_24px_rgba(240,85,159,0.6)]" />
+              <span
+                className="text-aurora relative font-display text-[6.5rem] font-bold leading-none lowercase drop-shadow-[0_0_24px_rgba(240,85,159,0.6)]"
+              >
+                o
+              </span>
             </div>
           </div>
 
@@ -178,7 +190,7 @@ export default function QualityPromises() {
               <div
                 key={p.label}
                 className="absolute left-0 top-0"
-                style={{ transform: `rotate(${p.angle}deg) translateY(-270px)` }}
+                style={{ transform: `rotate(${p.angle}deg) translateY(-${ORBIT_RADIUS}px)` }}
               >
                 <div style={{ transform: `rotate(${-p.angle}deg)` }}>
                   <div className="orbit-counter">
