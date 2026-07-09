@@ -19,9 +19,9 @@ const poppins = localFont({
   variable: "--font-poppins",
   display: "swap",
 });
-const instrument = localFont({
-  src: "../public/fonts/instrument-serif-latin-400-italic.woff2",
-  variable: "--font-instrument",
+const tiemposHeadline = localFont({
+  src: "../public/fonts/tiempos-headline-400-italic.woff2",
+  variable: "--font-tiempos",
   weight: "400",
   style: "italic",
   display: "swap",
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${instrument.variable} ${geistMono.variable}`}
+      className={`${poppins.variable} ${tiemposHeadline.variable} ${geistMono.variable}`}
     >
       <body className="noise">
         <JsonLd data={organizationJsonLd()} />

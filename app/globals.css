@@ -31,7 +31,7 @@
   /* — Type — */
   --font-display: var(--font-poppins), "Poppins", sans-serif;
   --font-sans: var(--font-poppins), "Poppins", system-ui, sans-serif;
-  --font-serif: var(--font-instrument), "Instrument Serif", serif;
+  --font-serif: var(--font-tiempos), "Tiempos Headline", serif;
   --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
 
   /* — Motion — */
@@ -177,7 +177,7 @@ body {
   color: var(--color-fg-faint);
 }
 
-/* Instrument Serif italic accent — the "cursive" words in headings.
+/* Tiempos Headline italic accent — the "cursive" words in headings.
    Weight 600 triggers synthetic emboldening (single 400 face) so the
    italic reads with the same optical thickness as the reference. */
 .serif {
