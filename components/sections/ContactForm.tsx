@@ -145,11 +145,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="btn-sheen group inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-white/15 px-8 py-4 text-[0.95rem] font-bold text-white disabled:opacity-60"
-        style={{
-          background: "linear-gradient(96deg, #2b3f63 0%, #3a3158 52%, #5e3050 100%)",
-          boxShadow: "0 0 30px rgba(94,48,80,0.35)",
-        }}
+        className="btn-sheen btn-cta group inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-8 py-4 text-[0.95rem] font-bold text-white disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send message"}
         {!pending && (
