@@ -187,15 +187,19 @@ export default function QualityPromises() {
 
           <div className="orbit-rotator absolute left-1/2 top-1/2 size-0">
             {promises.map((p) => (
-              <div
-                key={p.label}
-                className="absolute left-0 top-0"
-                style={{ transform: `rotate(${p.angle}deg) translateY(-${ORBIT_RADIUS}px)` }}
-              >
-                <div style={{ transform: `rotate(${-p.angle}deg)` }}>
-                  <div className="orbit-counter">
-                    <div className="-translate-x-1/2 -translate-y-1/2">
-                      <PromiseCard p={p} />
+              // Two nested zero-size wrappers: the first rotates around the
+              // shared anchor (0,0 — same point as the "o"), the second then
+              // pushes straight out along that rotated axis. Splitting rotate
+              // and translate this way keeps the pivot pinned to the anchor;
+              // combining them on one non-zero-size box (the old bug) let the
+              // card's own center become the rotation origin instead.
+              <div key={p.label} className="absolute left-0 top-0 size-0" style={{ transform: `rotate(${p.angle}deg)` }}>
+                <div className="absolute left-0 top-0 size-0" style={{ transform: `translateY(-${ORBIT_RADIUS}px)` }}>
+                  <div style={{ transform: `rotate(${-p.angle}deg)` }}>
+                    <div className="orbit-counter">
+                      <div className="-translate-x-1/2 -translate-y-1/2">
+                        <PromiseCard p={p} />
+                      </div>
                     </div>
                   </div>
                 </div>

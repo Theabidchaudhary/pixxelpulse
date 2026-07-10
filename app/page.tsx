@@ -30,10 +30,10 @@ export default function HomePage() {
         {/* Colorful wash sitting just below the hero fold, fading to black
             before the "Built with heart" heading */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-[66svh] h-[430px] opacity-[0.55] blur-[90px]"
+          className="pointer-events-none absolute inset-x-0 top-[60svh] h-[420px] opacity-[0.45] blur-[90px]"
           style={{
             background:
-              "radial-gradient(ellipse 38% 85% at 10% 50%, #3d63d8 0%, transparent 68%), radial-gradient(ellipse 40% 85% at 40% 55%, #8b3d9e 0%, transparent 68%), radial-gradient(ellipse 40% 85% at 66% 50%, #d84a86 0%, transparent 68%), radial-gradient(ellipse 38% 85% at 92% 55%, #d8703a 0%, transparent 68%)",
+              "radial-gradient(ellipse 34% 80% at 68% 45%, #6a4fd8 0%, transparent 70%), radial-gradient(ellipse 30% 70% at 84% 55%, #b8449a 0%, transparent 70%)",
           }}
           aria-hidden
         />

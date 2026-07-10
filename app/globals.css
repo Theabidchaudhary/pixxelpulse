@@ -274,13 +274,13 @@ body {
 /* Bright dot matrix used across Amphora's dark sections — bigger, wider
    spaced and clearly visible like the reference */
 .dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.44) 1.6px, transparent 2.2px);
-  background-size: 34px 34px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.3) 1.3px, transparent 2px);
+  background-size: 38px 38px;
 }
 .band-light .dot-grid,
 .dot-grid-dark {
-  background-image: radial-gradient(rgba(10, 10, 12, 0.28) 1.6px, transparent 2.2px);
-  background-size: 34px 34px;
+  background-image: radial-gradient(rgba(10, 10, 12, 0.22) 1.3px, transparent 2px);
+  background-size: 38px 38px;
 }
 
 /* ————— Rounded band caps + block stacking —————

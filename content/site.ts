@@ -11,7 +11,7 @@ export const site = {
   phone: "+44 741 308 9165",
   whatsapp: "https://wa.me/447413089165",
   foundingYear: 2018,
-  availability: "Always booking new projects",
+  availability: "No downtime — booking year-round",
   /** Set to your Cal.com / Calendly URL to enable the booking embed on /contact */
   bookingUrl: "",
   socials: {

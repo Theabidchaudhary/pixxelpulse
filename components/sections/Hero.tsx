@@ -163,8 +163,8 @@ export default function Hero() {
       {/* Dot matrix — clearly visible like the reference */}
       <div
         aria-hidden
-        className="dot-grid absolute inset-0 opacity-80"
-        style={{ maskImage: "radial-gradient(ellipse 110% 100% at 50% 32%, black 30%, transparent 85%)" }}
+        className="dot-grid absolute inset-0 opacity-40"
+        style={{ maskImage: "radial-gradient(ellipse 95% 75% at 50% 20%, black 25%, transparent 78%)" }}
       />
       {/* The colorful fold wash lives at block level (page.tsx) so it sits
           just below the hero and fades to black before the next heading */}
@@ -172,7 +172,11 @@ export default function Hero() {
       <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-16 px-6 pb-8 pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-12">
         <div>
           <h1 className="text-display">
-            <motion.span {...up(0.15)} className="serif text-gradient block pb-1 pr-2">
+            <motion.span
+              {...up(0.15)}
+              className="serif text-gradient block pb-1 pr-2"
+              style={{ whiteSpace: "nowrap", fontSize: "clamp(1.65rem,0.9rem + 4vw,6.3rem)" }}
+            >
               Dream video?
             </motion.span>
             <motion.span
