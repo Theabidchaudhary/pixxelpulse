@@ -71,8 +71,7 @@ export default function Nav() {
           <div className="hidden lg:block">
             <Link
               href="/contact"
-              className="btn-sheen group inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-[0.82rem] font-bold text-white shadow-[0_4px_20px_rgba(240,85,159,0.4)]"
-              style={{ background: "var(--gradient-aurora)" }}
+              className="btn-sheen btn-cta group inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-[0.82rem] font-bold text-white"
             >
               Contact us
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   motion,
   useMotionValue,
   useReducedMotion,
   useSpring,
-  useTransform,
 } from "framer-motion";
 import Link from "next/link";
 import { site } from "@/content/site";
@@ -31,36 +30,67 @@ function Stars() {
   );
 }
 
-/** Dark analytics-dashboard browser mockup that turns to face the cursor. */
+/** Dark analytics-dashboard browser mockup that turns to face the cursor.
+ *  Tilt is measured from the mockup's own center: the pointer's offset,
+ *  normalized to half the card size, drives rotateX (−10°·y) and rotateY
+ *  (12°·x) through a stiff-ish spring. When the cursor leaves the hero
+ *  (below its fold) the card relaxes to its resting pose (4°, −8°). */
+const TILT_REST_X = 4;
+const TILT_REST_Y = -8;
+const TILT_SPRING = { stiffness: 120, damping: 20, mass: 0.8 };
+
 function BrowserMockup() {
   const bars = [38, 62, 30, 74, 56, 88, 44, 70, 52, 92];
   const reduce = useReducedMotion();
-  const mx = useMotionValue(0.5);
-  const my = useMotionValue(0.4);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const tx = useMotionValue(TILT_REST_X);
+  const ty = useMotionValue(TILT_REST_Y);
 
   useEffect(() => {
     if (reduce) return;
+    let raf = 0;
     const onMove = (e: MouseEvent) => {
-      mx.set(e.clientX / window.innerWidth);
-      my.set(e.clientY / window.innerHeight);
+      const card = cardRef.current;
+      if (!card) return;
+      const section = card.closest("section");
+      if (section) {
+        const bottom = section.getBoundingClientRect().bottom;
+        if (e.clientY > bottom) {
+          tx.set(TILT_REST_X);
+          ty.set(TILT_REST_Y);
+          return;
+        }
+      }
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = card.getBoundingClientRect();
+        const nx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+        const ny = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+        tx.set(-(10 * ny));
+        ty.set(12 * nx);
+      });
     };
     window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [mx, my, reduce]);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, [tx, ty, reduce]);
 
-  const rotateY = useSpring(useTransform(mx, [0, 1], [-30, 8]), { stiffness: 60, damping: 16 });
-  const rotateX = useSpring(useTransform(my, [0, 1], [18, -18]), { stiffness: 60, damping: 16 });
+  const rotateX = useSpring(tx, TILT_SPRING);
+  const rotateY = useSpring(ty, TILT_SPRING);
 
   return (
-    <div style={{ perspective: "1600px" }}>
+    <div style={{ perspective: "1200px" }}>
       <motion.div
+        ref={cardRef}
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.4, delay: 0.5, ease }}
         style={{
           transformStyle: "preserve-3d",
-          rotateY: reduce ? -9 : rotateY,
-          rotateX: reduce ? 5 : rotateX,
+          rotateY: reduce ? TILT_REST_Y : rotateY,
+          rotateX: reduce ? TILT_REST_X : rotateX,
         }}
         className="relative w-full max-w-xl rounded-2xl border border-white/10 shadow-[0_40px_90px_rgba(0,0,0,0.55)]"
       >
@@ -153,41 +183,67 @@ function BrowserMockup() {
 export default function Hero() {
   const reduce = useReducedMotion();
   const up = (delay: number) => ({
-    initial: reduce ? { opacity: 0 } : { opacity: 0, y: 36 },
+    initial: reduce ? { opacity: 0 } : { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 1, delay, ease },
+    transition: { duration: 0.8, delay, ease: "easeOut" as const },
   });
 
   return (
-    <section className="relative flex min-h-[80svh] items-center pt-[var(--nav-h)] lg:min-h-[84svh]">
-      {/* Dot matrix — clearly visible like the reference */}
+    <section className="relative flex min-h-[96svh] items-center overflow-hidden pb-24 pt-[var(--nav-h)] lg:min-h-[100svh]">
+      {/* Dot matrix — even field across the whole hero */}
+      <div aria-hidden className="dot-grid pointer-events-none absolute inset-0 z-0 opacity-40" />
+
+      {/* ——— Fold: two blurred color strips hugging the bottom edge, grain
+          over them, then a near-black fade so the section settles dark
+          before the next heading ——— */}
       <div
         aria-hidden
-        className="dot-grid absolute inset-0 opacity-40"
-        style={{ maskImage: "radial-gradient(ellipse 95% 75% at 50% 20%, black 25%, transparent 78%)" }}
+        className="pointer-events-none absolute -bottom-4 -left-8 -right-8 z-0 h-[160px] blur-2xl"
+        style={{
+          background: "var(--gradient-fold)",
+          opacity: 0.6,
+          maskImage: "linear-gradient(to top, black 25%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to top, black 25%, transparent 100%)",
+        }}
       />
-      {/* The colorful fold wash lives at block level (page.tsx) so it sits
-          just below the hero and fades to black before the next heading */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-12 -right-12 bottom-0 z-20 h-[320px] blur-3xl"
+        style={{
+          background: "var(--gradient-fold)",
+          opacity: 0.75,
+          maskImage: "linear-gradient(to top, black 25%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to top, black 25%, transparent 100%)",
+        }}
+      />
+      <div aria-hidden className="noise-fold -left-12 -right-12 bottom-0 z-[21] h-[320px]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[200px]"
+        style={{
+          background: "linear-gradient(to top, #020002, rgba(2,0,2,0.6), transparent)",
+        }}
+      />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1440px] items-center gap-16 px-6 pb-8 pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-12">
         <div>
           <h1 className="text-display">
             <motion.span
-              {...up(0.15)}
+              {...up(0.1)}
               className="serif text-gradient block pb-1 pr-2"
               style={{ whiteSpace: "nowrap", fontSize: "clamp(1.65rem,0.9rem + 4vw,6.3rem)" }}
             >
               Dream video?
             </motion.span>
             <motion.span
-              {...up(0.3)}
+              {...up(0.2)}
               className="block whitespace-nowrap text-[clamp(1.65rem,0.9rem+4vw,6.3rem)]"
             >
               Consider it <span className="squiggle">done.</span>
             </motion.span>
           </h1>
 
-          <motion.div {...up(0.45)} className="mt-7 flex items-center gap-3.5">
+          <motion.div {...up(0.3)} className="mt-7 flex items-center gap-3.5">
             <span className="flex -space-x-2.5" aria-hidden>
               {AVATARS.map((a) => (
                 <span
@@ -213,20 +269,16 @@ export default function Hero() {
             </span>
           </motion.div>
 
-          <motion.p {...up(0.58)} className="mt-7 max-w-md text-[1.05rem] leading-[1.7] text-fg-soft">
+          <motion.p {...up(0.4)} className="mt-7 max-w-md text-[1.05rem] leading-[1.7] text-fg-soft">
             Professional <strong className="font-semibold text-fg">short-form, YouTube &amp; brand videos</strong>{" "}
             — 1,400+ delivered across 40+ niches. First cut in just 48–72 hours{" "}
             <strong className="font-semibold text-fg">— clear scope, no strings attached.</strong>
           </motion.p>
 
-          <motion.div {...up(0.72)} className="mt-9">
+          <motion.div {...up(0.5)} className="mt-9">
             <Link
               href="/contact"
-              className="btn-sheen group relative inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[0.92rem] font-bold text-white"
-              style={{
-                background: "var(--gradient-aurora)",
-                boxShadow: "0 6px 36px rgba(240,85,159,0.45)",
-              }}
+              className="btn-sheen btn-cta group relative inline-flex items-center gap-2.5 rounded-xl px-8 py-4 text-[0.92rem] font-bold text-white"
             >
               Contact us
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
@@ -235,7 +287,7 @@ export default function Hero() {
             </Link>
           </motion.div>
 
-          <motion.p {...up(0.85)} className="mt-6 inline-flex items-center gap-2 text-xs text-fg-faint">
+          <motion.p {...up(0.6)} className="mt-6 inline-flex items-center gap-2 text-xs text-fg-faint">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-pulse-green opacity-60" />
               <span className="relative inline-flex size-2 rounded-full bg-pulse-green" />

@@ -21,12 +21,20 @@ export default function HeartIntro({ projects }: { projects: Project[] }) {
   const photo = projects[0];
   return (
     <section className="relative pb-[calc(var(--cap)+7rem)] pt-28 lg:pt-36">
-      {/* Green wash filling the rounded bottom cap, like the reference */}
+      {/* Green wash in the rounded bottom cap: a deep emerald→teal rise from
+          the bottom edge plus a bright blurred pill hugging it */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-140px] h-[640px] opacity-[0.75] blur-[80px]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[420px] blur-lg md:blur-3xl"
         style={{
           background:
-            "radial-gradient(ellipse 62% 90% at 55% 100%, #157a58 0%, transparent 70%), radial-gradient(ellipse 40% 70% at 8% 100%, #135a8a 0%, transparent 70%), radial-gradient(ellipse 34% 60% at 96% 100%, #14805e 0%, transparent 70%)",
+            "linear-gradient(to top, rgba(6,78,59,0.4), rgba(19,78,74,0.2) 50%, transparent)",
+        }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute bottom-[-100px] left-1/2 h-[350px] w-4/5 -translate-x-1/2 rounded-full opacity-55 blur-2xl md:blur-[100px]"
+        style={{
+          background: "linear-gradient(90deg, #84cc16, #10b981, #14b8a6)",
         }}
         aria-hidden
       />

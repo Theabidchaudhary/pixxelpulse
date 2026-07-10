@@ -27,16 +27,6 @@ export default function HomePage() {
       {/* ——— Block 1 · Hero + Heart — one continuous dark gradient, rounds
              into the marquee band below ——— */}
       <div className="block-dark cap-b z-30">
-        {/* Colorful wash sitting just below the hero fold, fading to black
-            before the "Built with heart" heading */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-[60svh] h-[420px] opacity-[0.45] blur-[90px]"
-          style={{
-            background:
-              "radial-gradient(ellipse 34% 80% at 68% 45%, #6a4fd8 0%, transparent 70%), radial-gradient(ellipse 30% 70% at 84% 55%, #b8449a 0%, transparent 70%)",
-          }}
-          aria-hidden
-        />
         <Hero />
         <HeartIntro projects={featuredProjects} />
       </div>
@@ -45,11 +35,13 @@ export default function HomePage() {
              between block 1 and block 2 slides over it ——— */}
       <div className="relative z-20 mt-[-100svh]">
         <div className="band-light sticky top-0 z-0 flex h-[100svh] flex-col justify-center bg-cream">
-          <NicheMarquee />
+          <div className="scroll-drift">
+            <NicheMarquee />
+          </div>
         </div>
 
         {/* ——— Block 2 · Process → Feast — deep blue stage with warm edges ——— */}
-        <div className="block-dark cap-t cap-b z-10 mt-[38svh]">
+        <div className="block-dark cap-t cap-b z-10 mt-[38svh] !bg-ink-blue">
           {/* Rich blue top like the reference process stage */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-[1400px]"
@@ -95,12 +87,19 @@ export default function HomePage() {
             style={{ maskImage: "linear-gradient(180deg, black 60%, transparent 100%)" }}
             aria-hidden
           />
-          {/* Blue→purple glow rising into the rounded bottom, like the reference */}
+          {/* Purple/blue rise + bright blue→pink→orange pill in the rounded bottom */}
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-[-160px] h-[760px] opacity-[0.85] blur-[65px]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[300px] rounded-full blur-lg md:blur-3xl"
             style={{
               background:
-                "radial-gradient(ellipse 55% 85% at 18% 100%, #2a5fd0 0%, transparent 68%), radial-gradient(ellipse 55% 85% at 78% 100%, #8347e0 0%, transparent 68%), radial-gradient(ellipse 40% 60% at 50% 100%, #4c2f9e 0%, transparent 70%)",
+                "linear-gradient(to top, rgba(88,28,135,0.4), rgba(30,58,138,0.2) 50%, transparent)",
+            }}
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute bottom-[-100px] left-1/2 h-[300px] w-4/5 -translate-x-1/2 rounded-full opacity-60 blur-2xl md:blur-[100px]"
+            style={{
+              background: "linear-gradient(90deg, #2563eb, #db2777, #f97316)",
             }}
             aria-hidden
           />
@@ -114,7 +113,9 @@ export default function HomePage() {
              window between the comparison block and the contact block ——— */}
       <div className="relative z-[5] mt-[-100svh]">
         <div className="band-light sticky top-0 z-0 flex h-[100svh] flex-col justify-center bg-cream">
-          <Testimonials />
+          <div className="scroll-drift">
+            <Testimonials />
+          </div>
         </div>
 
         {/* ——— Block 4 · Contact + FAQ — warm maroon stage, rounds into footer ——— */}

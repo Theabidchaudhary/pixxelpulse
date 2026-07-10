@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /**
- * Standard scroll-in reveal: rise 32px + fade, expo-out.
+ * Standard scroll-in reveal: rise 20px + fade, ease-out.
  * `delay` in ms for stagger choreography.
  */
 export default function Reveal({
@@ -22,10 +22,10 @@ export default function Reveal({
   const Tag = motion[as];
   return (
     <Tag
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 32 }}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.9, delay: delay / 1000, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, delay: delay / 1000, ease: "easeOut" }}
       className={className}
     >
       {children}

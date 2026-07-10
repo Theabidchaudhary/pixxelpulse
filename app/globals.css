@@ -2,10 +2,14 @@
 
 @theme {
   /* — Backgrounds — */
-  --color-ink-950: #0a0a0c;
-  --color-ink-900: #0e0e12;
+  --color-ink-950: #050505;
+  --color-ink-900: #0a0a0c;
   --color-ink-800: #131318;
   --color-ink-700: #1b1b22;
+  /* Near-black with a hint of warmth used by fades that settle over washes */
+  --color-ink-void: #020002;
+  /* Deep blue-black stage behind the process block */
+  --color-ink-blue: #020012;
   --color-cream: #f6f5f1;
   --color-cream-2: #edebe6;
 
@@ -63,16 +67,17 @@
 }
 
 :root {
-  /* Warm pink↔orange pair used on most serif accent words */
-  --gradient-pulse: linear-gradient(96deg, #ff8a4f 0%, #f0559f 100%);
-  --gradient-heart: linear-gradient(96deg, #f0559f 0%, #ff8a4f 100%);
-  /* Violet → pink → lilac ("proven system", "questions") */
-  --gradient-candy: linear-gradient(96deg, #8ea2ff 0%, #e56ac2 55%, #c9a2ff 100%);
+  /* Warm sunset run used on the hero serif accent */
+  --gradient-pulse: linear-gradient(90deg, #fb923c 0%, #f87171 50%, #f472b6 100%);
+  /* Purple → pink → orange ("heart") */
+  --gradient-heart: linear-gradient(90deg, #c084fc 0%, #f472b6 50%, #fb923c 100%);
+  /* Fuchsia → purple → violet ("proven system", "questions") */
+  --gradient-candy: linear-gradient(90deg, #e879f9 0%, #c084fc 50%, #a78bfa 100%);
   /* Light blue ("quality promises") */
   --gradient-sky: linear-gradient(96deg, #3fb2f0 0%, #7ddcff 100%);
   /* Green ("grow", "impact") */
-  --gradient-mint: linear-gradient(96deg, #2fbf8f 0%, #7be3c0 100%);
-  /* Full-spectrum brand rainbow (wordmark, CTAs) */
+  --gradient-mint: linear-gradient(90deg, #34d399 0%, #2dd4bf 50%, #22d3ee 100%);
+  /* Full-spectrum brand rainbow (wordmark) */
   --gradient-aurora: linear-gradient(
     100deg,
     #4c8dff 0%,
@@ -81,14 +86,30 @@
     #ff8a4f 80%,
     #ffb46b 100%
   );
+  /* Blue → purple → pink → orange strip: CTA fill + the blurred fold washes */
+  --gradient-cta: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.45) 0%,
+    rgba(168, 85, 247, 0.5) 38%,
+    rgba(236, 72, 153, 0.5) 68%,
+    rgba(249, 115, 22, 0.48) 100%
+  );
+  --gradient-cta-hover: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.75) 0%,
+    rgba(168, 85, 247, 0.8) 38%,
+    rgba(236, 72, 153, 0.8) 68%,
+    rgba(249, 115, 22, 0.78) 100%
+  );
+  --gradient-fold: linear-gradient(90deg, #bae6fd, #3b82f6, #a855f7, #ec4899, #ef4444, #f97316);
   --nav-h: 88px;
   /* Corner radius of the rounded band caps + overlap distance between blocks */
-  --cap: 3rem;
+  --cap: 40px;
   color-scheme: dark;
 }
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   :root {
-    --cap: 4.5rem;
+    --cap: 80px;
   }
 }
 
@@ -274,13 +295,13 @@ body {
 /* Bright dot matrix used across Amphora's dark sections — bigger, wider
    spaced and clearly visible like the reference */
 .dot-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.3) 1.3px, transparent 2px);
-  background-size: 38px 38px;
+  background-image: radial-gradient(#a1a1aa 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 .band-light .dot-grid,
 .dot-grid-dark {
-  background-image: radial-gradient(rgba(10, 10, 12, 0.22) 1.3px, transparent 2px);
-  background-size: 38px 38px;
+  background-image: radial-gradient(rgba(10, 10, 12, 0.55) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* ————— Rounded band caps + block stacking —————
@@ -290,6 +311,8 @@ body {
 .cap-b {
   border-bottom-left-radius: var(--cap);
   border-bottom-right-radius: var(--cap);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.5);
 }
 .cap-t {
   border-top-left-radius: var(--cap);
@@ -317,11 +340,22 @@ body {
   border-radius: inherit;
   pointer-events: none;
   opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  background-size: 220px 220px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
 }
 .band-light::after {
   opacity: 0.06;
+}
+/* Extra grain strip laid over the bottom fold washes (stronger than the base
+   grain, faded upward) — sits above the blurred color strips */
+.noise-fold {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  mask-image: linear-gradient(to top, black 25%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 25%, transparent 100%);
 }
 /* Grain hosts need a positioning context, but never override an element's
    own position (sticky bands!) — only fill in the default. */
@@ -332,45 +366,53 @@ body {
   position: relative;
 }
 
-/* ————— Button finish: hover glow ring + reflective light sweep ————— */
+/* ————— Button finish —————
+   .btn-sheen: skewed light sweep crossing the button on hover (any button).
+   .btn-cta (add to .btn-sheen): primary treatment — translucent
+   blue→purple→pink→orange strip that saturates on hover over a near-black
+   base, plus a permanent 1px inner white ring. */
 .btn-sheen {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  transition: box-shadow 0.5s var(--ease-pulse), border-color 0.5s var(--ease-pulse),
-    transform 0.5s var(--ease-pulse);
 }
 .btn-sheen::after {
   content: "";
   position: absolute;
-  top: -60%;
-  bottom: -60%;
-  left: -75%;
-  width: 42%;
-  transform: skewX(-24deg);
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) 25%,
-    rgba(255, 255, 255, 0.5) 50%,
-    rgba(255, 255, 255, 0.05) 75%,
-    transparent 100%
-  );
-  opacity: 0;
+  top: 0;
+  left: -50%;
+  height: 100%;
+  width: 50%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.18) 50%, transparent 100%);
+  transition: transform 0.7s ease-out;
   pointer-events: none;
   z-index: 1;
 }
-.btn-sheen:hover {
-  /* !important so it also wins over inline base box-shadows */
-  box-shadow: 0 0 34px var(--sheen-glow, rgba(240, 85, 159, 0.4)),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.35) !important;
-}
 .btn-sheen:hover::after {
-  animation: sheen-sweep 0.9s var(--ease-pulse) forwards;
+  transform: skewX(-20deg) translateX(300%);
 }
-@keyframes sheen-sweep {
-  from { left: -75%; opacity: 1; }
-  to { left: 140%; opacity: 1; }
+.btn-sheen > * {
+  position: relative;
+  z-index: 2;
+}
+.btn-cta {
+  background: var(--color-ink-950);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+.btn-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--gradient-cta-hover);
+  opacity: 0.75;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.btn-cta:hover::before {
+  opacity: 1;
 }
 
 /* ————— Luxe card: corner gradient glow inside, brighter + outlined on hover ————— */
@@ -478,6 +520,24 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 2.1 120 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8c8-6 16-6 24 0s16 6 24 0 16-6 24 0 16 6 24 0 14-5 20-2' fill='none' stroke='%23ff8a4f' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E");
   background-size: 100% 100%;
   background-repeat: no-repeat;
+}
+
+/* ————— Scroll-linked drift —————
+   Content on the pinned light bands slides slowly upward as the band is
+   revealed between the dark blocks (CSS scroll-driven animation; desktop
+   only, and skipped under prefers-reduced-motion). */
+@keyframes scroll-drift {
+  from { transform: translateY(-18vh); }
+  to { transform: translateY(18vh); }
+}
+@supports (animation-timeline: view()) {
+  @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .scroll-drift {
+      animation: scroll-drift linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+  }
 }
 
 /* Timeline divider motif */
