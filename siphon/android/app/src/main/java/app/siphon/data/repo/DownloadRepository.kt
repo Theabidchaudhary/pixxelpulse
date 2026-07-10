@@ -109,10 +109,13 @@ class DownloadRepository(
         val outcome = mediaRepository.resolve(entity.sourceUrl)
         val media = (outcome as? ResolveOutcome.Media)?.media
             ?: throw IllegalStateException("Source is no longer a single media item")
-        val match = (media.video + media.audio).firstOrNull {
+        val match = (media.video + media.audio + media.image).firstOrNull {
             it.qualityLabel == entity.qualityLabel && it.container == entity.container
-        } ?: (if (entity.kind == "video") media.video.firstOrNull() else media.audio.firstOrNull())
-            ?: throw IllegalStateException("No matching format available anymore")
+        } ?: when (entity.kind) {
+            "video" -> media.video.firstOrNull()
+            "image" -> media.image.firstOrNull()
+            else -> media.audio.firstOrNull()
+        } ?: throw IllegalStateException("No matching format available anymore")
 
         val updated = entity.copy(
             directUrl = match.directUrl,

@@ -49,6 +49,13 @@ start, deploy via their dashboard from your GitHub repo.
 API service's environment variables and set `ALLOWED_ORIGINS` to your exact
 web URL from step B instead of `*`, then save (triggers a redeploy).
 
+**D. Put your own domain on it** (optional): on the Static Site → **Settings**
+→ **Custom Domains** → **Add Custom Domain** → enter e.g. `siphon.yourdomain.com`
+→ Render shows you a CNAME record to add at your domain registrar → once DNS
+propagates (usually minutes, sometimes a few hours) Render issues free TLS
+automatically and your domain serves the web app. Repeat CORS step C with the
+new domain once it's live.
+
 Free-tier caveats: the API service spins down after 15 minutes idle (first
 request after that takes ~30s to wake up) and has limited RAM, so very large
 1080p+ muxes may be slow or fail — fine for testing, not for real traffic.

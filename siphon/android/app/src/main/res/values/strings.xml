@@ -24,6 +24,7 @@
     <!-- Formats sheet -->
     <string name="sheet_video">Video · MP4</string>
     <string name="sheet_audio">Audio</string>
+    <string name="sheet_image">Image</string>
     <string name="sheet_loading">Reading link…</string>
     <string name="sheet_error_generic">Couldn\'t read this link. It may be private or removed.</string>
     <string name="download_started">Download started</string>

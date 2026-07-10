@@ -141,4 +141,41 @@ describe('buildFormatOptions', () => {
     const { video } = buildFormatOptions(info);
     expect(video.map((v) => v.height)).toEqual([1080, 720, 360]);
   });
+
+  it('exposes the largest image-only format for photo posts', () => {
+    const info: YtDlpInfo = {
+      ...baseInfo,
+      formats: [
+        {
+          format_id: 'small',
+          ext: 'jpg',
+          vcodec: 'none',
+          acodec: 'none',
+          width: 480,
+          height: 480,
+          filesize: 40_000,
+          url: 'https://cdn.example.com/small.jpg',
+          protocol: 'https',
+        },
+        {
+          format_id: 'large',
+          ext: 'jpg',
+          vcodec: 'none',
+          acodec: 'none',
+          width: 1440,
+          height: 1440,
+          filesize: 300_000,
+          url: 'https://cdn.example.com/large.jpg',
+          protocol: 'https',
+        },
+      ],
+    };
+    const { video, audio, image } = buildFormatOptions(info);
+    expect(video).toHaveLength(0);
+    expect(audio).toHaveLength(0);
+    expect(image).toHaveLength(1);
+    expect(image[0]?.container).toBe('jpg');
+    expect(image[0]?.directUrl).toBe('https://cdn.example.com/large.jpg');
+    expect(image[0]?.qualityLabel).toBe('1440×1440');
+  });
 });

@@ -141,6 +141,9 @@ class StorageSink private constructor(
         fun mimeTypeFor(container: String): String = when (container) {
             "mp3" -> "audio/mpeg"
             "m4a" -> "audio/mp4"
+            "jpg" -> "image/jpeg"
+            "png" -> "image/png"
+            "webp" -> "image/webp"
             else -> "video/mp4"
         }
 

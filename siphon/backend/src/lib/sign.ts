@@ -15,8 +15,8 @@ export interface DownloadTicket {
   u: string;
   /** yt-dlp format selector (e.g. "137+bestaudio", "22", "mp3-320"). */
   f: string;
-  /** 'video' | 'audio' */
-  k: 'video' | 'audio';
+  /** 'video' | 'audio' | 'image' */
+  k: 'video' | 'audio' | 'image';
   /** Container the client should receive: 'mp4' | 'mp3' | 'm4a'. */
   c: string;
   /** Human title used for the Content-Disposition filename. */
@@ -60,7 +60,7 @@ export function verifyToken(token: string, secret: string, now = Date.now()): Do
   if (
     typeof ticket.u !== 'string' ||
     typeof ticket.f !== 'string' ||
-    (ticket.k !== 'video' && ticket.k !== 'audio') ||
+    (ticket.k !== 'video' && ticket.k !== 'audio' && ticket.k !== 'image') ||
     typeof ticket.c !== 'string' ||
     typeof ticket.e !== 'number'
   ) {

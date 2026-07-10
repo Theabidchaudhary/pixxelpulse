@@ -4,8 +4,8 @@ export type Platform = 'youtube' | 'instagram' | 'tiktok' | 'twitter' | 'faceboo
 
 export interface ResolvedFormat {
   id: string;
-  kind: 'video' | 'audio';
-  container: 'mp4' | 'mp3' | 'm4a';
+  kind: 'video' | 'audio' | 'image';
+  container: 'mp4' | 'mp3' | 'm4a' | 'jpg' | 'png' | 'webp';
   qualityLabel: string;
   width: number | null;
   height: number | null;
@@ -28,6 +28,7 @@ export interface ResolvedMedia {
   thumbnailUrl: string | null;
   video: ResolvedFormat[];
   audio: ResolvedFormat[];
+  image: ResolvedFormat[];
   expiresAt: string;
 }
 
@@ -106,6 +107,7 @@ export async function resolve(url: string, signal?: AbortSignal): Promise<Resolv
   if (body.type === 'media') {
     body.video = body.video.map((f) => ({ ...f, downloadUrl: apiUrl(f.downloadUrl) }));
     body.audio = body.audio.map((f) => ({ ...f, downloadUrl: apiUrl(f.downloadUrl) }));
+    body.image = body.image.map((f) => ({ ...f, downloadUrl: apiUrl(f.downloadUrl) }));
   }
 
   return body;

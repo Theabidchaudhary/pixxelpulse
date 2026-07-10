@@ -66,6 +66,12 @@ fun MediaOptionsContent(
                 media.audio.forEach { format -> FormatRow(format = format, onClick = { onPick(format) }) }
             }
         }
+        if (media.image.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionLabel(text = androidx.compose.ui.res.stringResource(R.string.sheet_image))
+                media.image.forEach { format -> FormatRow(format = format, onClick = { onPick(format) }) }
+            }
+        }
     }
 }
 

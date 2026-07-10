@@ -22,6 +22,7 @@ export interface ResolvedMedia {
   thumbnailUrl: string | null;
   video: ResolvedFormat[];
   audio: ResolvedFormat[];
+  image: ResolvedFormat[];
   expiresAt: string;
 }
 
@@ -114,6 +115,7 @@ function refreshTokens(result: ResolveResult): ResolveResult {
     expiresAt: tokenExpiryIso(),
     video: result.video.map(resign),
     audio: result.audio.map(resign),
+    image: result.image.map(resign),
   };
 }
 
@@ -144,8 +146,8 @@ function buildDownloadUrl(input: {
 }
 
 function mapMedia(detected: DetectedLink, info: YtDlpInfo): ResolvedMedia {
-  const { video, audio } = buildFormatOptions(info);
-  if (video.length === 0 && audio.length === 0) {
+  const { video, audio, image } = buildFormatOptions(info);
+  if (video.length === 0 && audio.length === 0 && image.length === 0) {
     throw ApiError.extractionFailed({ reason: 'no-downloadable-formats' });
   }
 
@@ -169,6 +171,7 @@ function mapMedia(detected: DetectedLink, info: YtDlpInfo): ResolvedMedia {
     thumbnailUrl: pickThumbnail(info),
     video: attach(video),
     audio: attach(audio),
+    image: attach(image),
     expiresAt: tokenExpiryIso(),
   };
 }

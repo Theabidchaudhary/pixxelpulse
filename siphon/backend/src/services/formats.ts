@@ -8,8 +8,8 @@ import type { YtDlpFormat, YtDlpInfo } from '../lib/ytdlp.js';
  */
 export interface MediaFormatOption {
   id: string;
-  kind: 'video' | 'audio';
-  container: 'mp4' | 'mp3' | 'm4a';
+  kind: 'video' | 'audio' | 'image';
+  container: 'mp4' | 'mp3' | 'm4a' | 'jpg' | 'png' | 'webp';
   /** e.g. "1080p", "720p60", "320 kbps" */
   qualityLabel: string;
   width: number | null;
@@ -44,6 +44,17 @@ function hasAudio(f: YtDlpFormat): boolean {
   return !!f.acodec && f.acodec !== 'none';
 }
 
+const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+
+function isImageFormat(f: YtDlpFormat): boolean {
+  return (!f.vcodec || f.vcodec === 'none') && (!f.acodec || f.acodec === 'none') && IMAGE_EXTS.has(f.ext ?? '');
+}
+
+function imageContainer(ext: string): 'jpg' | 'png' | 'webp' {
+  if (ext === 'jpeg') return 'jpg';
+  return ext === 'png' || ext === 'webp' ? ext : 'jpg';
+}
+
 function estimateSize(f: YtDlpFormat, duration: number | null): { size: number | null; estimate: boolean } {
   if (f.filesize && f.filesize > 0) return { size: f.filesize, estimate: false };
   if (f.filesize_approx && f.filesize_approx > 0) return { size: Math.round(f.filesize_approx), estimate: true };
@@ -73,6 +84,7 @@ function qualityLabel(height: number | null, fps: number | null): string {
 export function buildFormatOptions(info: YtDlpInfo): {
   video: MediaFormatOption[];
   audio: MediaFormatOption[];
+  image: MediaFormatOption[];
 } {
   const duration = info.duration ?? null;
   const formats = (info.formats ?? []).filter(isHttpProtocol);
@@ -118,7 +130,48 @@ export function buildFormatOptions(info: YtDlpInfo): {
     });
 
   const audio = buildAudioOptions(formats, duration);
-  return { video, audio };
+  const image = buildImageOptions(formats);
+  return { video, audio, image };
+}
+
+/**
+ * Some posts (Instagram/X/Facebook photo posts) carry no video at all —
+ * yt-dlp's coverage of these varies by platform and version, but where an
+ * extractor reports an image-typed entry in `formats` (a real format_id it
+ * can re-select on the actual download pass), we surface it. Only the
+ * single best (largest) image is offered; there's no meaningful "quality"
+ * choice for a static photo the way there is for video.
+ */
+function buildImageOptions(formats: YtDlpFormat[]): MediaFormatOption[] {
+  const candidates = formats.filter(isImageFormat);
+  if (candidates.length === 0) return [];
+
+  const best = candidates.reduce((a, b) => {
+    const areaA = (a.width ?? 0) * (a.height ?? 0);
+    const areaB = (b.width ?? 0) * (b.height ?? 0);
+    if (areaB !== areaA) return areaB > areaA ? b : a;
+    return (b.filesize ?? 0) > (a.filesize ?? 0) ? b : a;
+  });
+
+  const { size, estimate } = estimateSize(best, null);
+  const container = imageContainer((best.ext ?? 'jpg').toLowerCase());
+
+  return [
+    {
+      id: `image-${best.format_id}`,
+      kind: 'image',
+      container,
+      qualityLabel: best.width && best.height ? `${best.width}×${best.height}` : 'Original',
+      width: best.width ?? null,
+      height: best.height ?? null,
+      fps: null,
+      sizeBytes: size,
+      sizeIsEstimate: estimate,
+      directUrl: best.url ?? null,
+      selector: best.format_id,
+      requiresProcessing: false,
+    },
+  ];
 }
 
 function bestAudioOnly(formats: YtDlpFormat[]): YtDlpFormat | null {

@@ -57,6 +57,16 @@ export function MediaResult({ media, onDownload }: MediaResultProps) {
             </div>
           </div>
         )}
+        {media.image.length > 0 && (
+          <div className="format-group">
+            <h3>Image</h3>
+            <div className="format-grid">
+              {media.image.map((f) => (
+                <FormatButton key={f.id} format={f} started={started.has(f.id)} onClick={() => start(f)} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

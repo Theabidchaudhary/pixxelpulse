@@ -45,6 +45,7 @@ data class ResolveResponseDto(
     val thumbnailUrl: String? = null,
     val video: List<ResolvedFormatDto> = emptyList(),
     val audio: List<ResolvedFormatDto> = emptyList(),
+    val image: List<ResolvedFormatDto> = emptyList(),
     val expiresAt: String? = null,
     val entryCount: Int? = null,
     val entries: List<PlaylistEntryDto> = emptyList(),

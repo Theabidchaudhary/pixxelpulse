@@ -6,7 +6,7 @@ import { config } from '../config.js';
 import { ApiError } from '../lib/errors.js';
 import { Semaphore } from '../lib/semaphore.js';
 import type { DownloadTicket } from '../lib/sign.js';
-import { runYtDlp, platformArgs, BROWSER_USER_AGENT } from '../lib/ytdlp.js';
+import { runYtDlp, platformArgs, BROWSER_USER_AGENT, YTDLP_CACHE_DIR } from '../lib/ytdlp.js';
 
 const streamGate = new Semaphore(config.MAX_CONCURRENT_STREAMS);
 const DOWNLOAD_TIMEOUT_MS = 20 * 60 * 1000;
@@ -25,6 +25,9 @@ const CONTENT_TYPES: Record<string, string> = {
   mp4: 'video/mp4',
   mp3: 'audio/mpeg',
   m4a: 'audio/mp4',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
 };
 
 /**
@@ -83,6 +86,8 @@ function buildArgs(ticket: DownloadTicket, workDir: string): string[] {
     '--no-warnings',
     '--no-call-home',
     '--no-check-certificates',
+    '--no-check-formats',
+    '--cache-dir', YTDLP_CACHE_DIR,
     '--no-playlist',
     '--no-mtime',
     ...platformArgs(ticket.u),

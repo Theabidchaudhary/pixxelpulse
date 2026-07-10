@@ -54,6 +54,15 @@ export const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 /**
+ * Persistent yt-dlp cache directory. yt-dlp caches expensive per-extractor
+ * work here (YouTube's signature/nsig JS interpreter results, etc.) so
+ * repeat requests within the same running container skip re-deriving it.
+ * Explicit path because the container no longer runs as a dedicated user
+ * with a predictable $HOME, and /tmp is always writable.
+ */
+export const YTDLP_CACHE_DIR = '/tmp/siphon-ytdlp-cache';
+
+/**
  * Cookies exported from a logged-in browser (Netscape cookies.txt format).
  * This is the only reliable fix for "Sign in to confirm you're not a bot"
  * (YouTube) and similar login walls (X/Twitter) that cloud-hosted IPs hit
@@ -64,14 +73,24 @@ function cookieArgs(): string[] {
   return config.COOKIES_FILE ? ['--cookies', config.COOKIES_FILE] : [];
 }
 
-/** Extra yt-dlp flags per-platform that meaningfully improve extraction success. */
+/**
+ * Primary attempt args per platform, tuned for the best balance of success
+ * rate and speed. `fallbackPlatformArgs` below supplies a second attempt
+ * with a different strategy when this one fails.
+ */
 export function platformArgs(url: string): string[] {
   if (/youtube\.com|youtu\.be/i.test(url)) {
     return [
-      // mweb/tv rarely need a PO token and are the current most reliable
-      // combo for cloud IPs; "web" is kept last as a broad fallback.
-      '--extractor-args', 'youtube:player_client=mweb,tv,web;player_skip=webpage',
-      '--no-check-formats',
+      // Two clients only (not yt-dlp's full client list) — each additional
+      // client is a full extra network round-trip to YouTube's internal
+      // API, so this is the resilience/speed tradeoff point. "tv" tends to
+      // dodge the bot-check wall more often than "web"; player_skip=webpage
+      // skips fetching the HTML page entirely since these clients don't
+      // need it. formats=missing_pot keeps formats that would otherwise be
+      // silently dropped for lacking a PO token — without it, some videos
+      // resolve to zero downloadable formats even though metadata fetch
+      // succeeded, which looks identical to "removed or private" downstream.
+      '--extractor-args', 'youtube:player_client=tv,web;player_skip=webpage;formats=missing_pot',
       ...cookieArgs(),
     ];
   }
@@ -92,6 +111,26 @@ export function platformArgs(url: string): string[] {
     return ['--add-header', 'Referer:https://www.instagram.com/', ...cookieArgs()];
   }
   return [];
+}
+
+/**
+ * Second-attempt args, only used if the primary attempt above fails. Tries a
+ * meaningfully different strategy rather than repeating the same request —
+ * e.g. a different YouTube player client, or X's regular (non-syndication)
+ * path in case syndication itself is the thing being rate-limited.
+ * Returns null when there's no meaningfully different fallback to try.
+ */
+function fallbackPlatformArgs(url: string): string[] | null {
+  if (/youtube\.com|youtu\.be/i.test(url)) {
+    return [
+      '--extractor-args', 'youtube:player_client=android,mweb;formats=missing_pot',
+      ...cookieArgs(),
+    ];
+  }
+  if (/twitter\.com|x\.com/i.test(url)) {
+    return ['--add-header', 'Referer:https://x.com/', ...cookieArgs()];
+  }
+  return null;
 }
 
 /**
@@ -144,29 +183,52 @@ export function runYtDlp(args: string[], timeoutMs = EXTRACTION_TIMEOUT_MS): Pro
   });
 }
 
-export async function fetchInfo(url: string, opts: { playlist: boolean }): Promise<YtDlpInfo> {
-  const args = [
+function baseFetchArgs(opts: { playlist: boolean }): string[] {
+  return [
     '--user-agent', BROWSER_USER_AGENT,
     '--add-header', 'Accept-Language:en-US,en;q=0.9',
     '--no-warnings',
     '--no-call-home',
     '--no-check-certificates',
-    ...platformArgs(url),
+    // Skips the extra HTTP request(s) yt-dlp otherwise makes to verify each
+    // format's URL is actually reachable before returning it — the single
+    // biggest per-request latency cost on platforms with many formats
+    // (Instagram/Facebook especially). We only ever hand out formats the
+    // extractor itself reported, so this trades a rare stale-URL edge case
+    // for several seconds off every fetch.
+    '--no-check-formats',
+    '--cache-dir', YTDLP_CACHE_DIR,
     '--dump-single-json',
     ...(opts.playlist ? ['--flat-playlist'] : ['--no-playlist']),
-    '--',
-    url,
   ];
+}
 
+async function fetchInfoOnce(url: string, opts: { playlist: boolean }, extraArgs: string[]): Promise<YtDlpInfo> {
+  const args = [...baseFetchArgs(opts), ...extraArgs, '--', url];
   const result = await runYtDlp(args);
   if (result.exitCode !== 0) {
     throw classifyExtractionError(result.stderr);
   }
-
   try {
     return JSON.parse(result.stdout) as YtDlpInfo;
   } catch {
     throw ApiError.extractionFailed({ reason: 'unparseable-metadata' });
+  }
+}
+
+export async function fetchInfo(url: string, opts: { playlist: boolean }): Promise<YtDlpInfo> {
+  try {
+    return await fetchInfoOnce(url, opts, platformArgs(url));
+  } catch (firstErr) {
+    const fallback = fallbackPlatformArgs(url);
+    if (!fallback) throw firstErr;
+    try {
+      return await fetchInfoOnce(url, opts, fallback);
+    } catch {
+      // Surface the original error — it's typically the more informative one
+      // since the primary strategy is chosen to be the better first guess.
+      throw firstErr;
+    }
   }
 }
 

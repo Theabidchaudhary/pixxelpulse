@@ -27,6 +27,7 @@ data class ResolvedMedia(
     val thumbnailUrl: String?,
     val video: List<MediaFormat>,
     val audio: List<MediaFormat>,
+    val image: List<MediaFormat>,
 )
 
 data class PlaylistEntry(
@@ -78,6 +79,7 @@ class MediaRepository(private val api: SiphonApi) {
         thumbnailUrl = thumbnailUrl,
         video = video.map { it.toFormat(base) },
         audio = audio.map { it.toFormat(base) },
+        image = image.map { it.toFormat(base) },
     )
 
     private fun ResolvedFormatDto.toFormat(base: String): MediaFormat = MediaFormat(
