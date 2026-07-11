@@ -1,14 +1,13 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Siphon app icon — gradient tile + siphon-tube arrow glyph -->
+  <!-- Vessel app icon — gradient tile + open-container glyph -->
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#16121F"/>
       <stop offset="1" stop-color="#0A0812"/>
     </linearGradient>
-    <linearGradient id="glyph" x1="140" y1="96" x2="380" y2="420" gradientUnits="userSpaceOnUse">
+    <linearGradient id="glyph" x1="175" y1="166" x2="337" y2="346" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#9D8CFF"/>
-      <stop offset="0.55" stop-color="#7C6BFF"/>
-      <stop offset="1" stop-color="#46C8FF"/>
+      <stop offset="1" stop-color="#7C6BFF"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.42" r="0.62">
       <stop offset="0" stop-color="#7C6BFF" stop-opacity="0.38"/>
@@ -20,19 +19,12 @@
   <rect width="512" height="512" rx="116" fill="url(#glow)"/>
   <rect x="1.5" y="1.5" width="509" height="509" rx="114.5" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="3"/>
 
-  <!-- Siphon tube: an S-curve that resolves into a down arrow -->
-  <path d="M338 132
-           C 338 112 322 96 302 96
-           L 220 96
-           C 172 96 134 134 134 182
-           C 134 230 172 268 220 268
-           L 256 268
-           L 256 330"
-        stroke="url(#glyph)" stroke-width="44" stroke-linecap="round" fill="none"/>
-  <!-- Arrowhead -->
-  <path d="M180 314 L 256 396 L 332 314"
-        stroke="url(#glyph)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <!-- Catch tray -->
-  <path d="M148 420 L 364 420"
-        stroke="#F2F2F8" stroke-opacity="0.9" stroke-width="34" stroke-linecap="round"/>
+  <!-- Vessel body: a simple open container -->
+  <path d="M175 166 L175 303 C175 327 204 346 256 346 C308 346 337 327 337 303 L337 166"
+        stroke="url(#glyph)" stroke-width="33" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Rim -->
+  <path d="M175 166 C175 190 204 209 256 209 C308 209 337 190 337 166"
+        stroke="url(#glyph)" stroke-width="33" stroke-linecap="round" fill="none"/>
+  <!-- What it holds -->
+  <circle cx="256" cy="265" r="27" fill="#46C8FF"/>
 </svg>

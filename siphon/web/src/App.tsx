@@ -155,7 +155,7 @@ export default function App() {
               <span className="num">1</span>
               <h3>Paste a link</h3>
               <p>
-                Copy any video URL and paste it above. Siphon detects the platform automatically —
+                Copy any video URL and paste it above. Vessel detects the platform automatically —
                 videos, Shorts, Reels and playlists.
               </p>
             </div>

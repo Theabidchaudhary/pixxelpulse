@@ -60,7 +60,7 @@ export const BROWSER_USER_AGENT =
  * Explicit path because the container no longer runs as a dedicated user
  * with a predictable $HOME, and /tmp is always writable.
  */
-export const YTDLP_CACHE_DIR = '/tmp/siphon-ytdlp-cache';
+export const YTDLP_CACHE_DIR = '/tmp/vessel-ytdlp-cache';
 
 /**
  * Cookies exported from a logged-in browser (Netscape cookies.txt format).

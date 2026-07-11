@@ -1,4 +1,4 @@
-/** Typed client for the Siphon API. Mirrors backend/src/services/extractor.ts. */
+/** Typed client for the Vessel API. Mirrors backend/src/services/extractor.ts. */
 
 export type Platform = 'youtube' | 'instagram' | 'tiktok' | 'twitter' | 'facebook';
 
@@ -58,7 +58,7 @@ export class ApiRequestError extends Error {
 }
 
 /**
- * Base URL for the Siphon API. Empty by default, meaning "same origin,
+ * Base URL for the Vessel API. Empty by default, meaning "same origin,
  * relative /api/... paths" — the setup used when nginx (or the Vite dev
  * proxy) reverse-proxies /api to the backend on one domain.
  *
@@ -85,7 +85,7 @@ export async function resolve(url: string, signal?: AbortSignal): Promise<Resolv
     });
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err;
-    throw new ApiRequestError('NETWORK', 'Could not reach the Siphon API. Check your connection.');
+    throw new ApiRequestError('NETWORK', 'Could not reach the Vessel API. Check your connection.');
   }
 
   const body = (await response.json().catch(() => null)) as

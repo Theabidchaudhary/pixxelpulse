@@ -11,7 +11,7 @@ describe('sanitizeFileName', () => {
   });
 
   it('falls back for empty input', () => {
-    expect(sanitizeFileName('///')).toBe('siphon-download');
+    expect(sanitizeFileName('///')).toBe('vessel-download');
   });
 
   it('keeps unicode titles intact', () => {

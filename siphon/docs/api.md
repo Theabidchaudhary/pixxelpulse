@@ -1,4 +1,4 @@
-# Siphon API reference
+# Vessel API reference
 
 Base path: `/api/v1`. All responses are JSON unless noted. Errors use a
 uniform envelope:

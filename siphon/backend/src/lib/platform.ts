@@ -1,7 +1,7 @@
 /**
  * Platform detection. Mirrored by the web client (web/src/lib/platform.ts)
  * and the Android client (util/UrlDetector.kt) so every surface agrees on
- * what Siphon supports before a request ever reaches the API.
+ * what Vessel supports before a request ever reaches the API.
  */
 export type Platform = 'youtube' | 'instagram' | 'tiktok' | 'twitter' | 'facebook';
 

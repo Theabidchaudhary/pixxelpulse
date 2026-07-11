@@ -10,7 +10,7 @@ export interface HistoryEntry {
   savedAt: number;
 }
 
-const KEY = 'siphon.history.v1';
+const KEY = 'vessel.history.v1';
 const MAX_ENTRIES = 30;
 
 export function loadHistory(): HistoryEntry[] {

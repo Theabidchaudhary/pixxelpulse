@@ -1,4 +1,4 @@
-# Siphon — Architecture
+# Vessel — Architecture
 
 ## System overview
 
@@ -11,7 +11,7 @@
        │  GET  /api/v1/download│        direct CDN URL (Range)
        ▼                      ▼        ┌──────────────────────┐
 ┌──────────────────────────────┐      │ Platform CDNs         │
-│ Siphon API (Fastify, Node 20)│      │ (YouTube, TikTok, …)  │
+│ Vessel API (Fastify, Node 20)│      │ (YouTube, TikTok, …)  │
 │  • platform detection        │◄─────┤ progressive files     │
 │  • yt-dlp metadata extraction│      └──────────────────────┘
 │  • signed download tokens    │
@@ -44,7 +44,7 @@ can serve any token — no sticky sessions, no shared session store.
   output; they cannot be produced on a pipe at all.
 - A temp file gives an exact `Content-Length`, so clients render real progress
   bars and segmented downloaders behave.
-- Disk is reclaimed per request (`siphon-*` temp dirs removed on stream close).
+- Disk is reclaimed per request (`vessel-*` temp dirs removed on stream close).
 
 ### Direct URLs for the Android client
 
@@ -147,7 +147,7 @@ in Hilt is mechanical.
 ### Share-sheet flow
 
 `ShareActivity` is `exported` for `ACTION_SEND text/plain`, runs with a fully
-transparent window (`Theme.Siphon.Share`), `taskAffinity=""`,
+transparent window (`Theme.Vessel.Share`), `taskAffinity=""`,
 `excludeFromRecents` and `noHistory`, so it renders as a bottom sheet floating
 over the sharing app. It extracts the first URL from the shared text, resolves
 it, and shows the same `MediaOptionsContent` composable used on Home. Picking

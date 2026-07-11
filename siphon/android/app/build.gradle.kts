@@ -7,17 +7,17 @@ plugins {
 }
 
 android {
-    namespace = "app.siphon"
+    namespace = "app.vessel"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "app.siphon"
+        applicationId = "app.vessel"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
-        // Baked-in default API — the deployed Siphon backend. Override with
+        // Baked-in default API — the deployed Vessel backend. Override with
         // -PsiphonApiBaseUrl=... at build time, or per-install from Settings.
         buildConfigField(
             "String",
@@ -65,7 +65,7 @@ androidComponents {
         variant.outputs
             .filterIsInstance<com.android.build.api.variant.impl.VariantOutputImpl>()
             .forEach { output ->
-                output.outputFileName.set("Siphon-${android.defaultConfig.versionName}-${variant.name}.apk")
+                output.outputFileName.set("Vessel-${android.defaultConfig.versionName}-${variant.name}.apk")
             }
     }
 }
@@ -93,6 +93,12 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
+
+    // On-device YouTube extraction — resolves straight from the user's own
+    // phone/network instead of a shared server IP, sidestepping the
+    // datacenter-IP bot-blocking that plagues server-side yt-dlp. Same
+    // approach the NewPipe app uses.
+    implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.26.3")
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

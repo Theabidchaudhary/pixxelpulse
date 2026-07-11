@@ -1,26 +1,26 @@
-# Siphon — Branding & design system
+# Vessel — Branding & design system
 
 ## Name
 
-**Siphon** — one word, a verb and an object at once: a tube that pulls
-something down from a higher place. Lowercase wordmark (`siphon`) for the
-product surface; capitalized in prose.
+**Vessel** — a calm, real word: something that holds what matters. Fits a
+save/keep tool better than a literal description of the mechanism.
+Lowercase wordmark (`vessel`) for the product surface; capitalized in prose.
 
 Tagline: **“Save any video. In seconds.”**
 
 ## Logo & app icon
 
-The mark is an S-curved tube that resolves into a downward arrow above a
-catch tray — "content flows down and lands with you". Sources of truth:
+The mark is a simple open container — two shapes only (an outline, a small
+filled circle for what it holds) so it stays legible at launcher-icon size,
+not just at landing-page scale. Sources of truth:
 
-- `assets/brand/icon.svg` — 512 px app icon (rounded 116 px tile)
-- `assets/brand/logo.svg` — horizontal lockup (mark + wordmark)
+- `web/public/icon.svg` — 512 px app icon (rounded 116 px tile)
+- `web/src/components/Logo.tsx` — the same mark as an inline React component
 - Android adaptive icon: `android/app/src/main/res/drawable/ic_launcher_foreground.xml`
-  over a near-black `#0A0812` background, with a monochrome variant for
-  themed icons.
+  over a near-black `#0A0812` background.
 
-The glyph gradient runs iris → cyan (`#9D8CFF → #7C6BFF → #46C8FF`), the tray
-is off-white.
+The glyph gradient runs iris (`#9D8CFF → #7C6BFF`), the held content is cyan
+(`#46C8FF`).
 
 ## Color
 

@@ -1,4 +1,4 @@
-# Siphon — Hosting quickstart (test → live domain)
+# Vessel — Hosting quickstart (test → live domain)
 
 A concrete path from zero to a working, TLS-secured deployment. Two things get
 hosted: the **API** (does the actual downloading; needs a server that can run
@@ -30,8 +30,8 @@ start, deploy via their dashboard from your GitHub repo.
 4. Environment variables: add `SIGNING_SECRET` (any long random string —
    or click "Generate") and `ALLOWED_ORIGINS` = `*` for now (tighten in step C).
 5. Create the service. First build takes a few minutes (installs yt-dlp +
-   ffmpeg). Note its URL, e.g. `https://siphon-api-xxxx.onrender.com`.
-6. Confirm it's alive: open `https://siphon-api-xxxx.onrender.com/healthz` —
+   ffmpeg). Note its URL, e.g. `https://vessel-api-xxxx.onrender.com`.
+6. Confirm it's alive: open `https://vessel-api-xxxx.onrender.com/healthz` —
    should show `{"status":"ok"}`.
 
 **B. Deploy the web app**
@@ -39,10 +39,10 @@ start, deploy via their dashboard from your GitHub repo.
 2. **Root Directory**: `siphon/web`. **Build Command**: `npm ci && npm run build`.
    **Publish Directory**: `dist`.
 3. Environment variables: add `VITE_API_BASE_URL` = the API URL from step A
-   (e.g. `https://siphon-api-xxxx.onrender.com`) — this tells the web app
+   (e.g. `https://vessel-api-xxxx.onrender.com`) — this tells the web app
    where to send requests since it's on a different domain than the API.
 4. Create the site. When it finishes you get a URL like
-   `https://siphon-web-xxxx.onrender.com` — **open it, paste a video link,
+   `https://vessel-web-xxxx.onrender.com` — **open it, paste a video link,
    test it for real.**
 
 **C. Lock down CORS** (optional but recommended once it works): go back to the
@@ -50,7 +50,7 @@ API service's environment variables and set `ALLOWED_ORIGINS` to your exact
 web URL from step B instead of `*`, then save (triggers a redeploy).
 
 **D. Put your own domain on it** (optional): on the Static Site → **Settings**
-→ **Custom Domains** → **Add Custom Domain** → enter e.g. `siphon.yourdomain.com`
+→ **Custom Domains** → **Add Custom Domain** → enter e.g. `vessel.yourdomain.com`
 → Render shows you a CNAME record to add at your domain registrar → once DNS
 propagates (usually minutes, sometimes a few hours) Render issues free TLS
 automatically and your domain serves the web app. Repeat CORS step C with the
@@ -68,7 +68,7 @@ no resource ceiling.
 
 ### YouTube / X saying "private, age-restricted, or asking the server to sign in"
 
-This isn't a bug in Siphon — YouTube and X actively fingerprint and
+This isn't a bug in Vessel — YouTube and X actively fingerprint and
 rate-limit requests coming from cloud/datacenter IP ranges (Render, Railway,
 AWS, etc.) far more aggressively than a home internet connection, regardless
 of what headers the request sends. It usually shows up as "Sign in to
@@ -110,14 +110,17 @@ non-Docker path: `pip install yt-dlp` / `apt install ffmpeg`.)
 
 **Android testing:**
 
-- Emulator: install the **debug APK** — it already points at
-  `http://10.0.2.2:8787` (your machine's localhost).
-- Physical phone on the same Wi-Fi: build with your PC's LAN IP —
-  `./gradlew :app:assembleDebug -PsiphonApiBaseUrl=http://192.168.1.20:8787`
-  (debug builds allow plain HTTP; release builds require HTTPS).
-- Install: `adb install app/build/outputs/apk/debug/app-debug.apk`, or copy
-  the APK to the phone and open it (allow "install unknown apps").
-- Test the flagship flow: open YouTube → Share → **Save with Siphon**.
+- Debug and release builds both default to the baked-in backend URL in
+  `app/build.gradle.kts` — no local server needed to just try the app.
+- To point a build at your own local server instead: on an emulator use
+  `./gradlew :app:assembleDebug -PsiphonApiBaseUrl=http://10.0.2.2:8787`
+  (emulator's loopback to your machine); on a physical phone on the same
+  Wi-Fi, use your PC's LAN IP instead —
+  `-PsiphonApiBaseUrl=http://192.168.1.20:8787` (debug builds allow plain
+  HTTP; release builds require HTTPS).
+- Install: `adb install app/build/outputs/apk/debug/Vessel-*-debug.apk`, or
+  copy the APK to the phone and open it (allow "install unknown apps").
+- Test the flagship flow: open YouTube → Share → **Save with Vessel**.
 
 ## 1. Get a server + domain
 
@@ -130,7 +133,7 @@ VPS's public IP:
 
 | Type | Name | Value |
 | --- | --- | --- |
-| A | `@` (or `siphon`) | `<VPS IP>` — serves the web app |
+| A | `@` (or `vessel`) | `<VPS IP>` — serves the web app |
 | A | `api` | `<VPS IP>` — serves the API |
 
 Propagation is usually minutes. Verify with `dig +short yourdomain.com`.
@@ -152,21 +155,21 @@ curl http://127.0.0.1:8787/readyz     # → {"status":"ready",...}
 ## 3. Put the web build on the VPS
 
 Build locally (`cd siphon/web && npm run build`) or grab the
-`siphon-web-dist` artifact from GitHub Actions, then:
+`vessel-web-dist` artifact from GitHub Actions, then:
 
 ```bash
-scp -r dist/* root@<VPS-IP>:/var/www/siphon/
+scp -r dist/* root@<VPS-IP>:/var/www/vessel/
 ```
 
 ## 4. nginx: one site for web, one for API, then TLS
 
-`/etc/nginx/sites-available/siphon`:
+`/etc/nginx/sites-available/vessel`:
 
 ```nginx
 server {
     listen 80;
     server_name yourdomain.com;
-    root /var/www/siphon;
+    root /var/www/vessel;
     location / { try_files $uri /index.html; }
     # Same-origin API proxy — the web app calls /api/... relatively
     location /api/ {
@@ -188,7 +191,7 @@ server {
 ```
 
 ```bash
-ln -s /etc/nginx/sites-available/siphon /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/vessel /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 certbot --nginx -d yourdomain.com -d api.yourdomain.com   # free TLS, auto-renew
 ```
@@ -205,7 +208,7 @@ cd siphon/android
 ./gradlew :app:assembleRelease -PsiphonApiBaseUrl=https://api.yourdomain.com
 ```
 
-The CI workflow (`.github/workflows/siphon-build.yml`) produces an unsigned
+The CI workflow (`.github/workflows/vessel-build.yml`) produces an unsigned
 release APK; sign it with `apksigner` and your keystore, or configure
 `signingConfigs` / Play App Signing for Play Store distribution
 (`:app:bundleRelease` for the AAB).

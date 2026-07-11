@@ -43,7 +43,7 @@ export class ApiError extends Error {
   static unsupportedPlatform() {
     return new ApiError(
       'UNSUPPORTED_PLATFORM',
-      'This link is not from a supported platform. Siphon supports YouTube, Instagram, TikTok, X and Facebook.',
+      'This link is not from a supported platform. Vessel supports YouTube, Instagram, TikTok, X and Facebook.',
       422,
     );
   }

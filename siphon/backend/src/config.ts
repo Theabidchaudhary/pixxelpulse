@@ -7,7 +7,7 @@ const envSchema = z.object({
   SIGNING_SECRET: z
     .string()
     .min(16, 'SIGNING_SECRET must be at least 16 characters')
-    .default('siphon-dev-secret-do-not-use-in-prod'),
+    .default('vessel-dev-secret-do-not-use-in-prod'),
   TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(1800),
   YTDLP_PATH: z.string().default('yt-dlp'),
   /**
@@ -41,7 +41,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
   if (
     parsed.data.NODE_ENV === 'production' &&
-    parsed.data.SIGNING_SECRET === 'siphon-dev-secret-do-not-use-in-prod'
+    parsed.data.SIGNING_SECRET === 'vessel-dev-secret-do-not-use-in-prod'
   ) {
     throw new Error('SIGNING_SECRET must be set explicitly in production');
   }

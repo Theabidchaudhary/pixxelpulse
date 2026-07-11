@@ -1,4 +1,4 @@
-# Siphon — Deployment
+# Vessel — Deployment
 
 ## Backend
 
@@ -9,7 +9,7 @@ The image bundles Node 20, yt-dlp and ffmpeg:
 ```bash
 cd backend
 SIGNING_SECRET=$(openssl rand -hex 32) \
-ALLOWED_ORIGINS=https://siphon.example.com \
+ALLOWED_ORIGINS=https://vessel.example.com \
 docker compose up --build -d
 ```
 
@@ -48,9 +48,9 @@ both share one origin (keeps CORS off and signed URLs relative). nginx sketch:
 ```nginx
 server {
   listen 443 ssl http2;
-  server_name siphon.example.com;
+  server_name vessel.example.com;
 
-  root /srv/siphon/web/dist;
+  root /srv/vessel/web/dist;
   location / { try_files $uri /index.html; }
 
   location /api/ {
@@ -74,8 +74,10 @@ walkthrough), set two things:
 
 ## Android
 
-- **Debug** builds target `http://10.0.2.2:8787` (emulator loopback).
-- **Release**: `./gradlew :app:assembleRelease -PsiphonApiBaseUrl=https://api.siphon.example.com`
+- **Debug and release** both default to the baked-in `SIPHON_API_BASE_URL` in
+  `app/build.gradle.kts` (the deployed backend), overridable per-install from
+  Settings without rebuilding.
+- **Different backend at build time**: `./gradlew :app:assembleRelease -PsiphonApiBaseUrl=https://api.vessel.example.com`
   — the URL is baked in via `BuildConfig`. Sign with your keystore
   (`signingConfigs` or Play App Signing) and ship the `aab` from
   `:app:bundleRelease` to Play.

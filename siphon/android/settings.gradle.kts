@@ -17,8 +17,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // NewPipeExtractor (on-device YouTube extraction) is published via JitPack.
+        maven("https://jitpack.io")
     }
 }
 
-rootProject.name = "Siphon"
+rootProject.name = "Vessel"
 include(":app")

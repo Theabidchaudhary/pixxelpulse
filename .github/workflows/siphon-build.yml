@@ -1,4 +1,4 @@
-name: Siphon — build & test
+name: Vessel — build & test
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
       - name: Upload web build
         uses: actions/upload-artifact@v4
         with:
-          name: siphon-web-dist
+          name: vessel-web-dist
           path: siphon/web/dist
           if-no-files-found: error
 
@@ -56,12 +56,12 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: siphon-debug-apk
-          path: siphon/android/app/build/outputs/apk/debug/Siphon-*.apk
+          name: vessel-debug-apk
+          path: siphon/android/app/build/outputs/apk/debug/Vessel-*.apk
           if-no-files-found: error
       - name: Upload release APK (unsigned)
         uses: actions/upload-artifact@v4
         with:
-          name: siphon-release-apk-unsigned
-          path: siphon/android/app/build/outputs/apk/release/Siphon-*.apk
+          name: vessel-release-apk-unsigned
+          path: siphon/android/app/build/outputs/apk/release/Vessel-*.apk
           if-no-files-found: error

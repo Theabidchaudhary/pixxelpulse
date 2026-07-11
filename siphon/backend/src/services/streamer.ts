@@ -42,7 +42,7 @@ const CONTENT_TYPES: Record<string, string> = {
  */
 export async function prepareDownload(ticket: DownloadTicket): Promise<PreparedFile> {
   return streamGate.run(async () => {
-    const workDir = await mkdtemp(path.join(tmpdir(), 'siphon-'));
+    const workDir = await mkdtemp(path.join(tmpdir(), 'vessel-'));
     const cleanup = () => rm(workDir, { recursive: true, force: true });
 
     try {
@@ -66,7 +66,7 @@ export async function prepareDownload(ticket: DownloadTicket): Promise<PreparedF
       const ext = ticket.c;
       return {
         filePath,
-        fileName: `${sanitizeFileName(ticket.t || 'siphon-download')}.${ext}`,
+        fileName: `${sanitizeFileName(ticket.t || 'vessel-download')}.${ext}`,
         contentType: CONTENT_TYPES[ext] ?? 'application/octet-stream',
         sizeBytes: info.size,
         cleanup,
@@ -127,6 +127,6 @@ export function sanitizeFileName(name: string): string {
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 120)
-      .replace(/[. ]+$/g, '') || 'siphon-download'
+      .replace(/[. ]+$/g, '') || 'vessel-download'
   );
 }
