@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Orwyx Player</string>
+
+    <!-- Library -->
+    <string name="tab_videos">Videos</string>
+    <string name="tab_folders">Folders</string>
+    <string name="continue_watching">Continue watching</string>
+    <string name="search_hint">Search your videos</string>
+    <string name="empty_library_title">No videos yet</string>
+    <string name="empty_library_body">Grant media access or add a folder to build your library.</string>
+    <string name="grant_access">Grant access</string>
+    <string name="add_folder">Add folder</string>
+    <string name="favorites">Favorites</string>
+    <string name="recently_played">Recently played</string>
+    <string name="private_folder">Private folder</string>
+    <string name="rescan_library">Rescan library</string>
+
+    <!-- Video actions -->
+    <string name="action_play">Play</string>
+    <string name="action_favorite">Favorite</string>
+    <string name="action_unfavorite">Remove favorite</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_share">Share</string>
+    <string name="action_move_private">Move to private folder</string>
+    <string name="action_remove_private">Remove from private folder</string>
+    <string name="action_properties">Properties</string>
+    <string name="delete_confirm_title">Delete video?</string>
+    <string name="delete_confirm_body">This permanently deletes the file from your device.</string>
+
+    <!-- Sorting / filtering -->
+    <string name="sort_and_filter">Sort &amp; filter</string>
+    <string name="sort_name">Name</string>
+    <string name="sort_date_added">Date added</string>
+    <string name="sort_last_played">Last played</string>
+    <string name="sort_size">File size</string>
+    <string name="sort_duration">Duration</string>
+    <string name="sort_resolution">Resolution</string>
+    <string name="sort_quality">Quality</string>
+    <string name="sort_frame_rate">Frame rate</string>
+
+    <!-- Player -->
+    <string name="playback_speed">Playback speed</string>
+    <string name="audio_tracks">Audio</string>
+    <string name="subtitle_tracks">Subtitles</string>
+    <string name="sleep_timer">Sleep timer</string>
+    <string name="screen_locked">Screen locked — double-tap the lock to unlock</string>
+    <string name="notification_channel_playback">Playback</string>
+
+    <!-- Private folder -->
+    <string name="pin_enter">Enter PIN</string>
+    <string name="pin_create">Create a PIN</string>
+    <string name="pin_confirm">Confirm PIN</string>
+    <string name="pin_wrong">Wrong PIN, try again</string>
+    <string name="unlock_biometric">Unlock with fingerprint</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+</resources>
