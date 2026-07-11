@@ -57,18 +57,25 @@ object LibraryQueryBuilder {
 
         val dir = if (query.direction == SortDirection.ASCENDING) "ASC" else "DESC"
         val orderBy = when (query.sortBy) {
-            SortBy.NAME -> "title COLLATE NOCASE $dir"
-            SortBy.DATE_ADDED -> "dateAddedMs $dir"
-            SortBy.LAST_PLAYED -> "lastPlayedAtMs $dir"
+            SortBy.TITLE -> "title COLLATE NOCASE $dir"
+            SortBy.DATE -> "dateAddedMs $dir"
+            SortBy.PLAYED_TIME -> "lastPlayedAtMs $dir"
+            // Unwatched (0) < in-progress (1) < finished (2).
+            SortBy.STATUS -> """CASE
+                WHEN positionMs = 0 THEN 0
+                WHEN positionMs < durationMs * 0.98 THEN 1
+                ELSE 2 END $dir"""
+            SortBy.LENGTH -> "durationMs $dir"
             SortBy.SIZE -> "sizeBytes $dir"
-            SortBy.DURATION -> "durationMs $dir"
             SortBy.RESOLUTION -> "MIN(widthPx, heightPx) $dir, widthPx $dir"
-            SortBy.QUALITY -> "MIN(widthPx, heightPx) $dir, bitrate $dir"
+            SortBy.PATH -> "path COLLATE NOCASE $dir"
             SortBy.FRAME_RATE -> "frameRate $dir"
+            // No dedicated container/extension column; codec is the closest proxy for "type".
+            SortBy.TYPE -> "videoCodec COLLATE NOCASE $dir"
         }
         // Sorting recently-played first when the filter is recently-played reads better.
         val effectiveOrder = if (query.filter == VideoFilter.RECENTLY_PLAYED &&
-            query.sortBy == SortBy.DATE_ADDED
+            query.sortBy == SortBy.DATE
         ) {
             "lastPlayedAtMs DESC"
         } else {

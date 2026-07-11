@@ -112,7 +112,11 @@ fun SettingsScreen(
                 )
             }
             item {
-                ToggleRow("Auto rotate", "Follow the sensor in the player", s.autoRotate) {
+                ToggleRow(
+                    "Auto rotate",
+                    "Orientation always matches the video; this allows flipping upside down via the sensor",
+                    s.autoRotate,
+                ) {
                     viewModel.set { setAutoRotate(it) }
                 }
             }

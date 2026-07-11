@@ -8,7 +8,13 @@ import coil.decode.VideoFrameDecoder
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import com.orwyx.player.data.scanner.MediaChangeObserver
+import com.orwyx.player.data.scanner.MediaScanner
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import javax.inject.Inject
 
 /**
  * Application entry point.
@@ -17,9 +23,22 @@ import dagger.hilt.android.HiltAndroidApp
  *  - small memory cache (thumbnails only, capped as a fraction of the heap),
  *  - persistent disk cache so re-scrolling a 100k-item library never re-decodes frames,
  *  - hardware bitmaps where safe to halve memory per thumbnail.
+ *
+ * Also starts [MediaChangeObserver] for the lifetime of the process, so the
+ * library updates itself the moment a video is added or removed anywhere on
+ * the device — the app never needs to rescan just because it was reopened.
  */
 @HiltAndroidApp
 class OrwyxApplication : Application(), ImageLoaderFactory {
+
+    @Inject lateinit var mediaScanner: MediaScanner
+
+    private val processScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    override fun onCreate() {
+        super.onCreate()
+        MediaChangeObserver(this, mediaScanner, processScope).start()
+    }
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)

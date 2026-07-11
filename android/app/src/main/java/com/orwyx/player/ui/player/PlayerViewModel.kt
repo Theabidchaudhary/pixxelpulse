@@ -10,6 +10,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import com.orwyx.player.data.repository.VideoRepository
 import com.orwyx.player.data.settings.AppSettings
@@ -52,9 +53,13 @@ data class PlayerUiState(
     val bufferedMs: Long = 0,
     val speed: Float = 1f,
     val holdSpeedActive: Boolean = false,
+    val holdSpeedValue: Float = 1f,
     val repeatState: RepeatState = RepeatState.OFF,
     val shuffle: Boolean = false,
     val zoomMode: ZoomMode = ZoomMode.FIT,
+    /** Decoder-reported size, rotation already applied; drives the activity's orientation lock. */
+    val videoDisplayWidth: Int = 0,
+    val videoDisplayHeight: Int = 0,
     val locked: Boolean = false,
     val controlsVisible: Boolean = true,
     val subtitleText: String? = null,
@@ -134,6 +139,17 @@ class PlayerViewModel @Inject constructor(
             audioFx.attach(audioSessionId)
         }
 
+        // Rotation-corrected size: unappliedRotationDegrees is 0 once the decoder
+        // has already applied the rotation, which is the common case.
+        override fun onVideoSizeChanged(videoSize: VideoSize) {
+            val rotated = videoSize.unappliedRotationDegrees % 180 != 0
+            val width = if (rotated) videoSize.height else videoSize.width
+            val height = if (rotated) videoSize.width else videoSize.height
+            if (width > 0 && height > 0) {
+                _state.value = _state.value.copy(videoDisplayWidth = width, videoDisplayHeight = height)
+            }
+        }
+
         override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
             _state.value = _state.value.copy(error = error.errorCodeName)
         }
@@ -169,7 +185,7 @@ class PlayerViewModel @Inject constructor(
         queue = repository.videos(
             LibraryQuery(
                 folderPath = video.folderPath,
-                sortBy = SortBy.NAME,
+                sortBy = SortBy.TITLE,
                 direction = SortDirection.ASCENDING,
                 includePrivate = video.isPrivate,
             ),
@@ -271,12 +287,34 @@ class PlayerViewModel @Inject constructor(
         _state.value = _state.value.copy(speed = speed)
     }
 
-    /** Long-press temporary 2x; restores the previous speed on release. */
-    fun setHoldSpeed(active: Boolean) {
-        val current = _state.value
-        if (active == current.holdSpeedActive) return
-        engine.setSpeed(if (active) 2f else current.speed)
-        _state.value = current.copy(holdSpeedActive = active)
+    // --- Long-press hold speed -----------------------------------------------
+    // Starts at a quick 2x boost (a plain long press with no drag is the common
+    // case); dragging left/right while still holding fine-tunes the value via
+    // the on-screen slider. Releasing always restores the speed from before
+    // the hold started.
+
+    private var speedBeforeHold = 1f
+    private var holdDragAccum = 0f
+
+    fun startHoldSpeed() {
+        speedBeforeHold = _state.value.speed
+        holdDragAccum = 0f
+        engine.setSpeed(HOLD_INITIAL_SPEED)
+        _state.value = _state.value.copy(holdSpeedActive = true, holdSpeedValue = HOLD_INITIAL_SPEED)
+    }
+
+    /** [normalizedDeltaX] is the horizontal drag delta as a fraction of screen width. */
+    fun dragHoldSpeed(normalizedDeltaX: Float) {
+        holdDragAccum += normalizedDeltaX
+        val newSpeed = (HOLD_INITIAL_SPEED + holdDragAccum * HOLD_DRAG_SENSITIVITY)
+            .coerceIn(0.25f, 3f)
+        engine.setSpeed(newSpeed)
+        _state.value = _state.value.copy(holdSpeedValue = newSpeed)
+    }
+
+    fun endHoldSpeed() {
+        engine.setSpeed(speedBeforeHold)
+        _state.value = _state.value.copy(holdSpeedActive = false)
     }
 
     fun cycleRepeat() {
@@ -424,4 +462,10 @@ class PlayerViewModel @Inject constructor(
             .setMediaId(id.toString())
             .setMediaMetadata(MediaMetadata.Builder().setTitle(title).build())
             .build()
+
+    private companion object {
+        const val HOLD_INITIAL_SPEED = 2f
+        /** Full screen-width drag shifts the speed by roughly this many multiples. */
+        const val HOLD_DRAG_SENSITIVITY = 4f
+    }
 }

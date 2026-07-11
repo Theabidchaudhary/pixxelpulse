@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreateNewFolder
@@ -23,24 +26,25 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,11 +55,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.orwyx.player.core.util.Formatters
 import com.orwyx.player.data.scanner.ScanState
+import com.orwyx.player.domain.model.LibraryLayout
+import com.orwyx.player.domain.model.VideoFolder
+import com.orwyx.player.ui.components.DisplayMode
+import com.orwyx.player.ui.components.DisplaySettingsSheet
 import com.orwyx.player.ui.components.EmptyState
-import com.orwyx.player.ui.components.FilterChipRow
 import com.orwyx.player.ui.components.FolderCard
-import com.orwyx.player.ui.components.SortSheet
 import com.orwyx.player.ui.components.VideoCard
 import com.orwyx.player.ui.player.PlayerActivity
 
@@ -64,9 +71,11 @@ private val MEDIA_PERMISSION =
     else Manifest.permission.READ_EXTERNAL_STORAGE
 
 /**
- * Library home: Videos and Folders tabs, instant search, quick filters, sort
- * sheet, continue-watching rail, scan progress, and entry points to the
- * private vault and settings.
+ * Library home: folders only — there is no separate "all videos" tab.
+ * Typing in search temporarily swaps the folder grid for matching videos
+ * across the whole library. The library is scanned once on first run; after
+ * that, [com.orwyx.player.data.scanner.MediaChangeObserver] keeps it current
+ * in the background, so opening the app never triggers a rescan.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +97,7 @@ fun HomeScreen(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
         hasPermission = granted
-        if (granted) viewModel.scan()
+        if (granted) viewModel.scanIfNeeded()
     }
     val safLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
@@ -101,18 +110,19 @@ fun HomeScreen(
         viewModel.addSafFolder(uri.toString())
     }
 
-    LaunchedEffect(hasPermission) { if (hasPermission) viewModel.scan() }
+    LaunchedEffect(hasPermission) { if (hasPermission) viewModel.scanIfNeeded() }
     LibraryEventHandler(viewModel, snackbar)
 
     val query by viewModel.query.collectAsState()
+    val settings by viewModel.settings.collectAsState()
     val scanState by viewModel.scanState.collectAsState()
     val continueWatching by viewModel.continueWatching.collectAsState()
     val folders by viewModel.folders.collectAsState()
     val videos = viewModel.videos.collectAsLazyPagingItems()
 
-    var tab by rememberSaveable { mutableIntStateOf(0) }
     var searching by rememberSaveable { mutableStateOf(false) }
-    var showSort by rememberSaveable { mutableStateOf(false) }
+    var showDisplaySettings by rememberSaveable { mutableStateOf(false) }
+    var folderActionsFor by remember { mutableStateOf<VideoFolder?>(null) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -128,7 +138,7 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
-                        Text("Orwyx", style = MaterialTheme.typography.titleLarge)
+                        Text("OX Player", style = MaterialTheme.typography.titleLarge)
                     }
                 },
                 actions = {
@@ -136,13 +146,13 @@ fun HomeScreen(
                         if (searching) viewModel.setSearch("")
                         searching = !searching
                     }) { Icon(Icons.Filled.Search, "Search") }
-                    IconButton(onClick = { showSort = true }) {
-                        Icon(Icons.Filled.SortByAlpha, "Sort")
+                    IconButton(onClick = { showDisplaySettings = true }) {
+                        Icon(Icons.Filled.SortByAlpha, "Sort & view")
                     }
                     IconButton(onClick = { safLauncher.launch(null) }) {
                         Icon(Icons.Filled.CreateNewFolder, "Add folder")
                     }
-                    IconButton(onClick = { viewModel.scan(force = true) }) {
+                    IconButton(onClick = viewModel::rescan) {
                         Icon(Icons.Filled.Refresh, "Rescan")
                     }
                     IconButton(onClick = onOpenVault) { Icon(Icons.Filled.Lock, "Private folder") }
@@ -166,49 +176,9 @@ fun HomeScreen(
                 LinearProgressIndicator(Modifier.fillMaxWidth())
             }
 
-            TabRow(selectedTabIndex = tab) {
-                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Videos") })
-                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Folders") })
-            }
-
-            if (tab == 0) {
-                if (continueWatching.isNotEmpty() && query.search.isBlank()) {
-                    Text(
-                        "Continue watching",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
-                    )
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp),
-                    ) {
-                        items(continueWatching, key = { it.id }) { video ->
-                            Row(Modifier.width(220.dp)) {
-                                VideoCard(
-                                    video = video,
-                                    onClick = {
-                                        context.startActivity(PlayerActivity.intent(context, video.id))
-                                    },
-                                    onLongClick = {},
-                                )
-                            }
-                        }
-                    }
-                }
-
-                FilterChipRow(
-                    selected = query.filter,
-                    onSelect = viewModel::setFilter,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                )
-
+            if (query.search.isNotBlank()) {
                 if (videos.itemCount == 0 && scanState is ScanState.Idle) {
-                    EmptyState(
-                        title = "Nothing here",
-                        body = "No videos match this view. Try another filter or rescan.",
-                        actionLabel = "Rescan library",
-                        onAction = { viewModel.scan(force = true) },
-                    )
+                    EmptyState(title = "No matches", body = "No videos match \"${query.search}\".")
                 } else {
                     VideoGrid(
                         items = videos,
@@ -216,29 +186,138 @@ fun HomeScreen(
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                     )
                 }
-            } else {
-                if (folders.isEmpty()) {
-                    EmptyState(title = "No folders", body = "Folders appear once videos are indexed.")
-                } else {
-                    LazyColumn(Modifier.fillMaxSize()) {
-                        items(folders, key = { it.path }) { folder ->
-                            FolderCard(
-                                folder = folder,
-                                onClick = { onOpenFolder(folder.path) },
-                                onLongClick = { viewModel.hideFolder(folder.path) },
+                return@Column
+            }
+
+            if (continueWatching.isNotEmpty()) {
+                Text(
+                    "Continue watching",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
+                ) {
+                    items(continueWatching, key = { it.id }) { video ->
+                        Row(Modifier.width(180.dp)) {
+                            VideoCard(
+                                video = video,
+                                layout = LibraryLayout.GRID,
+                                fields = settings.videoCardFields,
+                                onClick = { context.startActivity(PlayerActivity.intent(context, video)) },
+                                onLongClick = {},
                             )
                         }
+                    }
+                }
+            }
+
+            if (folders.isEmpty()) {
+                EmptyState(
+                    title = "No folders yet",
+                    body = "Videos will appear here automatically once found.",
+                )
+            } else if (settings.libraryLayout == LibraryLayout.LIST) {
+                LazyColumn(Modifier.fillMaxSize()) {
+                    items(folders, key = { it.path }) { folder ->
+                        FolderCard(
+                            folder = folder,
+                            layout = LibraryLayout.LIST,
+                            onClick = { onOpenFolder(folder.path) },
+                            onLongClick = { folderActionsFor = folder },
+                        )
+                    }
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 168.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    items(folders, key = { it.path }) { folder ->
+                        FolderCard(
+                            folder = folder,
+                            layout = LibraryLayout.GRID,
+                            onClick = { onOpenFolder(folder.path) },
+                            onLongClick = { folderActionsFor = folder },
+                        )
                     }
                 }
             }
         }
     }
 
-    if (showSort) {
-        SortSheet(
-            query = query,
-            onDismiss = { showSort = false },
-            onSelect = { sortBy, direction -> viewModel.setSort(sortBy, direction) },
+    if (showDisplaySettings) {
+        DisplaySettingsSheet(
+            mode = DisplayMode.FOLDERS,
+            layout = settings.libraryLayout,
+            sortBy = settings.librarySortBy,
+            direction = settings.libraryDirection,
+            enabledFields = settings.videoCardFields,
+            onDismiss = { showDisplaySettings = false },
+            onLayout = viewModel::setLayout,
+            onSort = viewModel::setSortBy,
+            onDirection = viewModel::setDirection,
+            onToggleField = viewModel::toggleField,
+        )
+    }
+
+    folderActionsFor?.let { folder ->
+        FolderActionsSheet(
+            folder = folder,
+            onDismiss = { folderActionsFor = null },
+            onOpen = { onOpenFolder(folder.path) },
+            onHide = { viewModel.hideFolder(folder.path) },
+        )
+    }
+}
+
+/** Long-press actions for a folder: open, properties (path lives only here), hide. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FolderActionsSheet(
+    folder: VideoFolder,
+    onDismiss: () -> Unit,
+    onOpen: () -> Unit,
+    onHide: () -> Unit,
+) {
+    var showProperties by rememberSaveable { mutableStateOf(false) }
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        ListItem(
+            headlineContent = { Text(folder.name, style = MaterialTheme.typography.titleMedium) },
+            supportingContent = { Text("${folder.videoCount} videos") },
+        )
+        ListItem(
+            headlineContent = { Text("Open") },
+            modifier = Modifier.fillMaxWidth().clickable { onOpen(); onDismiss() },
+        )
+        ListItem(
+            headlineContent = { Text("Properties") },
+            modifier = Modifier.fillMaxWidth().clickable { showProperties = true },
+        )
+        ListItem(
+            headlineContent = { Text("Hide folder") },
+            modifier = Modifier.fillMaxWidth().clickable { onHide(); onDismiss() },
+        )
+    }
+
+    if (showProperties) {
+        AlertDialog(
+            onDismissRequest = { showProperties = false },
+            title = { Text(folder.name) },
+            text = {
+                Text(
+                    buildString {
+                        appendLine("Path: ${folder.path}")
+                        appendLine("Videos: ${folder.videoCount}")
+                        appendLine("Total size: ${Formatters.fileSize(folder.totalSizeBytes)}")
+                        append("Last added: ${Formatters.date(folder.latestDateAddedMs)}")
+                    },
+                )
+            },
+            confirmButton = { TextButton(onClick = { showProperties = false }) { Text("Close") } },
         )
     }
 }

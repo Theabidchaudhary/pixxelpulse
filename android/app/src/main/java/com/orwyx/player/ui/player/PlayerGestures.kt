@@ -1,28 +1,31 @@
 package com.orwyx.player.ui.player
 
+import android.os.SystemClock
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 
-/** Which continuous gesture is in progress. */
+/** Which continuous single-finger gesture is in progress. */
 enum class DragMode { NONE, BRIGHTNESS, VOLUME, SEEK }
 
 /**
  * Callbacks the player screen wires to the ViewModel / Activity.
  * All deltas are normalized: vertical drags in [-1, 1] over full screen height,
- * seek drags in fraction-of-width.
+ * seek/long-press drags in fraction-of-width.
  */
 interface PlayerGestureListener {
     fun onTap()
-    fun onDoubleTap(zone: Int) // -1 left, 0 center, 1 right
+    /** -1 left third (seek back), 0 center third (play/pause), 1 right third (seek forward). */
+    fun onDoubleTap(zone: Int)
     fun onLongPressStart()
+    fun onLongPressDrag(normalizedDeltaX: Float)
     fun onLongPressEnd()
     fun onDragStart(mode: DragMode)
     fun onDragDelta(mode: DragMode, normalizedDelta: Float)
@@ -33,15 +36,18 @@ interface PlayerGestureListener {
 
 /**
  * MX-style gesture engine:
+ *  - left/center/right thirds double-tap: seek back / play-pause / seek forward
  *  - single-finger vertical drag: brightness (left half) / volume (right half)
  *  - single-finger horizontal drag: seek with live preview
- *  - double-tap: skip back / play-pause / skip forward by zone
- *  - long-press: temporary 2x until release
+ *  - long-press anywhere: temporary speed boost, adjustable by dragging left/right
+ *    while still holding, reverting to the prior speed on release
  *  - pinch: zoom + pan
  *  - two-finger tap: lock
  *
- * Tap family runs through [detectTapGestures]; drags/pinch run through a custom
- * [awaitEachGesture] loop so multi-touch classification stays deterministic.
+ * Taps run through [detectTapGestures] in one pointerInput; drags, pinch, and
+ * long-press-to-speed run through a second, independent [awaitEachGesture]
+ * loop so long-press can keep reading move events for as long as the finger
+ * stays down (something [detectTapGestures]'s onLongPress cannot do).
  * [sensitivity] scales drag response (user setting).
  */
 fun Modifier.playerGestures(
@@ -49,7 +55,7 @@ fun Modifier.playerGestures(
     sensitivity: Float,
     locked: Boolean,
 ): Modifier = this
-    .pointerInput(locked, sensitivity) {
+    .pointerInput(locked) {
         if (locked) {
             // While locked, only taps get through (to reveal the unlock button).
             detectTapGestures(onTap = { listener.onTap() })
@@ -59,16 +65,11 @@ fun Modifier.playerGestures(
             onTap = { listener.onTap() },
             onDoubleTap = { offset ->
                 val zone = when {
-                    offset.x < size.width * 0.35f -> -1
-                    offset.x > size.width * 0.65f -> 1
+                    offset.x < size.width / 3f -> -1
+                    offset.x > size.width * 2f / 3f -> 1
                     else -> 0
                 }
                 listener.onDoubleTap(zone)
-            },
-            onLongPress = { listener.onLongPressStart() },
-            onPress = {
-                tryAwaitRelease()
-                listener.onLongPressEnd()
             },
         )
     }
@@ -78,35 +79,58 @@ fun Modifier.playerGestures(
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
             val startTime = down.uptimeMillis
+            val downRealTime = SystemClock.uptimeMillis()
             var maxPointers = 1
             var pinching = false
             var dragMode = DragMode.NONE
+            var longPressActive = false
             var accumulated = Offset.Zero
 
             while (true) {
-                val event = awaitPointerEvent()
+                val remaining = viewConfiguration.longPressTimeoutMillis -
+                    (SystemClock.uptimeMillis() - downRealTime)
+                val event = if (!longPressActive && dragMode == DragMode.NONE && !pinching && remaining > 0) {
+                    withTimeoutOrNull(remaining) { awaitPointerEvent() }
+                } else {
+                    awaitPointerEvent()
+                }
+
+                if (event == null) {
+                    // No movement before the long-press timeout: start the speed hold.
+                    if (maxPointers == 1) {
+                        longPressActive = true
+                        listener.onLongPressStart()
+                    }
+                    continue
+                }
+
                 val pressed = event.changes.filter { it.pressed }
                 maxPointers = maxOf(maxPointers, pressed.size)
 
                 if (pressed.isEmpty()) {
-                    // Gesture finished.
-                    val duration = event.changes.maxOf { it.uptimeMillis } - startTime
                     when {
+                        longPressActive -> listener.onLongPressEnd()
                         dragMode != DragMode.NONE -> listener.onDragEnd(dragMode)
                         pinching -> Unit
-                        maxPointers >= 2 && duration < TWO_FINGER_TAP_MS ->
+                        maxPointers >= 2 &&
+                            event.changes.maxOf { it.uptimeMillis } - startTime < TWO_FINGER_TAP_MS ->
                             listener.onTwoFingerTap()
                     }
                     break
                 }
 
+                if (longPressActive) {
+                    val change = pressed.first()
+                    val deltaX = change.position.x - change.previousPosition.x
+                    if (deltaX != 0f) listener.onLongPressDrag(deltaX / size.width)
+                    change.consume()
+                    continue
+                }
+
                 if (pressed.size >= 2 && dragMode == DragMode.NONE) {
                     val zoom = event.calculateZoom()
                     val pan = event.calculatePan()
-                    if (!pinching &&
-                        (abs(zoom - 1f) > PINCH_ZOOM_THRESHOLD ||
-                            event.calculateCentroidSize() > 0f && pan.getDistance() > touchSlop)
-                    ) {
+                    if (!pinching && (abs(zoom - 1f) > PINCH_ZOOM_THRESHOLD || pan.getDistance() > touchSlop)) {
                         pinching = true
                     }
                     if (pinching) {

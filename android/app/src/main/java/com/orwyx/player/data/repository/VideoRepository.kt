@@ -9,6 +9,8 @@ import com.orwyx.player.data.db.VideoDao
 import com.orwyx.player.data.db.toDomain
 import com.orwyx.player.data.settings.SettingsRepository
 import com.orwyx.player.domain.model.LibraryQuery
+import com.orwyx.player.domain.model.SortBy
+import com.orwyx.player.domain.model.SortDirection
 import com.orwyx.player.domain.model.Video
 import com.orwyx.player.domain.model.VideoFolder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,18 +53,22 @@ class VideoRepository @Inject constructor(
     val continueWatching: Flow<List<Video>> =
         dao.continueWatching(limit = 12).map { list -> list.map { it.toDomain() } }
 
+    /** Folder listing, sorted by the same global sort/direction as video listings. */
     val folders: Flow<List<VideoFolder>> =
         combine(dao.folders(), settings.settings) { aggregates, prefs ->
-            aggregates.map { agg ->
-                VideoFolder(
-                    path = agg.path,
-                    name = agg.name,
-                    videoCount = agg.videoCount,
-                    totalSizeBytes = agg.totalSizeBytes,
-                    latestDateAddedMs = agg.latestDateAddedMs,
-                    isHidden = agg.path in prefs.hiddenFolders,
-                )
-            }.filter { !it.isHidden }
+            aggregates
+                .map { agg ->
+                    VideoFolder(
+                        path = agg.path,
+                        name = agg.name,
+                        videoCount = agg.videoCount,
+                        totalSizeBytes = agg.totalSizeBytes,
+                        latestDateAddedMs = agg.latestDateAddedMs,
+                        isHidden = agg.path in prefs.hiddenFolders,
+                    )
+                }
+                .filter { !it.isHidden }
+                .sortedFolders(prefs.librarySortBy, prefs.libraryDirection)
         }
 
     val hiddenFolders: Flow<List<VideoFolder>> =
@@ -85,4 +91,19 @@ class VideoRepository @Inject constructor(
 
     private fun buildQuery(query: LibraryQuery, hidden: Set<String>) =
         LibraryQueryBuilder.build(query, hidden, System.currentTimeMillis())
+
+    /** Folder counts are small (hundreds, not videos), so an in-memory sort is plenty fast. */
+    private fun List<VideoFolder>.sortedFolders(
+        sortBy: SortBy,
+        direction: SortDirection,
+    ): List<VideoFolder> {
+        val comparator = when (sortBy) {
+            SortBy.SIZE -> compareBy<VideoFolder> { it.totalSizeBytes }
+            SortBy.PATH -> compareBy(String.CASE_INSENSITIVE_ORDER) { it.path }
+            SortBy.DATE -> compareBy<VideoFolder> { it.latestDateAddedMs }
+            else -> compareBy(String.CASE_INSENSITIVE_ORDER) { it.name } // TITLE, and any video-only key
+        }
+        val ordered = sortedWith(comparator)
+        return if (direction == SortDirection.DESCENDING) ordered.asReversed() else ordered
+    }
 }

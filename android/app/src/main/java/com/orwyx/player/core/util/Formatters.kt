@@ -1,5 +1,7 @@
 package com.orwyx.player.core.util
 
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -48,4 +50,9 @@ object Formatters {
         val dot = fileName.lastIndexOf('.')
         return if (dot > 0) fileName.substring(0, dot) else fileName
     }
+
+    private val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+
+    /** "Jan 5, 2026" style label; not thread-safe (SimpleDateFormat), UI-thread only. */
+    fun date(ms: Long): String = if (ms <= 0) "—" else dateFormat.format(Date(ms))
 }

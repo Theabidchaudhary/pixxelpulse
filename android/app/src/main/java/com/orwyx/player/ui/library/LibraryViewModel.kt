@@ -11,13 +11,15 @@ import com.orwyx.player.data.files.FileOperations
 import com.orwyx.player.data.repository.VideoRepository
 import com.orwyx.player.data.scanner.MediaScanner
 import com.orwyx.player.data.scanner.ScanState
+import com.orwyx.player.data.settings.AppSettings
 import com.orwyx.player.data.settings.SettingsRepository
+import com.orwyx.player.domain.model.LibraryLayout
 import com.orwyx.player.domain.model.LibraryQuery
 import com.orwyx.player.domain.model.SortBy
 import com.orwyx.player.domain.model.SortDirection
 import com.orwyx.player.domain.model.Video
-import com.orwyx.player.domain.model.VideoFolder
 import com.orwyx.player.domain.model.VideoFilter
+import com.orwyx.player.domain.model.VideoFolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -45,6 +48,14 @@ sealed interface PendingAction {
     data class Rename(val videoId: Long, val newTitle: String) : PendingAction
 }
 
+/** Everything about a query that is local to one screen (not shared/persisted). */
+private data class LocalQueryState(
+    val search: String = "",
+    val folderPath: String? = null,
+    val filter: VideoFilter = VideoFilter.ALL,
+    val includePrivate: Boolean = false,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
@@ -54,10 +65,25 @@ class LibraryViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    private val _query = MutableStateFlow(LibraryQuery())
-    val query: StateFlow<LibraryQuery> = _query
+    private val _local = MutableStateFlow(LocalQueryState())
 
-    val videos: Flow<PagingData<Video>> = _query
+    /** Sort/direction are global and persisted; everything else is per-screen. */
+    val query: StateFlow<LibraryQuery> = combine(_local, settingsRepository.settings) { local, prefs ->
+        LibraryQuery(
+            search = local.search,
+            folderPath = local.folderPath,
+            filter = local.filter,
+            sortBy = prefs.librarySortBy,
+            direction = prefs.libraryDirection,
+            includePrivate = local.includePrivate,
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, LibraryQuery())
+
+    /** Layout, visible card fields, and other persisted display settings. */
+    val settings: StateFlow<AppSettings> = settingsRepository.settings
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
+
+    val videos: Flow<PagingData<Video>> = query
         .flatMapLatest { repository.pagedVideos(it) }
         .cachedIn(viewModelScope)
 
@@ -72,29 +98,46 @@ class LibraryViewModel @Inject constructor(
     private val _events = Channel<LibraryEvent>(Channel.BUFFERED)
     val events: Flow<LibraryEvent> = _events.receiveAsFlow()
 
-    /** Kicks a scan once permission is granted (and again on manual pull-to-refresh). */
-    fun scan(force: Boolean = false) {
+    /**
+     * Scans only if the library has never been indexed before. After that,
+     * the app-wide [com.orwyx.player.data.scanner.MediaChangeObserver] keeps
+     * things current in the background — opening the app never forces a rescan.
+     */
+    fun scanIfNeeded() {
         viewModelScope.launch {
-            val auto = settingsRepository.settings.first().autoScan
-            if (auto || force) scanner.scan()
+            if (!settingsRepository.settings.first().hasScannedOnce) scanner.scan()
         }
+    }
+
+    /** Explicit user-triggered rescan (pull-to-refresh / toolbar button). */
+    fun rescan() {
+        viewModelScope.launch { scanner.scan() }
     }
 
     // --- Query mutations ------------------------------------------------------
 
-    fun setSearch(text: String) = update { it.copy(search = text) }
-    fun setFilter(filter: VideoFilter) = update { it.copy(filter = filter) }
-    fun setFolder(path: String?) = update { it.copy(folderPath = path) }
+    fun setSearch(text: String) = updateLocal { it.copy(search = text) }
+    fun setFilter(filter: VideoFilter) = updateLocal { it.copy(filter = filter) }
+    fun setFolder(path: String?) = updateLocal { it.copy(folderPath = path) }
 
     /** Vault screens flip the query into private-only mode after authentication. */
-    fun setVaultMode(enabled: Boolean) = update { it.copy(includePrivate = enabled) }
+    fun setVaultMode(enabled: Boolean) = updateLocal { it.copy(includePrivate = enabled) }
 
-    fun setSort(sortBy: SortBy, direction: SortDirection) =
-        update { it.copy(sortBy = sortBy, direction = direction) }
-
-    private fun update(block: (LibraryQuery) -> LibraryQuery) {
-        _query.value = block(_query.value)
+    private fun updateLocal(block: (LocalQueryState) -> LocalQueryState) {
+        _local.value = block(_local.value)
     }
+
+    // --- Global display settings (persisted, shared by every folder) ----------
+
+    fun setSortBy(sortBy: SortBy) = viewModelScope.launch { settingsRepository.setLibrarySortBy(sortBy) }
+
+    fun setDirection(direction: SortDirection) =
+        viewModelScope.launch { settingsRepository.setLibraryDirection(direction) }
+
+    fun setLayout(layout: LibraryLayout) =
+        viewModelScope.launch { settingsRepository.setLibraryLayout(layout) }
+
+    fun toggleField(key: String) = viewModelScope.launch { settingsRepository.toggleVideoCardField(key) }
 
     // --- Item actions -----------------------------------------------------------
 

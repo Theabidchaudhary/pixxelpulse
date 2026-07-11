@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -22,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,14 +33,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import com.orwyx.player.core.util.Formatters
+import com.orwyx.player.domain.model.LibraryLayout
 import com.orwyx.player.domain.model.Video
 import com.orwyx.player.ui.components.VideoCard
 import com.orwyx.player.ui.player.PlayerActivity
 
 /**
- * Shared paged grid + long-press actions used by Home, folder, and vault screens.
- * Adaptive cells give phones 2 columns and tablets/foldables as many as fit.
+ * Shared paged grid/list + long-press actions used by Home, folder, and vault
+ * screens. Layout and visible card fields come from the global, persisted
+ * display settings, so they stay in sync everywhere.
  */
 @Composable
 fun VideoGrid(
@@ -49,19 +54,29 @@ fun VideoGrid(
     inVault: Boolean = false,
 ) {
     val context = LocalContext.current
+    val settings by viewModel.settings.collectAsState()
     var actionsFor by remember { mutableStateOf<Video?>(null) }
 
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 168.dp),
-        contentPadding = contentPadding,
-        modifier = modifier.fillMaxSize(),
-    ) {
-        gridItems(items) { video ->
-            VideoCard(
-                video = video,
-                onClick = { context.startActivity(PlayerActivity.intent(context, video.id)) },
-                onLongClick = { actionsFor = video },
-            )
+    val onClick: (Video) -> Unit = { video -> context.startActivity(PlayerActivity.intent(context, video)) }
+    val onLongClick: (Video) -> Unit = { video -> actionsFor = video }
+
+    if (settings.libraryLayout == LibraryLayout.LIST) {
+        LazyColumn(contentPadding = contentPadding, modifier = modifier.fillMaxSize()) {
+            items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
+                items[index]?.let { video ->
+                    VideoCard(video, settings.libraryLayout, settings.videoCardFields, { onClick(video) }, { onLongClick(video) })
+                }
+            }
+        }
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 168.dp),
+            contentPadding = contentPadding,
+            modifier = modifier.fillMaxSize(),
+        ) {
+            gridItems(items) { video ->
+                VideoCard(video, settings.libraryLayout, settings.videoCardFields, { onClick(video) }, { onLongClick(video) })
+            }
         }
     }
 
@@ -81,7 +96,7 @@ private fun LazyGridScope.gridItems(
 ) {
     items(
         count = items.itemCount,
-        key = { index -> items.peek(index)?.id ?: index },
+        key = items.itemKey { it.id },
     ) { index ->
         items[index]?.let { itemContent(it) }
     }
@@ -107,7 +122,7 @@ fun VideoActionsSheet(
             supportingContent = { Text(video.folderName) },
         )
         SheetAction("Play") {
-            context.startActivity(PlayerActivity.intent(context, video.id))
+            context.startActivity(PlayerActivity.intent(context, video))
             onDismiss()
         }
         SheetAction(if (video.isFavorite) "Remove favorite" else "Favorite") {

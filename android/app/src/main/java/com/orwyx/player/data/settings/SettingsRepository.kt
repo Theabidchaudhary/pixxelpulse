@@ -10,6 +10,10 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.orwyx.player.domain.model.LibraryLayout
+import com.orwyx.player.domain.model.SortBy
+import com.orwyx.player.domain.model.SortDirection
+import com.orwyx.player.domain.model.VideoCardField
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -40,9 +44,15 @@ data class AppSettings(
     val zoomMode: ZoomMode = ZoomMode.FIT,
     // Library
     val autoScan: Boolean = true,
+    val hasScannedOnce: Boolean = false,
     val ignoredFolders: Set<String> = emptySet(),
     val hiddenFolders: Set<String> = emptySet(),
     val safFolders: Set<String> = emptySet(),
+    // Display (global: shared by the folder list and every folder's video list)
+    val librarySortBy: SortBy = SortBy.DATE,
+    val libraryDirection: SortDirection = SortDirection.DESCENDING,
+    val libraryLayout: LibraryLayout = LibraryLayout.GRID,
+    val videoCardFields: Set<String> = VideoCardField.DEFAULT_ENABLED,
     // Subtitles
     val subtitleAutoLoad: Boolean = true,
     val subtitlePreferredLanguage: String = "en",
@@ -78,9 +88,14 @@ class SettingsRepository @Inject constructor(
         val REMEMBER_ZOOM = booleanPreferencesKey("remember_zoom")
         val ZOOM_MODE = stringPreferencesKey("zoom_mode")
         val AUTO_SCAN = booleanPreferencesKey("auto_scan")
+        val HAS_SCANNED_ONCE = booleanPreferencesKey("has_scanned_once")
         val IGNORED_FOLDERS = stringSetPreferencesKey("ignored_folders")
         val HIDDEN_FOLDERS = stringSetPreferencesKey("hidden_folders")
         val SAF_FOLDERS = stringSetPreferencesKey("saf_folders")
+        val LIBRARY_SORT_BY = stringPreferencesKey("library_sort_by")
+        val LIBRARY_DIRECTION = stringPreferencesKey("library_direction")
+        val LIBRARY_LAYOUT = stringPreferencesKey("library_layout")
+        val VIDEO_CARD_FIELDS = stringSetPreferencesKey("video_card_fields")
         val SUB_AUTO_LOAD = booleanPreferencesKey("sub_auto_load")
         val SUB_LANGUAGE = stringPreferencesKey("sub_language")
         val SUB_SCALE = floatPreferencesKey("sub_scale")
@@ -111,9 +126,14 @@ class SettingsRepository @Inject constructor(
                 rememberZoom = p[Keys.REMEMBER_ZOOM] ?: true,
                 zoomMode = p.enum(Keys.ZOOM_MODE, ZoomMode.FIT),
                 autoScan = p[Keys.AUTO_SCAN] ?: true,
+                hasScannedOnce = p[Keys.HAS_SCANNED_ONCE] ?: false,
                 ignoredFolders = p[Keys.IGNORED_FOLDERS] ?: emptySet(),
                 hiddenFolders = p[Keys.HIDDEN_FOLDERS] ?: emptySet(),
                 safFolders = p[Keys.SAF_FOLDERS] ?: emptySet(),
+                librarySortBy = p.enum(Keys.LIBRARY_SORT_BY, SortBy.DATE),
+                libraryDirection = p.enum(Keys.LIBRARY_DIRECTION, SortDirection.DESCENDING),
+                libraryLayout = p.enum(Keys.LIBRARY_LAYOUT, LibraryLayout.GRID),
+                videoCardFields = p[Keys.VIDEO_CARD_FIELDS] ?: VideoCardField.DEFAULT_ENABLED,
                 subtitleAutoLoad = p[Keys.SUB_AUTO_LOAD] ?: true,
                 subtitlePreferredLanguage = p[Keys.SUB_LANGUAGE] ?: "en",
                 subtitleTextScale = p[Keys.SUB_SCALE] ?: 1.0f,
@@ -143,6 +163,14 @@ class SettingsRepository @Inject constructor(
     suspend fun setRememberZoom(value: Boolean) = edit { it[Keys.REMEMBER_ZOOM] = value }
     suspend fun setZoomMode(value: ZoomMode) = edit { it[Keys.ZOOM_MODE] = value.name }
     suspend fun setAutoScan(value: Boolean) = edit { it[Keys.AUTO_SCAN] = value }
+    suspend fun setHasScannedOnce(value: Boolean) = edit { it[Keys.HAS_SCANNED_ONCE] = value }
+    suspend fun setLibrarySortBy(value: SortBy) = edit { it[Keys.LIBRARY_SORT_BY] = value.name }
+    suspend fun setLibraryDirection(value: SortDirection) = edit { it[Keys.LIBRARY_DIRECTION] = value.name }
+    suspend fun setLibraryLayout(value: LibraryLayout) = edit { it[Keys.LIBRARY_LAYOUT] = value.name }
+    suspend fun toggleVideoCardField(key: String) = edit {
+        val current = it[Keys.VIDEO_CARD_FIELDS] ?: VideoCardField.DEFAULT_ENABLED
+        it[Keys.VIDEO_CARD_FIELDS] = if (key in current) current - key else current + key
+    }
     suspend fun setBatteryMode(value: BatteryMode) = edit { it[Keys.BATTERY_MODE] = value.name }
     suspend fun setSubtitleAutoLoad(value: Boolean) = edit { it[Keys.SUB_AUTO_LOAD] = value }
     suspend fun setSubtitlePreferredLanguage(value: String) = edit { it[Keys.SUB_LANGUAGE] = value }

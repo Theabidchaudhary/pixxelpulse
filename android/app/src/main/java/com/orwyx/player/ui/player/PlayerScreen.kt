@@ -8,16 +8,20 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -41,12 +45,16 @@ import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,6 +69,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -71,17 +80,13 @@ import androidx.media3.ui.PlayerView
 import com.orwyx.player.core.util.Formatters
 import com.orwyx.player.data.settings.ZoomMode
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 /** Which bottom sheet is open. */
 enum class PlayerSheet { NONE, SPEED, AUDIO, SUBTITLES, SLEEP, ENHANCE }
 
-/** Transient gesture feedback HUD. */
-private sealed interface Hud {
-    data class Brightness(val fraction: Float) : Hud
-    data class Volume(val fraction: Float) : Hud
-    data class Seek(val targetMs: Long, val deltaMs: Long) : Hud
-    data object HoldSpeed : Hud
-}
+/** Transient centered gesture feedback (seek preview only; brightness/volume live on the sides). */
+private data class SeekHud(val targetMs: Long, val deltaMs: Long)
 
 @UnstableApi
 @Composable
@@ -98,7 +103,7 @@ fun PlayerScreen(
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
 
     var sheet by remember { mutableStateOf(PlayerSheet.NONE) }
-    var hud by remember { mutableStateOf<Hud?>(null) }
+    var showCropSheet by remember { mutableStateOf(false) }
     var zoomScale by remember { mutableFloatStateOf(1f) }
     var zoomOffset by remember { mutableStateOf(Offset.Zero) }
 
@@ -110,17 +115,27 @@ fun PlayerScreen(
     }
     var seekTargetMs by remember { mutableFloatStateOf(0f) }
 
-    // Auto-hide controls and HUD.
+    var brightnessHud by remember { mutableStateOf<Float?>(null) }
+    var volumeHud by remember { mutableStateOf<Float?>(null) }
+    var seekHud by remember { mutableStateOf<SeekHud?>(null) }
+
+    // Auto-hide controls and side HUDs.
     LaunchedEffect(state.controlsVisible, state.isPlaying) {
         if (state.controlsVisible && state.isPlaying) {
             delay(3_500)
             viewModel.setControlsVisible(false)
         }
     }
-    LaunchedEffect(hud) {
-        if (hud != null && hud !is Hud.Seek && hud !is Hud.HoldSpeed) {
+    LaunchedEffect(brightnessHud) {
+        if (brightnessHud != null) {
             delay(900)
-            hud = null
+            brightnessHud = null
+        }
+    }
+    LaunchedEffect(volumeHud) {
+        if (volumeHud != null) {
+            delay(900)
+            volumeHud = null
         }
     }
 
@@ -142,17 +157,9 @@ fun PlayerScreen(
                 }
             }
 
-            override fun onLongPressStart() {
-                viewModel.setHoldSpeed(true)
-                hud = Hud.HoldSpeed
-            }
-
-            override fun onLongPressEnd() {
-                if (viewModel.state.value.holdSpeedActive) {
-                    viewModel.setHoldSpeed(false)
-                    hud = null
-                }
-            }
+            override fun onLongPressStart() = viewModel.startHoldSpeed()
+            override fun onLongPressDrag(normalizedDeltaX: Float) = viewModel.dragHoldSpeed(normalizedDeltaX)
+            override fun onLongPressEnd() = viewModel.endHoldSpeed()
 
             override fun onDragStart(mode: DragMode) {
                 if (mode == DragMode.SEEK) seekTargetMs = viewModel.state.value.positionMs.toFloat()
@@ -163,7 +170,7 @@ fun PlayerScreen(
                     DragMode.BRIGHTNESS -> {
                         brightness = (brightness + normalizedDelta).coerceIn(0.01f, 1f)
                         onSetBrightness(brightness)
-                        hud = Hud.Brightness(brightness)
+                        brightnessHud = brightness
                     }
                     DragMode.VOLUME -> {
                         volumeFraction = (volumeFraction + normalizedDelta).coerceIn(0f, 1f)
@@ -173,13 +180,13 @@ fun PlayerScreen(
                             (volumeFraction * max).toInt(),
                             0,
                         )
-                        hud = Hud.Volume(volumeFraction)
+                        volumeHud = volumeFraction
                     }
                     DragMode.SEEK -> {
                         // Full screen width sweeps two minutes; sensitivity scales this.
                         seekTargetMs = (seekTargetMs + normalizedDelta * 120_000f)
                             .coerceIn(0f, viewModel.state.value.durationMs.toFloat())
-                        hud = Hud.Seek(
+                        seekHud = SeekHud(
                             targetMs = seekTargetMs.toLong(),
                             deltaMs = seekTargetMs.toLong() - viewModel.state.value.positionMs,
                         )
@@ -190,7 +197,7 @@ fun PlayerScreen(
 
             override fun onDragEnd(mode: DragMode) {
                 if (mode == DragMode.SEEK) viewModel.seekTo(seekTargetMs.toLong())
-                hud = null
+                seekHud = null
             }
 
             override fun onPinch(zoomFactor: Float, pan: Offset) {
@@ -256,7 +263,42 @@ fun PlayerScreen(
             )
         }
 
-        GestureHud(hud, Modifier.align(Alignment.Center))
+        // Brightness (left) / volume (right) vertical sliders.
+        AnimatedVisibility(
+            visible = brightnessHud != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.CenterStart).padding(start = 20.dp),
+        ) {
+            VerticalGestureBar(icon = Icons.Filled.BrightnessMedium, fraction = brightnessHud ?: 0f)
+        }
+        AnimatedVisibility(
+            visible = volumeHud != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp),
+        ) {
+            VerticalGestureBar(icon = Icons.AutoMirrored.Filled.VolumeUp, fraction = volumeHud ?: 0f)
+        }
+
+        AnimatedVisibility(
+            visible = seekHud != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.Center),
+        ) {
+            seekHud?.let { SeekHudView(it) }
+        }
+
+        // Long-press speed: adjustable slider at the top, driven straight from ViewModel state.
+        AnimatedVisibility(
+            visible = state.holdSpeedActive,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
+        ) {
+            HoldSpeedHud(state.holdSpeedValue)
+        }
 
         if (state.locked) {
             IconButton(
@@ -273,9 +315,9 @@ fun PlayerScreen(
                 sleepActive = sleepState !is com.orwyx.player.player.SleepTimerState.Off,
                 onExit = onExit,
                 onOpenSheet = { sheet = it },
+                onOpenCrop = { showCropSheet = true },
                 onEnterPip = onEnterPip,
                 viewModel = viewModel,
-                onResetZoom = { zoomScale = 1f; zoomOffset = Offset.Zero },
             )
         }
 
@@ -298,6 +340,19 @@ fun PlayerScreen(
         onDismiss = { sheet = PlayerSheet.NONE },
         viewModel = viewModel,
     )
+
+    if (showCropSheet) {
+        CropSheet(
+            current = state.zoomMode,
+            onDismiss = { showCropSheet = false },
+            onSelect = { mode ->
+                viewModel.setZoomMode(mode)
+                zoomScale = 1f
+                zoomOffset = Offset.Zero
+            },
+            onReset = { zoomScale = 1f; zoomOffset = Offset.Zero },
+        )
+    }
 }
 
 @UnstableApi
@@ -307,8 +362,8 @@ private fun PlayerControls(
     sleepActive: Boolean,
     onExit: () -> Unit,
     onOpenSheet: (PlayerSheet) -> Unit,
+    onOpenCrop: () -> Unit,
     onEnterPip: () -> Unit,
-    onResetZoom: () -> Unit,
     viewModel: PlayerViewModel,
 ) {
     val white = Color.White
@@ -441,12 +496,8 @@ private fun PlayerControls(
                     IconButton(onClick = { onOpenSheet(PlayerSheet.SPEED) }) {
                         Icon(Icons.Filled.Speed, "Speed", tint = if (state.speed != 1f) MaterialTheme.colorScheme.primary else white)
                     }
-                    IconButton(onClick = {
-                        val next = ZoomMode.entries[(state.zoomMode.ordinal + 1) % ZoomMode.entries.size]
-                        viewModel.setZoomMode(next)
-                        onResetZoom()
-                    }) {
-                        Icon(Icons.Filled.AspectRatio, "Zoom mode", tint = white)
+                    IconButton(onClick = onOpenCrop) {
+                        Icon(Icons.Filled.AspectRatio, "Crop & fit", tint = white)
                     }
                     IconButton(onClick = viewModel::cycleRepeat) {
                         Icon(
@@ -474,54 +525,139 @@ private fun PlayerControls(
     }
 }
 
+/** Vertical fill bar for brightness (left side) and volume (right side) gestures. */
 @Composable
-private fun GestureHud(hud: Hud?, modifier: Modifier = Modifier) {
-    AnimatedVisibility(visible = hud != null, enter = fadeIn(), exit = fadeOut(), modifier = modifier) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+private fun VerticalGestureBar(icon: androidx.compose.ui.graphics.vector.ImageVector, fraction: Float) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .width(44.dp)
+            .height(160.dp)
+            .background(Color(0x9915171B), RoundedCornerShape(22.dp))
+            .padding(vertical = 12.dp),
+    ) {
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+        Box(
             modifier = Modifier
-                .background(Color(0xCC15171B), RoundedCornerShape(16.dp))
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .weight(1f)
+                .width(5.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(Color(0x40FFFFFF)),
         ) {
-            when (hud) {
-                is Hud.Brightness -> {
-                    Icon(Icons.Filled.BrightnessMedium, null, tint = Color.White)
-                    HudBar(hud.fraction)
-                }
-                is Hud.Volume -> {
-                    Icon(Icons.AutoMirrored.Filled.VolumeUp, null, tint = Color.White)
-                    HudBar(hud.fraction)
-                }
-                is Hud.Seek -> {
-                    val sign = if (hud.deltaMs >= 0) "+" else "−"
-                    Text(
-                        Formatters.duration(hud.targetMs),
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = Color.White,
-                    )
-                    Text(
-                        "$sign${Formatters.duration(kotlin.math.abs(hud.deltaMs))}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color(0xFFB9BEC7),
-                    )
-                }
-                is Hud.HoldSpeed -> Text(
-                    "2× speed",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                )
-                null -> Unit
-            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(fraction.coerceIn(0f, 1f))
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Color.White),
+            )
         }
+        Text(
+            "${(fraction * 100).roundToInt()}%",
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall,
+        )
     }
 }
 
 @Composable
-private fun HudBar(fraction: Float) {
-    LinearProgressIndicator(
-        progress = { fraction },
+private fun SeekHudView(hud: SeekHud) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .padding(top = 10.dp)
-            .fillMaxWidth(0.35f),
-    )
+            .background(Color(0xCC15171B), RoundedCornerShape(16.dp))
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+    ) {
+        val sign = if (hud.deltaMs >= 0) "+" else "−"
+        Text(Formatters.duration(hud.targetMs), style = MaterialTheme.typography.headlineSmall, color = Color.White)
+        Text(
+            "$sign${Formatters.duration(kotlin.math.abs(hud.deltaMs))}",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color(0xFFB9BEC7),
+        )
+    }
+}
+
+/** Speed slider shown while a long-press hold is active; drag left/right to adjust. */
+@Composable
+private fun HoldSpeedHud(value: Float) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .background(Color(0xCC15171B), RoundedCornerShape(16.dp))
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+    ) {
+        Text("${"%.2f".format(value)}×", style = MaterialTheme.typography.titleMedium, color = Color.White)
+        val fraction = ((value - 0.25f) / (3f - 0.25f)).coerceIn(0f, 1f)
+        Box(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .width(200.dp)
+                .height(5.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(Color(0x40FFFFFF)),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+            )
+        }
+        Text(
+            "Slide to change speed",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color(0xFFB9BEC7),
+            modifier = Modifier.padding(top = 4.dp),
+        )
+    }
+}
+
+/** Crop/fit picker: Fit, Fill, Stretch, Original, plus a reset for pinch zoom/pan. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CropSheet(
+    current: ZoomMode,
+    onDismiss: () -> Unit,
+    onSelect: (ZoomMode) -> Unit,
+    onReset: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            "Crop & fit",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+        ZoomMode.entries.forEach { mode ->
+            ListItem(
+                headlineContent = { Text(zoomModeLabel(mode)) },
+                supportingContent = { Text(zoomModeDescription(mode)) },
+                leadingContent = {
+                    RadioButton(selected = current == mode, onClick = { onSelect(mode) })
+                },
+                modifier = Modifier.clickable { onSelect(mode) },
+            )
+        }
+        TextButton(
+            onClick = { onReset(); onDismiss() },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        ) { Text("Reset pinch zoom") }
+    }
+}
+
+private fun zoomModeLabel(mode: ZoomMode): String = when (mode) {
+    ZoomMode.FIT -> "Fit"
+    ZoomMode.FILL -> "Fill"
+    ZoomMode.STRETCH -> "Stretch"
+    ZoomMode.ORIGINAL -> "Original size"
+}
+
+private fun zoomModeDescription(mode: ZoomMode): String = when (mode) {
+    ZoomMode.FIT -> "Whole frame visible, may show bars"
+    ZoomMode.FILL -> "Fills the screen, edges may crop"
+    ZoomMode.STRETCH -> "Stretches to fill exactly"
+    ZoomMode.ORIGINAL -> "No scaling"
 }

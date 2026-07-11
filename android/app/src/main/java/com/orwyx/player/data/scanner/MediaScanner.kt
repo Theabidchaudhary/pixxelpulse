@@ -67,6 +67,7 @@ class MediaScanner @Inject constructor(
         }
         val removed = dao.sweepStale()
         _state.value = ScanState.Done(found, removed)
+        if (!prefs.hasScannedOnce) settings.setHasScannedOnce(true)
 
         enrichMetadata()
         _state.value = ScanState.Idle
