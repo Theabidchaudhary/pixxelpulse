@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import android.util.Rational
 import androidx.activity.ComponentActivity
@@ -22,7 +21,6 @@ import androidx.media3.common.util.UnstableApi
 import com.orwyx.player.player.PlaybackService
 import com.orwyx.player.ui.theme.OrwyxTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -101,7 +99,6 @@ class PlayerActivity : ComponentActivity() {
         }
     }
 
-    @Deprecated("Platform callback; PiP-on-home remains intent-driven")
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (viewModel.state.value.isPlaying) enterPip()

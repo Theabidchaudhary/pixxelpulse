@@ -352,16 +352,18 @@ class PlayerViewModel @Inject constructor(
 
     fun selectTrack(choice: TrackChoice) {
         val selector = engine.trackSelector ?: return
-        selector.parameters = selector.parameters.buildUpon()
-            .addOverride(TrackSelectionOverride(choice.group.mediaTrackGroup, choice.trackIndex))
-            .build()
+        selector.setParameters(
+            selector.buildUponParameters()
+                .addOverride(TrackSelectionOverride(choice.group.mediaTrackGroup, choice.trackIndex))
+                .setTrackTypeDisabled(choice.group.type, false),
+        )
     }
 
     fun disableTextTracks() {
         val selector = engine.trackSelector ?: return
-        selector.parameters = selector.parameters.buildUpon()
-            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
-            .build()
+        selector.setParameters(
+            selector.buildUponParameters().setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true),
+        )
         subtitleManager.clearTrack()
     }
 

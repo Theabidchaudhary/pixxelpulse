@@ -77,12 +77,14 @@ same player in a `MediaSession` for notification/lockscreen/Bluetooth control.
 
 ## Building
 
-Open `android/` in Android Studio (Ladybug+) and run the `app` configuration,
-or from this directory:
+Open `android/` in Android Studio (Ladybug+) and run the `app` configuration.
+Android Studio generates the Gradle wrapper binary from
+`gradle/wrapper/gradle-wrapper.properties` (Gradle 8.9) on first sync; from the
+command line, run `gradle wrapper` once, then:
 
 ```
-./gradlew :app:assembleDebug
-./gradlew :app:testDebugUnitTest
+./gradlew :app:assembleDebug        # build
+./gradlew :app:testDebugUnitTest    # JVM unit tests (parsers, formatters, query builder)
 ```
 
 ## Privacy

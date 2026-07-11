@@ -20,8 +20,10 @@ class StereoModeProcessor : BaseAudioProcessor() {
         if (inputAudioFormat.encoding != C.ENCODING_PCM_16BIT) {
             throw AudioProcessor.UnhandledAudioFormatException(inputAudioFormat)
         }
-        // Only activate for stereo input while mono mode is on.
-        return if (monoEnabled && inputAudioFormat.channelCount == 2) {
+        // Stay active for stereo content regardless of the current toggle, so the
+        // user can flip mono mode mid-playback (only a flush is needed, not a
+        // format change). Non-stereo content passes through untouched upstream.
+        return if (inputAudioFormat.channelCount == 2) {
             inputAudioFormat
         } else {
             AudioProcessor.AudioFormat.NOT_SET
@@ -29,6 +31,13 @@ class StereoModeProcessor : BaseAudioProcessor() {
     }
 
     override fun queueInput(inputBuffer: ByteBuffer) {
+        if (!monoEnabled) {
+            if (!inputBuffer.hasRemaining()) return
+            val output = replaceOutputBuffer(inputBuffer.remaining())
+            output.put(inputBuffer)
+            output.flip()
+            return
+        }
         val frames = inputBuffer.remaining() / 4 // 2 channels * 2 bytes
         val output = replaceOutputBuffer(frames * 4)
         repeat(frames) {

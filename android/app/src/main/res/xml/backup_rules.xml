@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <!-- Never back up the private-folder PIN material. -->
-    <exclude domain="sharedpref" path="orwyx_settings.preferences_pb" />
+    <!-- Never back up settings (contains the private-folder PIN hash + salt). -->
+    <exclude domain="file" path="datastore/orwyx_settings.preferences_pb" />
 </full-backup-content>

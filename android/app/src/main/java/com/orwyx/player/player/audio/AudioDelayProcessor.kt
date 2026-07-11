@@ -33,7 +33,9 @@ class AudioDelayProcessor : BaseAudioProcessor() {
         if (inputAudioFormat.encoding != C.ENCODING_PCM_16BIT) {
             throw AudioProcessor.UnhandledAudioFormatException(inputAudioFormat)
         }
-        return if (delayMs == 0L) AudioProcessor.AudioFormat.NOT_SET else inputAudioFormat
+        // Stay active even at zero delay: reconfiguration only happens on format
+        // change, but the user can dial in a delay at any time (a seek re-flushes us).
+        return inputAudioFormat
     }
 
     override fun onFlush() {

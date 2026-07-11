@@ -74,10 +74,6 @@
             </intent-filter>
         </service>
 
-        <!-- No analytics, no ads, no tracking: the app declares no other network components. -->
-        <meta-data
-            android:name="android.max_aspect"
-            android:value="3.0"
-            tools:ignore="ManifestResource" />
+        <!-- No analytics, no ads, no tracking: the app declares no other components. -->
     </application>
 </manifest>
