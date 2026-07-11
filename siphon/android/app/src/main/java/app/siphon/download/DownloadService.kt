@@ -140,6 +140,9 @@ class DownloadService : Service() {
             jobs[id]
         }
         if (job != null) {
+            // Abort the in-flight socket first — the coroutine may be stuck
+            // in a blocking read that plain job.cancel() can't interrupt.
+            downloader.cancelActive(id)
             job.cancel()
         } else if (!pause) {
             // Not running (still queued) — flip the row directly.

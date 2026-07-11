@@ -5,12 +5,13 @@ import app.siphon.data.db.DownloadDao
 import app.siphon.data.db.DownloadEntity
 import app.siphon.data.repo.DownloadRepository
 import app.siphon.util.StorageSink
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Executes a single download from start (or a resume offset) to completion.
@@ -32,6 +33,22 @@ class Downloader(
 ) {
 
     class HttpStatusException(val code: Int) : IOException("HTTP $code")
+
+    /** In-flight OkHttp calls keyed by download id, so [cancelActive] can abort the socket directly. */
+    private val activeCalls = ConcurrentHashMap<Long, Call>()
+
+    /**
+     * Aborts the in-flight network call for [id], if any. `Call.cancel()`
+     * closes the underlying socket, which immediately unblocks a thread
+     * currently stuck in a blocking `read()` — coroutine cancellation alone
+     * can't do that, since it's only checked between reads. Called by
+     * [app.siphon.download.DownloadService] before cancelling the coroutine
+     * job, so pause/cancel take effect right away instead of waiting for
+     * whatever chunk the connection was stalled on.
+     */
+    fun cancelActive(id: Long) {
+        activeCalls[id]?.cancel()
+    }
 
     suspend fun execute(id: Long) {
         var entity = dao.byId(id) ?: return
@@ -80,16 +97,10 @@ class Downloader(
             .build()
 
         val call = client.newCall(request)
-        // input.read() below is a blocking Java I/O call — a coroutine
-        // cancellation flag alone can't interrupt it while it's blocked
-        // waiting on the network, so pause/cancel would otherwise hang until
-        // the current chunk happens to arrive (which can be a long time on a
-        // slow/stalled connection). Closing the OkHttp call directly on
-        // cancellation aborts the underlying socket, which unblocks the read
-        // immediately with an IOException.
-        val cancelHandle = currentCoroutineContext()[Job]?.invokeOnCompletion(onCancelling = true) {
-            call.cancel()
-        }
+        // Registered so DownloadService.stopJob() can call cancelActive(id)
+        // to close this socket directly — see the class doc on cancelActive
+        // for why coroutine cancellation alone isn't enough here.
+        activeCalls[entity.id] = call
 
         try {
             call.execute().use { response ->
@@ -143,14 +154,14 @@ class Downloader(
                 sink.finalizeFile()
             }
         } catch (e: IOException) {
-            // If this IOException is the socket closing because we just
-            // cancelled the call above, surface the real CancellationException
-            // so the caller's pause/cancel handling runs instead of marking
-            // the download FAILED. A genuine network IOException rethrows as-is.
+            // If this IOException is the socket closing because cancelActive()
+            // aborted it, surface the real CancellationException so the
+            // caller's pause/cancel handling runs instead of marking the
+            // download FAILED. A genuine network IOException rethrows as-is.
             currentCoroutineContext().ensureActive()
             throw e
         } finally {
-            cancelHandle?.dispose()
+            activeCalls.remove(entity.id)
         }
     }
 
