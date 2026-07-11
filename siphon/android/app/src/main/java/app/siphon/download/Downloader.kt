@@ -5,6 +5,7 @@ import app.siphon.data.db.DownloadDao
 import app.siphon.data.db.DownloadEntity
 import app.siphon.data.repo.DownloadRepository
 import app.siphon.util.StorageSink
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import okhttp3.OkHttpClient
@@ -78,55 +79,78 @@ class Downloader(
             .apply { if (resumeFrom > 0) header("Range", "bytes=$resumeFrom-") }
             .build()
 
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw HttpStatusException(response.code)
+        val call = client.newCall(request)
+        // input.read() below is a blocking Java I/O call — a coroutine
+        // cancellation flag alone can't interrupt it while it's blocked
+        // waiting on the network, so pause/cancel would otherwise hang until
+        // the current chunk happens to arrive (which can be a long time on a
+        // slow/stalled connection). Closing the OkHttp call directly on
+        // cancellation aborts the underlying socket, which unblocks the read
+        // immediately with an IOException.
+        val cancelHandle = currentCoroutineContext()[Job]?.invokeOnCompletion(onCancelling = true) {
+            call.cancel()
+        }
 
-            val body = response.body ?: throw IOException("Empty response body")
-            val isPartial = response.code == 206
-            val startOffset = if (isPartial) resumeFrom else 0L
-            val reportedLength = body.contentLength()
-            val totalBytes = when {
-                reportedLength > 0 -> startOffset + reportedLength
-                entity.totalBytes > 0 -> entity.totalBytes
-                else -> -1L
-            }
+        try {
+            call.execute().use { response ->
+                if (!response.isSuccessful) throw HttpStatusException(response.code)
 
-            var downloaded = startOffset
-            var windowBytes = 0L
-            var windowStart = System.nanoTime()
-            var speedBps = 0L
-
-            sink.open(append = isPartial && startOffset > 0).use { out ->
-                val buffer = ByteArray(BUFFER_SIZE)
-                val input = body.byteStream()
-                while (true) {
-                    currentCoroutineContext().ensureActive()
-                    val read = input.read(buffer)
-                    if (read == -1) break
-                    out.write(buffer, 0, read)
-                    downloaded += read
-                    windowBytes += read
-
-                    val now = System.nanoTime()
-                    val windowNanos = now - windowStart
-                    if (windowNanos >= FLUSH_INTERVAL_NANOS) {
-                        val instant = windowBytes * 1_000_000_000L / windowNanos
-                        // Exponential smoothing keeps the displayed speed calm.
-                        speedBps = if (speedBps == 0L) instant else (speedBps * 7 + instant * 3) / 10
-                        val eta = if (totalBytes > 0 && speedBps > 0) (totalBytes - downloaded) / speedBps else -1L
-                        dao.updateProgress(entity.id, downloaded, totalBytes, speedBps, eta)
-                        windowBytes = 0
-                        windowStart = now
-                    }
+                val body = response.body ?: throw IOException("Empty response body")
+                val isPartial = response.code == 206
+                val startOffset = if (isPartial) resumeFrom else 0L
+                val reportedLength = body.contentLength()
+                val totalBytes = when {
+                    reportedLength > 0 -> startOffset + reportedLength
+                    entity.totalBytes > 0 -> entity.totalBytes
+                    else -> -1L
                 }
-                out.flush()
-            }
 
-            dao.updateProgress(entity.id, downloaded, if (totalBytes > 0) totalBytes else downloaded, 0, 0)
-            // Verify strictly against the server's Content-Length; resolve-time
-            // size estimates are not authoritative and must not fail a file.
-            verify(entity.id, downloaded, if (reportedLength > 0) startOffset + reportedLength else -1L)
-            sink.finalizeFile()
+                var downloaded = startOffset
+                var windowBytes = 0L
+                var windowStart = System.nanoTime()
+                var speedBps = 0L
+
+                sink.open(append = isPartial && startOffset > 0).use { out ->
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    val input = body.byteStream()
+                    while (true) {
+                        currentCoroutineContext().ensureActive()
+                        val read = input.read(buffer)
+                        if (read == -1) break
+                        out.write(buffer, 0, read)
+                        downloaded += read
+                        windowBytes += read
+
+                        val now = System.nanoTime()
+                        val windowNanos = now - windowStart
+                        if (windowNanos >= FLUSH_INTERVAL_NANOS) {
+                            val instant = windowBytes * 1_000_000_000L / windowNanos
+                            // Exponential smoothing keeps the displayed speed calm.
+                            speedBps = if (speedBps == 0L) instant else (speedBps * 7 + instant * 3) / 10
+                            val eta = if (totalBytes > 0 && speedBps > 0) (totalBytes - downloaded) / speedBps else -1L
+                            dao.updateProgress(entity.id, downloaded, totalBytes, speedBps, eta)
+                            windowBytes = 0
+                            windowStart = now
+                        }
+                    }
+                    out.flush()
+                }
+
+                dao.updateProgress(entity.id, downloaded, if (totalBytes > 0) totalBytes else downloaded, 0, 0)
+                // Verify strictly against the server's Content-Length; resolve-time
+                // size estimates are not authoritative and must not fail a file.
+                verify(entity.id, downloaded, if (reportedLength > 0) startOffset + reportedLength else -1L)
+                sink.finalizeFile()
+            }
+        } catch (e: IOException) {
+            // If this IOException is the socket closing because we just
+            // cancelled the call above, surface the real CancellationException
+            // so the caller's pause/cancel handling runs instead of marking
+            // the download FAILED. A genuine network IOException rethrows as-is.
+            currentCoroutineContext().ensureActive()
+            throw e
+        } finally {
+            cancelHandle?.dispose()
         }
     }
 

@@ -50,9 +50,9 @@ jobs:
       - name: Build debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
       - name: Build release APK (unsigned)
-        # Point release builds at your real API before shipping:
-        # -PsiphonApiBaseUrl=https://api.yourdomain.com
-        run: ./gradlew --no-daemon :app:assembleRelease -PsiphonApiBaseUrl=https://api.siphon.app
+        # Uses the baked-in default API URL from build.gradle.kts. Override for
+        # a different backend with: -PsiphonApiBaseUrl=https://api.yourdomain.com
+        run: ./gradlew --no-daemon :app:assembleRelease
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:

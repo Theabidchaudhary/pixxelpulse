@@ -17,11 +17,12 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        // Point release builds at your deployed Siphon API (see docs/deployment.md).
+        // Baked-in default API — the deployed Siphon backend. Override with
+        // -PsiphonApiBaseUrl=... at build time, or per-install from Settings.
         buildConfigField(
             "String",
             "SIPHON_API_BASE_URL",
-            "\"${project.findProperty("siphonApiBaseUrl") ?: "https://api.siphon.app"}\"",
+            "\"${project.findProperty("siphonApiBaseUrl") ?: "https://pixxelpulse.onrender.com"}\"",
         )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,8 +30,6 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            // Emulator loopback to a locally running backend.
-            buildConfigField("String", "SIPHON_API_BASE_URL", "\"http://10.0.2.2:8787\"")
         }
         release {
             isMinifyEnabled = true
