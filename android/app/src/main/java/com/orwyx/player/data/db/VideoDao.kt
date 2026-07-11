@@ -111,8 +111,8 @@ interface VideoDao {
     @Query("UPDATE videos SET isFavorite = :favorite WHERE id = :id")
     suspend fun setFavorite(id: Long, favorite: Boolean)
 
-    @Query("UPDATE videos SET isPrivate = :private WHERE id = :id")
-    suspend fun setPrivate(id: Long, private: Boolean)
+    @Query("UPDATE videos SET isPrivate = :makePrivate WHERE id = :id")
+    suspend fun setPrivate(id: Long, makePrivate: Boolean)
 
     @Query("UPDATE videos SET title = :title, path = :path WHERE id = :id")
     suspend fun applyRename(id: Long, title: String, path: String)
