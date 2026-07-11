@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowDownward
-import androidx.compose.material.icons.automirrored.filled.ArrowUpward
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -130,13 +130,13 @@ fun DisplaySettingsSheet(
                     selected = direction == SortDirection.ASCENDING,
                     onClick = { onDirection(SortDirection.ASCENDING) },
                     shape = SegmentedButtonDefaults.itemShape(0, 2),
-                    icon = { Icon(Icons.AutoMirrored.Filled.ArrowUpward, null) },
+                    icon = { Icon(Icons.Filled.ArrowUpward, null) },
                 ) { Text("A to Z") }
                 SegmentedButton(
                     selected = direction == SortDirection.DESCENDING,
                     onClick = { onDirection(SortDirection.DESCENDING) },
                     shape = SegmentedButtonDefaults.itemShape(1, 2),
-                    icon = { Icon(Icons.AutoMirrored.Filled.ArrowDownward, null) },
+                    icon = { Icon(Icons.Filled.ArrowDownward, null) },
                 ) { Text("Z to A") }
             }
 

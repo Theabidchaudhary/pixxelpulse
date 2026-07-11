@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreateNewFolder
@@ -235,7 +236,7 @@ fun HomeScreen(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items(folders, key = { it.path }) { folder ->
+                    gridItems(folders, key = { it.path }) { folder ->
                         FolderCard(
                             folder = folder,
                             layout = LibraryLayout.GRID,
