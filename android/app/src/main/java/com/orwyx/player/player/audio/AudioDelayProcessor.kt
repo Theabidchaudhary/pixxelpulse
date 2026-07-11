@@ -5,6 +5,8 @@ import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.BaseAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import java.nio.ByteBuffer
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.abs
 
 /**
@@ -15,7 +17,8 @@ import kotlin.math.abs
  *  - Negative delay: audio plays earlier — the first `|delay|` ms are dropped.
  */
 @UnstableApi
-class AudioDelayProcessor : BaseAudioProcessor() {
+@Singleton
+class AudioDelayProcessor @Inject constructor() : BaseAudioProcessor() {
 
     @Volatile
     private var delayMs: Long = 0

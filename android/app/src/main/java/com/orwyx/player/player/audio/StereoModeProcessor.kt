@@ -5,13 +5,16 @@ import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.BaseAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import java.nio.ByteBuffer
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Downmixes stereo 16-bit PCM to dual-mono when mono mode is enabled.
  * Inactive (zero-cost passthrough) in stereo mode or for non-stereo content.
  */
 @UnstableApi
-class StereoModeProcessor : BaseAudioProcessor() {
+@Singleton
+class StereoModeProcessor @Inject constructor() : BaseAudioProcessor() {
 
     @Volatile
     var monoEnabled: Boolean = false
