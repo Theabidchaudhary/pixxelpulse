@@ -9,7 +9,7 @@ import com.orwyx.player.domain.model.HdrType
 @Database(
     entities = [VideoEntity::class],
     version = 1,
-    exportSchema = true,
+    exportSchema = false,
 )
 @TypeConverters(OrwyxTypeConverters::class)
 abstract class OrwyxDatabase : RoomDatabase() {

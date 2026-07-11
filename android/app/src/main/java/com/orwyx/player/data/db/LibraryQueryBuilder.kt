@@ -32,7 +32,7 @@ object LibraryQueryBuilder {
             args += query.folderPath
         } else if (hiddenFolders.isNotEmpty() && !query.includePrivate) {
             where.append(" AND folderPath NOT IN (${placeholders(hiddenFolders.size)})")
-            args += hiddenFolders
+            args.addAll(hiddenFolders)
         }
 
         if (query.search.isNotBlank()) {
