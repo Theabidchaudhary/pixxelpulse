@@ -73,9 +73,9 @@ private fun VideoGridCard(
 ) {
     Column(
         modifier = modifier
-            .clip(MaterialTheme.shapes.medium)
+            .glassCard()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(4.dp),
+            .padding(6.dp),
     ) {
         Thumbnail(video, fields, Modifier.fillMaxWidth().aspectRatio(16f / 9f))
 

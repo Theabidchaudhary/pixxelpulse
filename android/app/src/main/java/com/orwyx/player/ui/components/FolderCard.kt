@@ -56,16 +56,16 @@ private fun FolderGridCard(
 ) {
     Column(
         modifier = modifier
-            .clip(MaterialTheme.shapes.medium)
+            .glassCard()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(4.dp),
+            .padding(6.dp),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(

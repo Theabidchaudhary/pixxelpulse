@@ -425,11 +425,14 @@ class PlayerViewModel @Inject constructor(
     }
 
     // --- Enhancement -----------------------------------------------------------
+    // One-tap automatic enhancement: no manual sliders. Tuned constants live in
+    // EnhanceSettings' defaults; toggling just flips the pipeline on/off.
 
-    fun setEnhance(settings: EnhanceSettings) {
-        val supported = engine.setVideoEffects(EnhancePipeline.build(settings))
+    fun toggleEnhance() {
+        val next = _state.value.enhance.copy(enabled = !_state.value.enhance.enabled)
+        val supported = engine.setVideoEffects(EnhancePipeline.build(next))
         _state.value = _state.value.copy(
-            enhance = if (supported) settings else EnhanceSettings.OFF,
+            enhance = if (supported) next else EnhanceSettings.OFF,
             enhanceSupported = supported,
         )
     }

@@ -77,7 +77,10 @@ fun Modifier.playerGestures(
         if (locked) return@pointerInput
         val touchSlop = viewConfiguration.touchSlop
         awaitEachGesture {
-            val down = awaitFirstDown(requireUnconsumed = false)
+            // requireUnconsumed (the default) means a down already claimed by a
+            // button or the progress slider is invisible here: video gestures
+            // (including long-press speed) only ever start on the bare frame.
+            val down = awaitFirstDown()
             val startTime = down.uptimeMillis
             val downRealTime = SystemClock.uptimeMillis()
             var maxPointers = 1

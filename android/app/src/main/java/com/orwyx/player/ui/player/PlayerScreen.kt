@@ -2,13 +2,20 @@ package com.orwyx.player.ui.player
 
 import android.content.Context
 import android.media.AudioManager
+import android.os.SystemClock
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,54 +29,50 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.BrightnessMedium
-import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.FastRewind
+import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -78,15 +81,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.orwyx.player.core.util.Formatters
+import com.orwyx.player.data.settings.AppSettings
 import com.orwyx.player.data.settings.ZoomMode
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
-
-/** Which bottom sheet is open. */
-enum class PlayerSheet { NONE, SPEED, AUDIO, SUBTITLES, SLEEP, ENHANCE }
-
-/** Transient centered gesture feedback (seek preview only; brightness/volume live on the sides). */
-private data class SeekHud(val targetMs: Long, val deltaMs: Long)
 
 @UnstableApi
 @Composable
@@ -98,12 +96,9 @@ fun PlayerScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val settings by viewModel.settings.collectAsState()
-    val sleepState by viewModel.sleepTimerState.collectAsState()
     val context = LocalContext.current
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
 
-    var sheet by remember { mutableStateOf(PlayerSheet.NONE) }
-    var showCropSheet by remember { mutableStateOf(false) }
     var zoomScale by remember { mutableFloatStateOf(1f) }
     var zoomOffset by remember { mutableStateOf(Offset.Zero) }
 
@@ -113,31 +108,36 @@ fun PlayerScreen(
         val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
         mutableFloatStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / max)
     }
-    var seekTargetMs by remember { mutableFloatStateOf(0f) }
+    var isScrubbing by remember { mutableStateOf(false) }
+    var scrubTargetMs by remember { mutableFloatStateOf(0f) }
 
     var brightnessHud by remember { mutableStateOf<Float?>(null) }
     var volumeHud by remember { mutableStateOf<Float?>(null) }
-    var seekHud by remember { mutableStateOf<SeekHud?>(null) }
+    var toast by remember { mutableStateOf<String?>(null) }
 
-    // Auto-hide controls and side HUDs.
-    LaunchedEffect(state.controlsVisible, state.isPlaying) {
-        if (state.controlsVisible && state.isPlaying) {
+    // Netflix-style double-tap seek bursts (rapid taps in the same zone accumulate).
+    var leftBurstSeconds by remember { mutableIntStateOf(0) }
+    var leftBurstToken by remember { mutableIntStateOf(0) }
+    var lastLeftTapAt by remember { mutableFloatStateOf(0f) }
+    var rightBurstSeconds by remember { mutableIntStateOf(0) }
+    var rightBurstToken by remember { mutableIntStateOf(0) }
+    var lastRightTapAt by remember { mutableFloatStateOf(0f) }
+    var centerFlashToken by remember { mutableIntStateOf(0) }
+    var centerFlashPlaying by remember { mutableStateOf(true) }
+
+    // Auto-hide controls and transient HUDs (paused while actively scrubbing).
+    LaunchedEffect(state.controlsVisible, state.isPlaying, isScrubbing) {
+        if (state.controlsVisible && state.isPlaying && !isScrubbing) {
             delay(3_500)
             viewModel.setControlsVisible(false)
         }
     }
-    LaunchedEffect(brightnessHud) {
-        if (brightnessHud != null) {
-            delay(900)
-            brightnessHud = null
-        }
-    }
-    LaunchedEffect(volumeHud) {
-        if (volumeHud != null) {
-            delay(900)
-            volumeHud = null
-        }
-    }
+    LaunchedEffect(brightnessHud) { if (brightnessHud != null) { delay(700); brightnessHud = null } }
+    LaunchedEffect(volumeHud) { if (volumeHud != null) { delay(700); volumeHud = null } }
+    LaunchedEffect(toast) { if (toast != null) { delay(900); toast = null } }
+    LaunchedEffect(leftBurstToken) { if (leftBurstToken > 0) { delay(650); leftBurstSeconds = 0 } }
+    LaunchedEffect(rightBurstToken) { if (rightBurstToken > 0) { delay(650); rightBurstSeconds = 0 } }
+    LaunchedEffect(centerFlashToken) { if (centerFlashToken > 0) { delay(450); centerFlashToken = 0 } }
 
     val gestureListener = remember(settings) {
         object : PlayerGestureListener {
@@ -149,11 +149,27 @@ fun PlayerScreen(
             }
 
             override fun onDoubleTap(zone: Int) {
-                val step = (settings?.seekStepSeconds ?: 10) * 1000L
+                val stepSec = settings?.seekStepSeconds ?: 10
+                val stepMs = stepSec * 1000L
+                val now = SystemClock.uptimeMillis().toFloat()
                 when (zone) {
-                    -1 -> viewModel.seekBy(-step)
-                    1 -> viewModel.seekBy(step)
-                    else -> viewModel.togglePlayPause()
+                    -1 -> {
+                        viewModel.seekBy(-stepMs)
+                        leftBurstSeconds = if (now - lastLeftTapAt < 900f) leftBurstSeconds + stepSec else stepSec
+                        lastLeftTapAt = now
+                        leftBurstToken++
+                    }
+                    1 -> {
+                        viewModel.seekBy(stepMs)
+                        rightBurstSeconds = if (now - lastRightTapAt < 900f) rightBurstSeconds + stepSec else stepSec
+                        lastRightTapAt = now
+                        rightBurstToken++
+                    }
+                    else -> {
+                        viewModel.togglePlayPause()
+                        centerFlashPlaying = viewModel.state.value.isPlaying
+                        centerFlashToken++
+                    }
                 }
             }
 
@@ -162,7 +178,13 @@ fun PlayerScreen(
             override fun onLongPressEnd() = viewModel.endHoldSpeed()
 
             override fun onDragStart(mode: DragMode) {
-                if (mode == DragMode.SEEK) seekTargetMs = viewModel.state.value.positionMs.toFloat()
+                if (mode == DragMode.SEEK) {
+                    scrubTargetMs = viewModel.state.value.positionMs.toFloat()
+                    isScrubbing = true
+                    // Swiping to seek reveals the progress bar even if controls were hidden,
+                    // so the scrub is always visible — never a silent gesture.
+                    viewModel.setControlsVisible(true)
+                }
             }
 
             override fun onDragDelta(mode: DragMode, normalizedDelta: Float) {
@@ -184,20 +206,19 @@ fun PlayerScreen(
                     }
                     DragMode.SEEK -> {
                         // Full screen width sweeps two minutes; sensitivity scales this.
-                        seekTargetMs = (seekTargetMs + normalizedDelta * 120_000f)
+                        // The progress bar itself scrubs live via scrubTargetMs below.
+                        scrubTargetMs = (scrubTargetMs + normalizedDelta * 120_000f)
                             .coerceIn(0f, viewModel.state.value.durationMs.toFloat())
-                        seekHud = SeekHud(
-                            targetMs = seekTargetMs.toLong(),
-                            deltaMs = seekTargetMs.toLong() - viewModel.state.value.positionMs,
-                        )
                     }
                     DragMode.NONE -> Unit
                 }
             }
 
             override fun onDragEnd(mode: DragMode) {
-                if (mode == DragMode.SEEK) viewModel.seekTo(seekTargetMs.toLong())
-                seekHud = null
+                if (mode == DragMode.SEEK) {
+                    viewModel.seekTo(scrubTargetMs.toLong())
+                    isScrubbing = false
+                }
             }
 
             override fun onPinch(zoomFactor: Float, pan: Offset) {
@@ -254,7 +275,6 @@ fun PlayerScreen(
             CircularProgressIndicator(Modifier.align(Alignment.Center), color = Color.White)
         }
 
-        // Owned subtitle rendering (external + embedded share this overlay).
         settings?.let { s ->
             SubtitleOverlay(
                 text = state.subtitleText,
@@ -281,42 +301,91 @@ fun PlayerScreen(
             VerticalGestureBar(icon = Icons.AutoMirrored.Filled.VolumeUp, fraction = volumeHud ?: 0f)
         }
 
+        // Netflix-style ±10s bursts, left/right thirds.
+        Box(modifier = Modifier.align(Alignment.CenterStart).fillMaxWidth(0.33f), contentAlignment = Alignment.Center) {
+            AnimatedVisibility(visible = leftBurstToken > 0 && leftBurstSeconds > 0, enter = fadeIn(), exit = fadeOut()) {
+                SeekBurst(seconds = leftBurstSeconds, forward = false, key = leftBurstToken)
+            }
+        }
+        Box(modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.33f), contentAlignment = Alignment.Center) {
+            AnimatedVisibility(visible = rightBurstToken > 0 && rightBurstSeconds > 0, enter = fadeIn(), exit = fadeOut()) {
+                SeekBurst(seconds = rightBurstSeconds, forward = true, key = rightBurstToken)
+            }
+        }
         AnimatedVisibility(
-            visible = seekHud != null,
-            enter = fadeIn(),
+            visible = centerFlashToken > 0,
+            enter = fadeIn() + scaleIn(initialScale = 0.7f),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.Center),
         ) {
-            seekHud?.let { SeekHudView(it) }
+            Icon(
+                if (centerFlashPlaying) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .size(84.dp)
+                    .background(Color(0x4D000000), CircleShape)
+                    .padding(16.dp),
+            )
         }
 
-        // Long-press speed: adjustable slider at the top, driven straight from ViewModel state.
+        // Long-press speed: minimal, no background — must never sit on top of controls.
         AnimatedVisibility(
             visible = state.holdSpeedActive,
             enter = fadeIn(),
             exit = fadeOut(),
-            modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
+            modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 64.dp),
         ) {
             HoldSpeedHud(state.holdSpeedValue)
+        }
+
+        // Small transient toast (crop mode change, enhance toggle) — near the bottom row, never full-screen.
+        AnimatedVisibility(
+            visible = toast != null,
+            enter = fadeIn() + scaleIn(initialScale = 0.9f),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 116.dp),
+        ) {
+            toast?.let {
+                Text(
+                    it,
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .background(Color(0x99000000), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
         }
 
         if (state.locked) {
             IconButton(
                 onClick = { viewModel.setLocked(false) },
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(24.dp),
+                modifier = Modifier.align(Alignment.CenterStart).padding(24.dp),
             ) {
                 Icon(Icons.Filled.Lock, contentDescription = "Unlock", tint = Color.White)
             }
         } else {
             PlayerControls(
                 state = state,
-                sleepActive = sleepState !is com.orwyx.player.player.SleepTimerState.Off,
+                settings = settings,
+                displayPositionMs = if (isScrubbing) scrubTargetMs.toLong() else state.positionMs,
                 onExit = onExit,
-                onOpenSheet = { sheet = it },
-                onOpenCrop = { showCropSheet = true },
                 onEnterPip = onEnterPip,
+                onScrub = { ms ->
+                    isScrubbing = true
+                    scrubTargetMs = ms.toFloat()
+                },
+                onScrubFinished = {
+                    viewModel.seekTo(scrubTargetMs.toLong())
+                    isScrubbing = false
+                },
+                onCropChanged = { label ->
+                    zoomScale = 1f
+                    zoomOffset = Offset.Zero
+                    toast = label
+                },
+                onEnhanceToggled = { label -> toast = label },
                 viewModel = viewModel,
             )
         }
@@ -328,30 +397,11 @@ fun PlayerScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 120.dp)
+                    .padding(bottom = 140.dp)
                     .background(Color(0xAA000000), RoundedCornerShape(8.dp))
                     .padding(12.dp),
             )
         }
-    }
-
-    PlayerSheets(
-        sheet = sheet,
-        onDismiss = { sheet = PlayerSheet.NONE },
-        viewModel = viewModel,
-    )
-
-    if (showCropSheet) {
-        CropSheet(
-            current = state.zoomMode,
-            onDismiss = { showCropSheet = false },
-            onSelect = { mode ->
-                viewModel.setZoomMode(mode)
-                zoomScale = 1f
-                zoomOffset = Offset.Zero
-            },
-            onReset = { zoomScale = 1f; zoomOffset = Offset.Zero },
-        )
     }
 }
 
@@ -359,165 +409,162 @@ fun PlayerScreen(
 @Composable
 private fun PlayerControls(
     state: PlayerUiState,
-    sleepActive: Boolean,
+    settings: AppSettings?,
+    displayPositionMs: Long,
     onExit: () -> Unit,
-    onOpenSheet: (PlayerSheet) -> Unit,
-    onOpenCrop: () -> Unit,
     onEnterPip: () -> Unit,
+    onScrub: (Long) -> Unit,
+    onScrubFinished: () -> Unit,
+    onCropChanged: (String) -> Unit,
+    onEnhanceToggled: (String) -> Unit,
     viewModel: PlayerViewModel,
 ) {
     val white = Color.White
+    var overflowExpanded by remember { mutableStateOf(false) }
 
     AnimatedVisibility(
         visible = state.controlsVisible,
-        enter = fadeIn() + slideInVertically { -it / 3 },
-        exit = fadeOut() + slideOutVertically { -it / 3 },
+        enter = fadeIn(tween(180)) + slideInVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy)) { -it / 2 },
+        exit = fadeOut(tween(150)) + slideOutVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy)) { -it / 2 },
     ) {
-        // Top bar: back, title, subtitle/audio/enhance/sleep shortcuts.
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(listOf(Color(0xB3000000), Color.Transparent)),
-                )
+                .background(Brush.verticalGradient(listOf(Color(0xB3000000), Color.Transparent)))
                 .statusBarsPadding()
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 4.dp, vertical = 2.dp),
         ) {
-            IconButton(onClick = onExit) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = white)
-            }
-            Text(
-                text = state.video?.title ?: "",
-                style = MaterialTheme.typography.titleMedium,
-                color = white,
-                maxLines = 1,
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(onClick = { onOpenSheet(PlayerSheet.SUBTITLES) }) {
-                Icon(Icons.Filled.Subtitles, "Subtitles", tint = white)
-            }
-            IconButton(onClick = { onOpenSheet(PlayerSheet.AUDIO) }) {
-                Icon(Icons.AutoMirrored.Filled.VolumeUp, "Audio", tint = white)
-            }
-            IconButton(onClick = { onOpenSheet(PlayerSheet.ENHANCE) }) {
-                Icon(
-                    Icons.Filled.AutoAwesome,
-                    "Enhance",
-                    tint = if (state.enhance.enabled) MaterialTheme.colorScheme.primary else white,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onExit) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = white)
+                }
+                Text(
+                    text = state.video?.title ?: "",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = white,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f),
                 )
+                CaptionsQuickMenu(viewModel, state, settings, white)
+                AudioQuickMenu(viewModel, state, white)
+                IconButton(onClick = {
+                    viewModel.toggleEnhance()
+                    val s = viewModel.state.value
+                    onEnhanceToggled(
+                        when {
+                            !s.enhanceSupported -> "Enhance not supported on this device"
+                            s.enhance.enabled -> "AI Enhance on"
+                            else -> "AI Enhance off"
+                        },
+                    )
+                }) {
+                    Icon(
+                        Icons.Filled.AutoAwesome,
+                        "AI Enhance",
+                        tint = if (state.enhance.enabled) MaterialTheme.colorScheme.primary else white,
+                    )
+                }
+                SleepQuickMenu(viewModel, white)
+                Box {
+                    IconButton(onClick = { overflowExpanded = true }) {
+                        Icon(Icons.Filled.MoreVert, "More", tint = white)
+                    }
+                    DropdownMenu(expanded = overflowExpanded, onDismissRequest = { overflowExpanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text(if (state.repeatState == RepeatState.ONE) "Repeat: one" else if (state.repeatState == RepeatState.ALL) "Repeat: all" else "Repeat: off") },
+                            leadingIcon = {
+                                Icon(if (state.repeatState == RepeatState.ONE) Icons.Filled.RepeatOne else Icons.Filled.Repeat, null)
+                            },
+                            onClick = { viewModel.cycleRepeat() },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(if (state.shuffle) "Shuffle: on" else "Shuffle: off") },
+                            leadingIcon = { Icon(Icons.Filled.Shuffle, null) },
+                            onClick = { viewModel.toggleShuffle() },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Picture in picture") },
+                            leadingIcon = { Icon(Icons.Filled.PictureInPictureAlt, null) },
+                            onClick = { overflowExpanded = false; onEnterPip() },
+                        )
+                    }
+                }
             }
-            IconButton(onClick = { onOpenSheet(PlayerSheet.SLEEP) }) {
-                Icon(
-                    Icons.Filled.Bedtime,
-                    "Sleep timer",
-                    tint = if (sleepActive) MaterialTheme.colorScheme.primary else white,
+
+            // Speed: compact, always-visible slider — left side, below the title.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 12.dp, top = 2.dp),
+            ) {
+                Text(
+                    "${"%.2f".format(state.speed).trimEnd('0').trimEnd('.')}×",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = white,
+                    modifier = Modifier.padding(end = 8.dp),
+                )
+                Slider(
+                    value = state.speed,
+                    onValueChange = viewModel::setSpeed,
+                    valueRange = 0.25f..3f,
+                    modifier = Modifier.width(120.dp).height(24.dp),
                 )
             }
         }
     }
 
     Box(Modifier.fillMaxSize()) {
-        // Center transport cluster.
         AnimatedVisibility(
             visible = state.controlsVisible,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.Center),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = viewModel::previous) {
-                    Icon(Icons.Filled.SkipPrevious, "Previous", tint = white, modifier = Modifier.size(36.dp))
-                }
-                IconButton(onClick = { viewModel.stepFrame(false) }) {
-                    Icon(Icons.Filled.FastRewind, "Frame back", tint = white)
-                }
-                IconButton(onClick = viewModel::togglePlayPause, modifier = Modifier.size(72.dp)) {
-                    Icon(
-                        if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        "Play/Pause",
-                        tint = white,
-                        modifier = Modifier.size(56.dp),
-                    )
-                }
-                IconButton(onClick = { viewModel.stepFrame(true) }) {
-                    Icon(Icons.Filled.FastForward, "Frame forward", tint = white)
-                }
-                IconButton(onClick = viewModel::next) {
-                    Icon(Icons.Filled.SkipNext, "Next", tint = white, modifier = Modifier.size(36.dp))
-                }
-            }
-        }
-
-        // Bottom bar: timeline + secondary actions.
-        AnimatedVisibility(
-            visible = state.controlsVisible,
-            enter = fadeIn() + slideInVertically { it / 3 },
-            exit = fadeOut() + slideOutVertically { it / 3 },
+            enter = fadeIn(tween(180)) + slideInVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy)) { it / 2 },
+            exit = fadeOut(tween(150)) + slideOutVertically(spring(dampingRatio = Spring.DampingRatioNoBouncy)) { it / 2 },
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000))),
-                    )
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000))))
                     .navigationBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        Formatters.duration(state.positionMs),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = white,
-                    )
+                    Text(Formatters.duration(displayPositionMs), style = MaterialTheme.typography.labelMedium, color = white)
                     Slider(
-                        value = state.positionMs.toFloat()
-                            .coerceIn(0f, state.durationMs.toFloat().coerceAtLeast(1f)),
-                        onValueChange = { viewModel.seekTo(it.toLong()) },
+                        value = displayPositionMs.toFloat().coerceIn(0f, state.durationMs.toFloat().coerceAtLeast(1f)),
+                        onValueChange = { onScrub(it.toLong()) },
+                        onValueChangeFinished = onScrubFinished,
                         valueRange = 0f..state.durationMs.toFloat().coerceAtLeast(1f),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
                     )
-                    Text(
-                        Formatters.duration(state.durationMs),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = white,
-                    )
+                    Text(Formatters.duration(state.durationMs), style = MaterialTheme.typography.labelMedium, color = white)
                 }
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    IconButton(onClick = { onOpenSheet(PlayerSheet.SPEED) }) {
-                        Icon(Icons.Filled.Speed, "Speed", tint = if (state.speed != 1f) MaterialTheme.colorScheme.primary else white)
-                    }
-                    IconButton(onClick = onOpenCrop) {
-                        Icon(Icons.Filled.AspectRatio, "Crop & fit", tint = white)
-                    }
-                    IconButton(onClick = viewModel::cycleRepeat) {
-                        Icon(
-                            if (state.repeatState == RepeatState.ONE) Icons.Filled.RepeatOne else Icons.Filled.Repeat,
-                            "Repeat",
-                            tint = if (state.repeatState != RepeatState.OFF) MaterialTheme.colorScheme.primary else white,
-                        )
-                    }
-                    IconButton(onClick = viewModel::toggleShuffle) {
-                        Icon(
-                            Icons.Filled.Shuffle,
-                            "Shuffle",
-                            tint = if (state.shuffle) MaterialTheme.colorScheme.primary else white,
-                        )
-                    }
                     IconButton(onClick = { viewModel.setLocked(true) }) {
                         Icon(Icons.Filled.LockOpen, "Lock", tint = white)
                     }
-                    IconButton(onClick = onEnterPip) {
-                        Icon(Icons.Filled.PictureInPictureAlt, "Picture in picture", tint = white)
+                    IconButton(onClick = { viewModel.seekBy(-(settings?.seekStepSeconds ?: 10) * 1000L) }) {
+                        Icon(Icons.Filled.Replay10, "Back 10s", tint = white, modifier = Modifier.size(30.dp))
+                    }
+                    IconButton(onClick = viewModel::togglePlayPause, modifier = Modifier.size(68.dp)) {
+                        Icon(
+                            if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            "Play/Pause",
+                            tint = white,
+                            modifier = Modifier.size(52.dp),
+                        )
+                    }
+                    IconButton(onClick = { viewModel.seekBy((settings?.seekStepSeconds ?: 10) * 1000L) }) {
+                        Icon(Icons.Filled.Forward10, "Forward 10s", tint = white, modifier = Modifier.size(30.dp))
+                    }
+                    IconButton(onClick = {
+                        val next = ZoomMode.entries[(state.zoomMode.ordinal + 1) % ZoomMode.entries.size]
+                        viewModel.setZoomMode(next)
+                        onCropChanged(zoomModeLabel(next))
+                    }) {
+                        Icon(Icons.Filled.AspectRatio, "Crop & fit", tint = white)
                     }
                 }
             }
@@ -527,7 +574,12 @@ private fun PlayerControls(
 
 /** Vertical fill bar for brightness (left side) and volume (right side) gestures. */
 @Composable
-private fun VerticalGestureBar(icon: androidx.compose.ui.graphics.vector.ImageVector, fraction: Float) {
+private fun VerticalGestureBar(icon: ImageVector, fraction: Float) {
+    val animatedFraction by animateFloatAsState(
+        targetValue = fraction.coerceIn(0f, 1f),
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium),
+        label = "gestureBar",
+    )
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
@@ -549,102 +601,66 @@ private fun VerticalGestureBar(icon: androidx.compose.ui.graphics.vector.ImageVe
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .fillMaxHeight(fraction.coerceIn(0f, 1f))
+                    .fillMaxHeight(animatedFraction)
                     .clip(RoundedCornerShape(3.dp))
                     .background(Color.White),
             )
         }
-        Text(
-            "${(fraction * 100).roundToInt()}%",
-            color = Color.White,
-            style = MaterialTheme.typography.labelSmall,
-        )
+        Text("${(fraction * 100).roundToInt()}%", color = Color.White, style = MaterialTheme.typography.labelSmall)
     }
 }
 
+/** Circular Netflix-style ±N second burst shown on double tap, with a bouncy scale-in each tap. */
 @Composable
-private fun SeekHudView(hud: SeekHud) {
+private fun SeekBurst(seconds: Int, forward: Boolean, key: Int) {
+    val scale = remember { Animatable(1f) }
+    LaunchedEffect(key) {
+        scale.snapTo(0.8f)
+        scale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .background(Color(0xCC15171B), RoundedCornerShape(16.dp))
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .graphicsLayer { scaleX = scale.value; scaleY = scale.value }
+            .background(Color(0x59000000), CircleShape)
+            .padding(22.dp),
     ) {
-        val sign = if (hud.deltaMs >= 0) "+" else "−"
-        Text(Formatters.duration(hud.targetMs), style = MaterialTheme.typography.headlineSmall, color = Color.White)
-        Text(
-            "$sign${Formatters.duration(kotlin.math.abs(hud.deltaMs))}",
-            style = MaterialTheme.typography.labelMedium,
-            color = Color(0xFFB9BEC7),
+        Icon(
+            if (forward) Icons.Filled.Forward10 else Icons.Filled.Replay10,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(32.dp),
         )
+        Text("${seconds}s", color = Color.White, style = MaterialTheme.typography.labelMedium)
     }
 }
 
-/** Speed slider shown while a long-press hold is active; drag left/right to adjust. */
+/** Speed slider shown while a long-press hold is active — no background, so it never masks the video. */
 @Composable
 private fun HoldSpeedHud(value: Float) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .background(Color(0xCC15171B), RoundedCornerShape(16.dp))
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-    ) {
-        Text("${"%.2f".format(value)}×", style = MaterialTheme.typography.titleMedium, color = Color.White)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            "${"%.2f".format(value)}×",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White,
+        )
         val fraction = ((value - 0.25f) / (3f - 0.25f)).coerceIn(0f, 1f)
         Box(
             modifier = Modifier
-                .padding(top = 8.dp)
-                .width(200.dp)
-                .height(5.dp)
-                .clip(RoundedCornerShape(3.dp))
+                .padding(top = 6.dp)
+                .width(160.dp)
+                .height(3.dp)
+                .clip(RoundedCornerShape(2.dp))
                 .background(Color(0x40FFFFFF)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(fraction)
-                    .clip(RoundedCornerShape(3.dp))
+                    .clip(RoundedCornerShape(2.dp))
                     .background(MaterialTheme.colorScheme.primary),
             )
         }
-        Text(
-            "Slide to change speed",
-            style = MaterialTheme.typography.labelSmall,
-            color = Color(0xFFB9BEC7),
-            modifier = Modifier.padding(top = 4.dp),
-        )
-    }
-}
-
-/** Crop/fit picker: Fit, Fill, Stretch, Original, plus a reset for pinch zoom/pan. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CropSheet(
-    current: ZoomMode,
-    onDismiss: () -> Unit,
-    onSelect: (ZoomMode) -> Unit,
-    onReset: () -> Unit,
-) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Text(
-            "Crop & fit",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
-        ZoomMode.entries.forEach { mode ->
-            ListItem(
-                headlineContent = { Text(zoomModeLabel(mode)) },
-                supportingContent = { Text(zoomModeDescription(mode)) },
-                leadingContent = {
-                    RadioButton(selected = current == mode, onClick = { onSelect(mode) })
-                },
-                modifier = Modifier.clickable { onSelect(mode) },
-            )
-        }
-        TextButton(
-            onClick = { onReset(); onDismiss() },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        ) { Text("Reset pinch zoom") }
     }
 }
 
@@ -653,11 +669,4 @@ private fun zoomModeLabel(mode: ZoomMode): String = when (mode) {
     ZoomMode.FILL -> "Fill"
     ZoomMode.STRETCH -> "Stretch"
     ZoomMode.ORIGINAL -> "Original size"
-}
-
-private fun zoomModeDescription(mode: ZoomMode): String = when (mode) {
-    ZoomMode.FIT -> "Whole frame visible, may show bars"
-    ZoomMode.FILL -> "Fills the screen, edges may crop"
-    ZoomMode.STRETCH -> "Stretches to fill exactly"
-    ZoomMode.ORIGINAL -> "No scaling"
 }

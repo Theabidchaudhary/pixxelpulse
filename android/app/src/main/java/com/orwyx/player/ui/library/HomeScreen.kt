@@ -5,17 +5,16 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -23,12 +22,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -51,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -64,7 +69,6 @@ import com.orwyx.player.ui.components.DisplayMode
 import com.orwyx.player.ui.components.DisplaySettingsSheet
 import com.orwyx.player.ui.components.EmptyState
 import com.orwyx.player.ui.components.FolderCard
-import com.orwyx.player.ui.components.VideoCard
 import com.orwyx.player.ui.player.PlayerActivity
 
 private val MEDIA_PERMISSION =
@@ -123,7 +127,9 @@ fun HomeScreen(
 
     var searching by rememberSaveable { mutableStateOf(false) }
     var showDisplaySettings by rememberSaveable { mutableStateOf(false) }
+    var showOverflow by remember { mutableStateOf(false) }
     var folderActionsFor by remember { mutableStateOf<VideoFolder?>(null) }
+    val resumeVideo = continueWatching.firstOrNull()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -139,27 +145,66 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
-                        Text("OX Player", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "OX Player",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                        )
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showDisplaySettings = true }) {
+                        Icon(Icons.Filled.Tune, "Sort & view")
+                    }
                     IconButton(onClick = {
                         if (searching) viewModel.setSearch("")
                         searching = !searching
                     }) { Icon(Icons.Filled.Search, "Search") }
-                    IconButton(onClick = { showDisplaySettings = true }) {
-                        Icon(Icons.Filled.SortByAlpha, "Sort & view")
+                    Box {
+                        IconButton(onClick = { showOverflow = true }) {
+                            Icon(Icons.Filled.MoreVert, "More")
+                        }
+                        DropdownMenu(expanded = showOverflow, onDismissRequest = { showOverflow = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Add folder") },
+                                leadingIcon = { Icon(Icons.Filled.CreateNewFolder, null) },
+                                onClick = { showOverflow = false; safLauncher.launch(null) },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Rescan library") },
+                                leadingIcon = { Icon(Icons.Filled.Refresh, null) },
+                                onClick = { showOverflow = false; viewModel.rescan() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Private folder") },
+                                leadingIcon = { Icon(Icons.Filled.Lock, null) },
+                                onClick = { showOverflow = false; onOpenVault() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Settings") },
+                                leadingIcon = { Icon(Icons.Filled.Settings, null) },
+                                onClick = { showOverflow = false; onOpenSettings() },
+                            )
+                        }
                     }
-                    IconButton(onClick = { safLauncher.launch(null) }) {
-                        Icon(Icons.Filled.CreateNewFolder, "Add folder")
-                    }
-                    IconButton(onClick = viewModel::rescan) {
-                        Icon(Icons.Filled.Refresh, "Rescan")
-                    }
-                    IconButton(onClick = onOpenVault) { Icon(Icons.Filled.Lock, "Private folder") }
-                    IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, "Settings") }
                 },
             )
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = resumeVideo != null && !searching,
+                enter = scaleIn(),
+                exit = scaleOut(),
+            ) {
+                if (resumeVideo != null) {
+                    FloatingActionButton(
+                        onClick = { context.startActivity(PlayerActivity.intent(context, resumeVideo)) },
+                    ) {
+                        Icon(Icons.Filled.PlayArrow, "Resume ${resumeVideo.title}")
+                    }
+                }
+            }
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
@@ -188,30 +233,6 @@ fun HomeScreen(
                     )
                 }
                 return@Column
-            }
-
-            if (continueWatching.isNotEmpty()) {
-                Text(
-                    "Continue watching",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
-                )
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp),
-                ) {
-                    items(continueWatching, key = { it.id }) { video ->
-                        Row(Modifier.width(180.dp)) {
-                            VideoCard(
-                                video = video,
-                                layout = LibraryLayout.GRID,
-                                fields = settings.videoCardFields,
-                                onClick = { context.startActivity(PlayerActivity.intent(context, video)) },
-                                onLongClick = {},
-                            )
-                        }
-                    }
-                }
             }
 
             if (folders.isEmpty()) {

@@ -1,61 +1,63 @@
 package com.orwyx.player.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.orwyx.player.data.settings.ThemeMode
 
-// Fallback brand palette for devices without Material You (dynamic color wins when available).
-private val Ink = Color(0xFF0E1013)
-private val Surface1Dark = Color(0xFF16181D)
-private val Accent = Color(0xFF7DA9FF)
-private val AccentDeep = Color(0xFF2B5CB8)
+// Deep navy/indigo "glass" identity, always used regardless of wallpaper —
+// dynamic Material You color is deliberately not applied so the app keeps a
+// consistent premium look across devices, matching the reference design.
+private val InkNavy = Color(0xFF0A0C16)
+private val SurfaceNavy = Color(0xFF10131F)
+private val GlassCardNavy = Color(0xFF181C30)
+private val Indigo = Color(0xFF5B7FFF)
+private val IndigoDeep = Color(0xFF2C3B7E)
 
 private val DarkColors = darkColorScheme(
-    primary = Accent,
-    onPrimary = Color(0xFF06182E),
-    primaryContainer = AccentDeep,
-    onPrimaryContainer = Color(0xFFDCE7FF),
-    background = Ink,
-    onBackground = Color(0xFFE4E6EB),
-    surface = Ink,
-    onSurface = Color(0xFFE4E6EB),
-    surfaceVariant = Surface1Dark,
-    onSurfaceVariant = Color(0xFFABB0BA),
-    outline = Color(0xFF3A3F47),
+    primary = Indigo,
+    onPrimary = Color.White,
+    primaryContainer = IndigoDeep,
+    onPrimaryContainer = Color(0xFFDCE3FF),
+    secondary = Color(0xFF8CA3FF),
+    background = InkNavy,
+    onBackground = Color(0xFFEDEFF7),
+    surface = SurfaceNavy,
+    onSurface = Color(0xFFEDEFF7),
+    surfaceVariant = GlassCardNavy,
+    onSurfaceVariant = Color(0xFFA6ACC4),
+    outline = Color(0xFF2E3350),
+    outlineVariant = Color(0xFF20233A),
 )
 
 private val LightColors = lightColorScheme(
-    primary = AccentDeep,
+    primary = Color(0xFF4A63D6),
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD8E2FF),
-    onPrimaryContainer = Color(0xFF001A41),
-    background = Color(0xFFFAFAFC),
-    onBackground = Color(0xFF1A1C1F),
-    surface = Color(0xFFFAFAFC),
-    onSurface = Color(0xFF1A1C1F),
-    surfaceVariant = Color(0xFFEFF0F4),
-    onSurfaceVariant = Color(0xFF54575E),
-    outline = Color(0xFFC6C9D0),
+    primaryContainer = Color(0xFFDCE3FF),
+    onPrimaryContainer = Color(0xFF10184A),
+    secondary = Color(0xFF5B72C4),
+    background = Color(0xFFF5F6FB),
+    onBackground = Color(0xFF14162B),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF14162B),
+    surfaceVariant = Color(0xFFECEEF7),
+    onSurfaceVariant = Color(0xFF5B5F78),
+    outline = Color(0xFFD3D6E6),
 )
 
-/** Rounded, soft geometry across cards, sheets, and dialogs. */
+/** Generously rounded, soft geometry across cards, sheets, and dialogs — glass-card language. */
 private val OrwyxShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(22.dp),
-    extraLarge = RoundedCornerShape(28.dp),
+    extraSmall = RoundedCornerShape(10.dp),
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(18.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(32.dp),
 )
 
 @Composable
@@ -68,15 +70,8 @@ fun OrwyxTheme(
         ThemeMode.DARK -> true
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
-    val context = LocalContext.current
-    val colorScheme = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        dark -> DarkColors
-        else -> LightColors
-    }
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (dark) DarkColors else LightColors,
         shapes = OrwyxShapes,
         typography = OrwyxTypography,
         content = content,

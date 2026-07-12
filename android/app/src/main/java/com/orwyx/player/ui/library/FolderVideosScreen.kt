@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,7 +66,7 @@ fun FolderVideosScreen(
                 },
                 actions = {
                     IconButton(onClick = { showDisplaySettings = true }) {
-                        Icon(Icons.Filled.SortByAlpha, "Sort & view")
+                        Icon(Icons.Filled.Tune, "Sort & view")
                     }
                 },
             )

@@ -83,7 +83,7 @@ fun SettingsScreen(
         },
     ) { padding ->
         LazyColumn(Modifier.padding(padding)) {
-            item { Section("Theme") }
+            item { Section("Appearance") }
             item {
                 ChipRow(
                     options = ThemeMode.entries.map { it.name.lowercase().replaceFirstChar(Char::uppercase) },
