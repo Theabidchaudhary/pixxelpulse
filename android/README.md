@@ -9,7 +9,7 @@ makes it visually obvious whether consumption is safe or approaching the limit.
 No account, no cloud, no ads, no tracking. Internet is only used for opt-in features (bill sync,
 scanner) planned in later milestones.
 
-## Current status — M0–M6
+## Current status — M0–M8
 
 Implemented:
 
@@ -28,11 +28,17 @@ Implemented:
 - **Reading history**: every completed month, reachable from Settings, with per-month figures and a
   clear-all action. History persists until explicitly deleted.
 - **Settings**: theme (light/dark/system), monthly reading date, default target, decimals toggle,
-  reading history, about.
+  reading history, **backup export/import**, about.
+- **Backup (M7)**: export a versioned JSON snapshot (meters + history + settings) to any location
+  via the Storage Access Framework, and restore it in a single transaction. Round-trip unit-tested.
+- **Optional online modules (M8)**: `BillSyncEngine` (provider adapters behind a `BillProvider`
+  interface) and `BillScanner` (OCR) are wired as isolated seams. No adapters are registered yet, so
+  the app is fully offline and sync gracefully reports "unsupported" — adding a real provider later
+  is a single `@Binds @IntoSet` with no other changes.
 - **Persistence**: Room database with a seeded starter meter on first launch; settings in DataStore.
 
-Planned next (see `PLAN.md`): M7 backup export/import, M8 optional bill sync + OCR (isolated
-modules), M9 polish.
+Planned next (see `PLAN.md`): M9 polish; concrete bill-sync provider adapters and an ML-Kit OCR
+backend when desired.
 
 Planning engines (`PlanningEngine`, `ForecastEngine`) are pure and unit-tested. The day-by-day
 "actual" line is estimated from your running average pace, since the app doesn't require daily

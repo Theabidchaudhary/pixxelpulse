@@ -23,6 +23,15 @@ interface MeterDao {
     @Query("SELECT COUNT(*) FROM meters")
     suspend fun count(): Int
 
+    @Query("SELECT * FROM meters")
+    suspend fun getAllOnce(): List<MeterEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(meters: List<MeterEntity>)
+
+    @Query("DELETE FROM meters")
+    suspend fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(meter: MeterEntity): Long
 

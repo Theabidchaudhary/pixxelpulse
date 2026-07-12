@@ -18,6 +18,12 @@ interface HistoryDao {
     @Insert
     suspend fun insert(history: HistoryEntity): Long
 
+    @Query("SELECT * FROM reading_history")
+    suspend fun getAllOnce(): List<HistoryEntity>
+
+    @Insert
+    suspend fun insertAll(history: List<HistoryEntity>)
+
     @Query("DELETE FROM reading_history WHERE id = :id")
     suspend fun deleteById(id: Long)
 
