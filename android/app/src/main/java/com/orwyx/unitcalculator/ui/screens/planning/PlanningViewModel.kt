@@ -3,8 +3,10 @@ package com.orwyx.unitcalculator.ui.screens.planning
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.orwyx.unitcalculator.core.util.BillingCycle
-import com.orwyx.unitcalculator.domain.engine.CalculationEngine
-import com.orwyx.unitcalculator.domain.model.DashboardSummary
+import com.orwyx.unitcalculator.domain.engine.ForecastEngine
+import com.orwyx.unitcalculator.domain.engine.PlanningEngine
+import com.orwyx.unitcalculator.domain.model.DayPlan
+import com.orwyx.unitcalculator.domain.model.Forecast
 import com.orwyx.unitcalculator.domain.repository.MeterRepository
 import com.orwyx.unitcalculator.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,18 +18,19 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 data class PlanningUiState(
-    val summary: DashboardSummary = DashboardSummary(),
     val cycleStart: LocalDate = LocalDate.now(),
     val cycleEnd: LocalDate = LocalDate.now(),
     val elapsedDays: Int = 0,
     val totalDays: Int = 30,
     val remainingDays: Int = 30,
-    val expectedCumulative: Double = 0.0,
-    val actualCumulative: Double = 0.0,
+    val totalTarget: Double = 0.0,
+    val totalConsumed: Double = 0.0,
+    val days: List<DayPlan> = emptyList(),
+    val forecast: Forecast = Forecast(),
     val hasMeters: Boolean = false,
 ) {
-    /** Positive means consuming faster than planned; negative means comfortably under. */
-    val difference: Double get() = actualCumulative - expectedCumulative
+    val expectedToday: Double get() = totalTarget * (elapsedDays.toFloat() / totalDays).toDouble()
+    val difference: Double get() = totalConsumed - expectedToday
     val onTrack: Boolean get() = difference <= 0
 }
 
@@ -35,7 +38,8 @@ data class PlanningUiState(
 class PlanningViewModel @Inject constructor(
     meterRepository: MeterRepository,
     settingsRepository: SettingsRepository,
-    private val calculationEngine: CalculationEngine,
+    private val planningEngine: PlanningEngine,
+    private val forecastEngine: ForecastEngine,
 ) : ViewModel() {
 
     val uiState: StateFlow<PlanningUiState> = combine(
@@ -43,17 +47,18 @@ class PlanningViewModel @Inject constructor(
         settingsRepository.observeSettings(),
     ) { meters, settings ->
         val cycle = BillingCycle.of(settings.readingDate)
-        val summary = calculationEngine.summarize(meters, cycle)
-        val expected = summary.totalTarget * cycle.progressFraction
+        val totalTarget = meters.sumOf { it.targetLimit }
+        val totalConsumed = meters.sumOf { it.consumedUnits }
         PlanningUiState(
-            summary = summary,
             cycleStart = cycle.start,
             cycleEnd = cycle.end,
             elapsedDays = cycle.elapsedDays,
             totalDays = cycle.totalDays,
             remainingDays = cycle.remainingDays,
-            expectedCumulative = expected,
-            actualCumulative = summary.totalConsumed,
+            totalTarget = totalTarget,
+            totalConsumed = totalConsumed,
+            days = planningEngine.buildCalendar(totalTarget, totalConsumed, cycle),
+            forecast = forecastEngine.forecast(totalConsumed, totalTarget, cycle),
             hasMeters = meters.isNotEmpty(),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PlanningUiState())

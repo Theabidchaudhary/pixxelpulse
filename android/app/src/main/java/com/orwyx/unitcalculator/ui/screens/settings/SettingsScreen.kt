@@ -14,6 +14,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -41,6 +42,7 @@ import com.orwyx.unitcalculator.ui.components.SectionHeader
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenHistory: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -158,6 +160,29 @@ fun SettingsScreen(
                             onCheckedChange = { viewModel.setAllowDecimals(it) },
                         )
                     }
+                }
+            }
+
+            SectionHeader("Data")
+            NeumorphicCard(modifier = Modifier.fillMaxWidth(), onClick = onOpenHistory) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Reading history", fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "View every completed billing month",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 

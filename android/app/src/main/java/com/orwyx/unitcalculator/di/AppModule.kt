@@ -3,7 +3,9 @@ package com.orwyx.unitcalculator.di
 import android.content.Context
 import com.orwyx.unitcalculator.data.prefs.SettingsDataStore
 import com.orwyx.unitcalculator.domain.engine.CalculationEngine
+import com.orwyx.unitcalculator.domain.engine.ForecastEngine
 import com.orwyx.unitcalculator.domain.engine.MeterValidator
+import com.orwyx.unitcalculator.domain.engine.PlanningEngine
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,4 +29,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMeterValidator(): MeterValidator = MeterValidator()
+
+    @Provides
+    @Singleton
+    fun provideForecastEngine(): ForecastEngine = ForecastEngine()
+
+    @Provides
+    @Singleton
+    fun providePlanningEngine(): PlanningEngine = PlanningEngine()
 }

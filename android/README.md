@@ -9,7 +9,7 @@ makes it visually obvious whether consumption is safe or approaching the limit.
 No account, no cloud, no ads, no tracking. Internet is only used for opt-in features (bill sync,
 scanner) planned in later milestones.
 
-## Current status — MVP core (M0–M4)
+## Current status — M0–M6
 
 Implemented:
 
@@ -22,14 +22,21 @@ Implemented:
 - **Meter detail** with full reference, forecast (avg/day, projection, over/under), monthly reset,
   delete, and reading history.
 - **Monthly reset** that snapshots the closed month to history and rolls the cycle forward.
-- **Planning tab** (preview): billing-cycle window, expected-vs-actual pace, and forecast. The full
-  day-by-day calendar and charts arrive in M5.
+- **Planning tab**: billing-cycle window with expected-vs-actual pace, a colour-graded day-by-day
+  **calendar** (tap any day for expected/actual/difference), animated **Target-vs-Actual** line
+  chart and **Daily usage** bar chart, and a forecast card (avg/day, projected end, overage).
+- **Reading history**: every completed month, reachable from Settings, with per-month figures and a
+  clear-all action. History persists until explicitly deleted.
 - **Settings**: theme (light/dark/system), monthly reading date, default target, decimals toggle,
-  about.
+  reading history, about.
 - **Persistence**: Room database with a seeded starter meter on first launch; settings in DataStore.
 
-Planned next (see `PLAN.md`): M5 planning calendar + charts, M6 history screen, M7 backup
-export/import, M8 optional bill sync + OCR (isolated modules), M9 polish.
+Planned next (see `PLAN.md`): M7 backup export/import, M8 optional bill sync + OCR (isolated
+modules), M9 polish.
+
+Planning engines (`PlanningEngine`, `ForecastEngine`) are pure and unit-tested. The day-by-day
+"actual" line is estimated from your running average pace, since the app doesn't require daily
+meter logging.
 
 ## Architecture
 
