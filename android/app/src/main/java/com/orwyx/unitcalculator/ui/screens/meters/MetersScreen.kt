@@ -88,6 +88,8 @@ fun MetersScreen(
         items(state.meters, key = { it.id }) { meter ->
             MeterCard(
                 meter = meter,
+                remainingDays = state.remainingDays,
+                modifier = Modifier.animateItem(),
                 onClick = { onOpenMeter(meter.id) },
                 onEdit = { onEditMeter(meter.id) },
                 onReset = { meterToReset = meter },

@@ -28,6 +28,7 @@ data class MetersUiState(
     val settings: AppSettings = AppSettings(),
     val query: String = "",
     val sort: MeterSort = MeterSort.NAME,
+    val remainingDays: Int = 0,
     val isLoading: Boolean = true,
 ) {
     val isEmpty: Boolean get() = !isLoading && meters.isEmpty()
@@ -57,6 +58,7 @@ class MetersViewModel @Inject constructor(
             settings = settings,
             query = q,
             sort = s,
+            remainingDays = cycle.remainingDays,
             isLoading = false,
         )
     }.stateIn(

@@ -37,8 +37,12 @@ Implemented:
   is a single `@Binds @IntoSet` with no other changes.
 - **Persistence**: Room database with a seeded starter meter on first launch; settings in DataStore.
 
-Planned next (see `PLAN.md`): M9 polish; concrete bill-sync provider adapters and an ML-Kit OCR
-backend when desired.
+- **Polish (M9, ongoing)**: a "safe daily budget" chip on each meter card (units/day left to stay
+  under the limit), animated list reordering when the sort changes, and a floating FAB positioned
+  clear of the glass nav bar.
+
+Planned next (see `PLAN.md`): concrete bill-sync provider adapters and an ML-Kit OCR backend when
+desired; further visual polish.
 
 Planning engines (`PlanningEngine`, `ForecastEngine`) are pure and unit-tested. The day-by-day
 "actual" line is estimated from your running average pace, since the app doesn't require daily

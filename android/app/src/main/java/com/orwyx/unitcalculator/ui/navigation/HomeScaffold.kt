@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.orwyx.unitcalculator.ui.components.AddMeterFab
 import com.orwyx.unitcalculator.ui.screens.meters.MetersScreen
 import com.orwyx.unitcalculator.ui.screens.planning.PlanningScreen
@@ -46,9 +48,6 @@ fun HomeScaffold(
                 onSettings = onOpenSettings,
             )
         },
-        floatingActionButton = {
-            if (selectedTab == BottomTab.METERS) AddMeterFab(onClick = onAddMeter)
-        },
     ) { padding ->
         Box(Modifier.fillMaxSize()) {
             AnimatedContent(
@@ -64,6 +63,17 @@ fun HomeScaffold(
                     )
                     BottomTab.PLANNING -> PlanningScreen(contentPadding = padding)
                 }
+            }
+
+            // FAB floats above the glass nav bar so the two never overlap.
+            if (selectedTab == BottomTab.METERS) {
+                AddMeterFab(
+                    onClick = onAddMeter,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .navigationBarsPadding()
+                        .padding(end = 28.dp, bottom = 96.dp),
+                )
             }
 
             GlassBottomNav(

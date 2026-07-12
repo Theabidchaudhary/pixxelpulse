@@ -3,6 +3,7 @@ package com.orwyx.unitcalculator.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ import com.orwyx.unitcalculator.ui.theme.ConsumptionColors
 @Composable
 fun MeterCard(
     meter: Meter,
+    remainingDays: Int,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onEdit: () -> Unit,
@@ -88,7 +91,10 @@ fun MeterCard(
             Spacer(Modifier.height(16.dp))
             AnimatedProgressBar(fraction = meter.usedFraction)
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
+            SafeBudgetChip(meter = meter, remainingDays = remainingDays)
+
+            Spacer(Modifier.height(12.dp))
             // Stats row
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -138,6 +144,33 @@ fun MeterCard(
             }
         }
     }
+}
+
+/**
+ * A one-line, actionable hint: how many units per day this meter can use for the rest of the cycle
+ * and still stay under its target. Turns the raw numbers into a decision the user can act on.
+ */
+@Composable
+private fun SafeBudgetChip(meter: Meter, remainingDays: Int) {
+    val remaining = meter.remainingUnits
+    val color = ConsumptionColors.colorFor(meter.usedFraction)
+    val text = when {
+        remaining <= 0.0 ->
+            "Over limit by ${Formatters.units(-remaining)} units"
+        remainingDays > 0 ->
+            "≈ ${Formatters.units(remaining / remainingDays)} units/day left to stay safe"
+        else ->
+            "${Formatters.units(remaining)} units left this cycle"
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = color,
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .background(color.copy(alpha = 0.12f))
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    )
 }
 
 @Composable
