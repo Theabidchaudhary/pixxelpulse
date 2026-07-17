@@ -79,6 +79,7 @@ fun GlassBottomNav(
             }
             .padding(8.dp)
             .height(56.dp),
+        contentAlignment = Alignment.Center,
     ) {
         val slotWidth = maxWidth / tabs.size
         val indicatorOffset by animateDpAsState(
