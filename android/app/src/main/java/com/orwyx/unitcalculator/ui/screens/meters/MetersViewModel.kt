@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.orwyx.unitcalculator.core.util.BillingCycle
 import com.orwyx.unitcalculator.domain.engine.CalculationEngine
-import com.orwyx.unitcalculator.domain.model.AppSettings
 import com.orwyx.unitcalculator.domain.model.DashboardSummary
 import com.orwyx.unitcalculator.domain.model.Meter
 import com.orwyx.unitcalculator.domain.repository.MeterRepository
@@ -14,18 +13,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.TextStyle
-import java.util.Locale
 import javax.inject.Inject
 
 data class MetersUiState(
     val meters: List<Meter> = emptyList(),
     val summary: DashboardSummary = DashboardSummary(),
-    val settings: AppSettings = AppSettings(),
+    val settings: com.orwyx.unitcalculator.domain.model.AppSettings = com.orwyx.unitcalculator.domain.model.AppSettings(),
     val query: String = "",
     val sort: MeterSort = MeterSort.NAME,
     val remainingDays: Int = 0,
@@ -37,7 +34,7 @@ data class MetersUiState(
 @HiltViewModel
 class MetersViewModel @Inject constructor(
     private val meterRepository: MeterRepository,
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     private val calculationEngine: CalculationEngine,
 ) : ViewModel() {
 
@@ -45,48 +42,34 @@ class MetersViewModel @Inject constructor(
     private val sort = MutableStateFlow(MeterSort.NAME)
 
     val uiState: StateFlow<MetersUiState> = combine(
-        meterRepository.observeMeters(),
-        settingsRepository.observeSettings(),
-        query,
-        sort,
+        meterRepository.observeMeters(), settingsRepository.observeSettings(), query, sort,
     ) { meters, settings, q, s ->
         val cycle = BillingCycle.of(settings.readingDate)
         val visible = s.sort(meters.filterByQuery(q))
-        MetersUiState(
-            meters = visible,
-            summary = calculationEngine.summarize(meters, cycle),
-            settings = settings,
-            query = q,
-            sort = s,
-            remainingDays = cycle.remainingDays,
-            isLoading = false,
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = MetersUiState(),
-    )
+        MetersUiState(meters = visible, summary = calculationEngine.summarize(meters, cycle),
+            settings = settings, query = q, sort = s, remainingDays = cycle.remainingDays, isLoading = false)
+    }.stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = MetersUiState())
 
     fun onQueryChange(value: String) { query.value = value }
     fun onSortChange(value: MeterSort) { sort.value = value }
 
-    fun deleteMeter(id: Long) = viewModelScope.launch { meterRepository.delete(id) }
-
-    /** Resets a meter's month, snapshotting the current cycle into history. */
-    fun resetMeter(meter: Meter, settings: AppSettings) = viewModelScope.launch {
-        val cycle = BillingCycle.of(settings.readingDate)
-        val avgDaily = calculationEngine.averageDailyUsage(meter, cycle)
-        meterRepository.resetMonth(
-            id = meter.id,
-            monthLabel = currentMonthLabel(cycle.start),
-            avgDailyUsage = avgDaily,
-            closedAt = System.currentTimeMillis(),
-        )
+    fun updateCurrentReading(meter: Meter, rawReading: String, allowDecimals: Boolean) {
+        val parsed = rawReading.toDoubleOrNull() ?: return
+        if (parsed < 0.0) return
+        if (!allowDecimals && rawReading.contains('.')) return
+        if (parsed < meter.previousReading) return
+        viewModelScope.launch { meterRepository.upsert(meter.copy(currentReading = parsed)) }
     }
 
-    private fun currentMonthLabel(start: LocalDate): String {
-        val ym = YearMonth.from(start)
-        val month = ym.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
-        return "$month ${ym.year}"
+    fun toggleActiveMeter(meter: Meter) {
+        viewModelScope.launch {
+            val current = settingsRepository.observeSettings().first().activeMeterId
+            val newId = if (current == meter.id) null else meter.id
+            settingsRepository.setActiveMeterId(newId)
+        }
+    }
+
+    fun setMeterClosedDate(meter: Meter, date: LocalDate?) {
+        viewModelScope.launch { meterRepository.setClosedDate(meter.id, date) }
     }
 }

@@ -29,48 +29,33 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 
-/**
- * A month-style grid for the billing cycle. Each cell is tinted along the consumption gradient by
- * how much of the target is used by that day, with today outlined. Tapping a day surfaces its
- * expected/actual detail via [onDaySelected].
- */
 @Composable
 fun PlanningCalendar(
     days: List<DayPlan>,
     onDaySelected: (DayPlan) -> Unit,
+    meterColorMap: Map<Long, Color>,
+    selectedDay: DayPlan? = null,
     modifier: Modifier = Modifier,
 ) {
     if (days.isEmpty()) return
-    val weekdayHeaders = listOf(
-        DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
-        DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY,
-    )
-    // Leading blanks so the first day lands under its weekday column (Monday-first).
+    val weekdayHeaders = listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
     val leadingBlanks = (days.first().date.dayOfWeek.value + 6) % 7
 
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
             weekdayHeaders.forEach { dow ->
-                Text(
-                    text = dow.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(1),
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text(text = dow.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(1), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Spacer(Modifier.height(6.dp))
-
         val cells: List<DayPlan?> = List(leadingBlanks) { null } + days
         cells.chunked(7).forEach { week ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 week.forEach { day ->
                     Box(Modifier.weight(1f)) {
-                        if (day != null) DayCell(day, onDaySelected)
+                        if (day != null) DayCell(day = day, meterColor = day.meterId?.let { meterColorMap[it] } ?: Color.Transparent, isSelected = selectedDay?.date == day.date, onDaySelected = onDaySelected)
                     }
                 }
-                // Pad short final week so cells keep their width.
                 repeat(7 - week.size) { Box(Modifier.weight(1f)) {} }
             }
             Spacer(Modifier.height(4.dp))
@@ -79,58 +64,29 @@ fun PlanningCalendar(
 }
 
 @Composable
-private fun DayCell(day: DayPlan, onDaySelected: (DayPlan) -> Unit) {
-    val color = ConsumptionColors.colorFor(day.usedFraction)
-    val alpha = if (day.isFuture) 0.28f else 0.85f
+private fun DayCell(day: DayPlan, meterColor: Color, isSelected: Boolean, onDaySelected: (DayPlan) -> Unit) {
+    val baseAlpha = if (day.isFuture) 0.22f else 0.60f
+    val cellColor = if (meterColor != Color.Transparent) meterColor.copy(alpha = baseAlpha) else ConsumptionColors.colorFor(day.usedFraction).copy(alpha = baseAlpha * 0.5f)
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(10.dp))
-            .background(color.copy(alpha = alpha * 0.35f))
-            .then(
-                if (day.isToday) Modifier.border(2.dp, color, RoundedCornerShape(10.dp))
-                else Modifier,
-            )
+        modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(10.dp)).background(cellColor)
+            .then(if (day.isToday) Modifier.border(2.dp, meterColor.takeIf { it != Color.Transparent } ?: ConsumptionColors.colorFor(day.usedFraction), RoundedCornerShape(10.dp)) else Modifier)
+            .then(if (isSelected && !day.isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp)) else Modifier)
             .clickable { onDaySelected(day) },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = day.date.dayOfMonth.toString(),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Medium,
-            color = if (day.isFuture) MaterialTheme.colorScheme.onSurfaceVariant
-            else MaterialTheme.colorScheme.onSurface,
-        )
+        Text(text = day.date.dayOfMonth.toString(), style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (day.isFuture) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
     }
 }
 
-/** Compact legend explaining the calendar's colour gradient. */
 @Composable
 fun CalendarLegend(modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            "Safe",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text("Safe", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(0.dp))
-        Box(
-            Modifier
-                .padding(horizontal = 8.dp)
-                .weight(1f)
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(
-                    androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        (0..10).map { ConsumptionColors.colorFor(it / 10f) },
-                    ),
-                ),
-        )
-        Text(
-            "Over",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Box(Modifier.padding(horizontal = 8.dp).weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp))
+            .background(androidx.compose.ui.graphics.Brush.horizontalGradient((0..10).map { ConsumptionColors.colorFor(it / 10f) })))
+        Text("Over", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

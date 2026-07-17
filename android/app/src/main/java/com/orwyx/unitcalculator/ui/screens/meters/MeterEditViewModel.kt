@@ -72,13 +72,23 @@ class MeterEditViewModel @Inject constructor(
     /** Validates and saves. Returns via [MeterEditUiState.saved]; caller navigates back on true. */
     fun save() {
         val current = _state.value
-        val errors = validator.validate(current.input, current.allowDecimals)
+        val effectiveInput = current.input.copy(currentReading = current.input.previousReading)
+        val errors = validator.validate(effectiveInput, current.allowDecimals)
         if (!errors.isValid) {
             _state.value = current.copy(errors = errors)
             return
         }
         viewModelScope.launch {
-            meterRepository.upsert(current.input.toMeter())
+            val toSave = if (current.isEditing) {
+                val existing = meterRepository.getMeter(effectiveInput.id)
+                effectiveInput.toMeter().copy(
+                    currentReading = existing?.currentReading ?: effectiveInput.previousReading.toDoubleOrNull() ?: 0.0,
+                    closedDate = existing?.closedDate,
+                )
+            } else {
+                effectiveInput.toMeter()
+            }
+            meterRepository.upsert(toSave)
             _state.value = current.copy(saved = true)
         }
     }

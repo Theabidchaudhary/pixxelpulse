@@ -10,4 +10,5 @@ interface SettingsRepository {
     suspend fun setReadingDate(day: Int)
     suspend fun setDefaultTarget(target: Double)
     suspend fun setAllowDecimals(allow: Boolean)
+    suspend fun setActiveMeterId(id: Long?)
 }

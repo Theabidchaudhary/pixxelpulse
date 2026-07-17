@@ -1,10 +1,16 @@
 package com.orwyx.unitcalculator.ui.theme
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -13,10 +19,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * Soft dual-shadow neumorphic surface: a dark shadow bottom-right and a light highlight
- * top-left, giving cards a gently raised, tactile feel in both themes.
- */
 @Composable
 fun Modifier.neumorphic(
     shape: RoundedCornerShape = RoundedCornerShape(24.dp),
@@ -25,22 +27,12 @@ fun Modifier.neumorphic(
 ): Modifier {
     val neu = LocalNeuColors.current
     return this
-        .shadow(
-            elevation = elevation,
-            shape = shape,
-            ambientColor = neu.shadow,
-            spotColor = neu.shadow,
-        )
-        .drawBehind {
-            // Subtle top-left highlight to complete the neumorphic illusion.
-            drawRoundRectHighlight(neu.highlight)
-        }
+        .shadow(elevation = elevation, shape = shape, ambientColor = neu.shadow, spotColor = neu.shadow)
+        .drawBehind { drawRoundRectHighlight(neu.highlight) }
         .background(color = surface, shape = shape)
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawRoundRectHighlight(
-    highlight: Color,
-) {
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawRoundRectHighlight(highlight: Color) {
     drawRect(
         brush = Brush.linearGradient(
             colors = listOf(highlight.copy(alpha = 0.35f), Color.Transparent),
@@ -50,10 +42,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawRoundRectHighli
     )
 }
 
-/**
- * Light glassmorphism: a translucent tinted fill with a faint gradient sheen and hairline
- * border. Best layered over a colourful or blurred backdrop.
- */
 @Composable
 fun Modifier.glass(
     shape: Shape = RoundedCornerShape(24.dp),
@@ -62,10 +50,22 @@ fun Modifier.glass(
 ): Modifier = this
     .background(
         brush = Brush.verticalGradient(
-            colors = listOf(
-                tint.copy(alpha = alpha),
-                tint.copy(alpha = alpha * 0.75f),
-            ),
+            colors = listOf(tint.copy(alpha = alpha), tint.copy(alpha = alpha * 0.75f)),
         ),
         shape = shape,
     )
+
+@Composable
+fun Modifier.pressScale(
+    interactionSource: InteractionSource,
+    pressedScale: Float = 0.96f,
+    idleScale: Float = 1f,
+): Modifier {
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) pressedScale else idleScale,
+        animationSpec = tween(durationMillis = 140),
+        label = "pressScale",
+    )
+    return this.scale(scale)
+}

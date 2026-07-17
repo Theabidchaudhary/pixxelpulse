@@ -16,4 +16,5 @@ data class MeterEntity(
     @ColumnInfo(defaultValue = "0") val createdAt: Long,
     @ColumnInfo(defaultValue = "0") val updatedAt: Long,
     @ColumnInfo(defaultValue = "0") val sortOrder: Int = 0,
+    @ColumnInfo(defaultValue = "0") val closedDateEpochDay: Long = 0L,
 )

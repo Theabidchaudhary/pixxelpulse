@@ -24,6 +24,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
             .addCallback(SeedCallback)
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides
@@ -32,19 +33,16 @@ object DatabaseModule {
     @Provides
     fun provideHistoryDao(db: AppDatabase): HistoryDao = db.historyDao()
 
-    /** Seeds a single starter meter so the app never opens empty on first launch. */
     private object SeedCallback : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             val now = System.currentTimeMillis()
-            db.execSQL(
-                """
+            db.execSQL("""
                 INSERT INTO meters
                 (name, referenceNumber, providerId, targetLimit, previousReading,
-                 currentReading, createdAt, updatedAt, sortOrder)
+                 currentReading, createdAt, updatedAt, sortOrder, closedDateEpochDay)
                 VALUES ('House', '00000000000', '${ElectricityProvider.DEFAULT.id}',
-                        200.0, 0.0, 0.0, $now, $now, 0)
-                """.trimIndent(),
-            )
+                        200.0, 0.0, 0.0, $now, $now, 0, 0)
+            """.trimIndent())
         }
     }
 }

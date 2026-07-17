@@ -7,6 +7,7 @@ import com.orwyx.unitcalculator.domain.engine.ForecastEngine
 import com.orwyx.unitcalculator.domain.engine.PlanningEngine
 import com.orwyx.unitcalculator.domain.model.DayPlan
 import com.orwyx.unitcalculator.domain.model.Forecast
+import com.orwyx.unitcalculator.domain.model.MeterWindow
 import com.orwyx.unitcalculator.domain.repository.MeterRepository
 import com.orwyx.unitcalculator.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,13 +26,16 @@ data class PlanningUiState(
     val remainingDays: Int = 30,
     val totalTarget: Double = 0.0,
     val totalConsumed: Double = 0.0,
+    val summaryTarget: Double = 0.0,
+    val summaryConsumed: Double = 0.0,
     val days: List<DayPlan> = emptyList(),
+    val meterWindows: List<MeterWindow> = emptyList(),
     val forecast: Forecast = Forecast(),
     val hasMeters: Boolean = false,
 ) {
-    val expectedToday: Double get() = totalTarget * (elapsedDays.toFloat() / totalDays).toDouble()
-    val difference: Double get() = totalConsumed - expectedToday
-    val onTrack: Boolean get() = difference <= 0
+    val summaryExpectedToday: Double get() = summaryTarget * (elapsedDays.toFloat() / totalDays).toDouble()
+    val summaryDifference: Double get() = summaryConsumed - summaryExpectedToday
+    val summaryOnTrack: Boolean get() = summaryDifference <= 0
 }
 
 @HiltViewModel
@@ -43,21 +47,23 @@ class PlanningViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiState: StateFlow<PlanningUiState> = combine(
-        meterRepository.observeMeters(),
-        settingsRepository.observeSettings(),
+        meterRepository.observeMeters(), settingsRepository.observeSettings(),
     ) { meters, settings ->
         val cycle = BillingCycle.of(settings.readingDate)
         val totalTarget = meters.sumOf { it.targetLimit }
         val totalConsumed = meters.sumOf { it.consumedUnits }
+        val activeAndPending = meters.filter { it.closedDate == null }
+        val summaryTarget = activeAndPending.sumOf { it.targetLimit }
+        val summaryConsumed = activeAndPending.sumOf { it.consumedUnits }
+        val windows = planningEngine.computeMeterWindows(meters, cycle)
         PlanningUiState(
-            cycleStart = cycle.start,
-            cycleEnd = cycle.end,
-            elapsedDays = cycle.elapsedDays,
-            totalDays = cycle.totalDays,
+            cycleStart = cycle.start, cycleEnd = cycle.end,
+            elapsedDays = cycle.elapsedDays, totalDays = cycle.totalDays,
             remainingDays = cycle.remainingDays,
-            totalTarget = totalTarget,
-            totalConsumed = totalConsumed,
-            days = planningEngine.buildCalendar(totalTarget, totalConsumed, cycle),
+            totalTarget = totalTarget, totalConsumed = totalConsumed,
+            summaryTarget = summaryTarget, summaryConsumed = summaryConsumed,
+            days = planningEngine.buildCalendar(totalTarget, totalConsumed, cycle, meters),
+            meterWindows = windows,
             forecast = forecastEngine.forecast(totalConsumed, totalTarget, cycle),
             hasMeters = meters.isNotEmpty(),
         )

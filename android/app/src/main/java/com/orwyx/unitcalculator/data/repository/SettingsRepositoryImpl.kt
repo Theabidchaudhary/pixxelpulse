@@ -15,4 +15,5 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setReadingDate(day: Int) = dataStore.setReadingDate(day)
     override suspend fun setDefaultTarget(target: Double) = dataStore.setDefaultTarget(target)
     override suspend fun setAllowDecimals(allow: Boolean) = dataStore.setAllowDecimals(allow)
+    override suspend fun setActiveMeterId(id: Long?) = dataStore.setActiveMeterId(id)
 }

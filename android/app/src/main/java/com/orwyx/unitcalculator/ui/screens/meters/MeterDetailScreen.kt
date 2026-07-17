@@ -1,5 +1,6 @@
 package com.orwyx.unitcalculator.ui.screens.meters
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,6 +44,7 @@ import com.orwyx.unitcalculator.ui.components.ConfirmDialog
 import com.orwyx.unitcalculator.ui.components.NeumorphicCard
 import com.orwyx.unitcalculator.ui.components.SectionHeader
 import com.orwyx.unitcalculator.ui.components.StatusBadge
+import com.orwyx.unitcalculator.ui.theme.pressScale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,8 +69,9 @@ fun MeterDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { meter?.let { onEdit(it.id) } }) {
-                        Icon(Icons.Rounded.Edit, contentDescription = "Edit")
+                    IconButton(onClick = { meter?.let { onEdit(it.id) } }, enabled = meter?.closedDate == null) {
+                        Icon(Icons.Rounded.Edit, contentDescription = "Edit",
+                            tint = if (meter?.closedDate == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f))
                     }
                 },
             )
@@ -77,7 +81,7 @@ fun MeterDetailScreen(
             return@Scaffold
         }
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -123,21 +127,14 @@ fun MeterDetailScreen(
             }
 
             item {
+                val isClosed = meter.closedDate != null
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(
-                        onClick = { showReset = true },
-                        modifier = Modifier.weight(1f).height(50.dp),
-                        shape = MaterialTheme.shapes.large,
-                    ) {
+                    OutlinedButton(onClick = { showReset = true }, enabled = !isClosed, modifier = Modifier.weight(1f).height(50.dp), shape = MaterialTheme.shapes.large) {
                         Icon(Icons.Rounded.RestartAlt, contentDescription = null)
                         Spacer(Modifier.height(0.dp))
                         Text(" Reset month")
                     }
-                    OutlinedButton(
-                        onClick = { showDelete = true },
-                        modifier = Modifier.weight(1f).height(50.dp),
-                        shape = MaterialTheme.shapes.large,
-                    ) {
+                    OutlinedButton(onClick = { showDelete = true }, modifier = Modifier.weight(1f).height(50.dp), shape = MaterialTheme.shapes.large) {
                         Icon(Icons.Rounded.Delete, contentDescription = null)
                         Text(" Delete")
                     }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -92,6 +93,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -137,7 +139,7 @@ fun SettingsScreen(
                         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        listOf(1, 7, 10, 15, 20, 25, 28).forEach { day ->
+                        (1..31).forEach { day ->
                             FilterChip(
                                 selected = settings.readingDate == day,
                                 onClick = { viewModel.setReadingDate(day) },
@@ -161,7 +163,7 @@ fun SettingsScreen(
                         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        listOf(100.0, 150.0, 200.0, 250.0, 300.0).forEach { target ->
+                        (80..1000 step 20).map { it.toDouble() }.forEach { target ->
                             FilterChip(
                                 selected = settings.defaultTarget == target,
                                 onClick = { viewModel.setDefaultTarget(target) },

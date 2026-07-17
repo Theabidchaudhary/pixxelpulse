@@ -42,7 +42,7 @@ class BackupManager @Inject constructor(
         val s = settings.settings.first()
         val backup = BackupFile(
             exportedAt = System.currentTimeMillis(),
-            settings = SettingsBackup(s.themeMode.name, s.readingDate, s.defaultTarget, s.allowDecimals),
+            settings = SettingsBackup(s.themeMode.name, s.readingDate, s.defaultTarget, s.allowDecimals, s.activeMeterId),
             meters = meters.map { it.toBackup() },
             history = history.map { it.toBackup() },
         )
@@ -77,17 +77,18 @@ class BackupManager @Inject constructor(
         settings.setReadingDate(s.readingDate)
         settings.setDefaultTarget(s.defaultTarget)
         settings.setAllowDecimals(s.allowDecimals)
+        settings.setActiveMeterId(s.activeMeterId)
     }
 }
 
 private fun MeterEntity.toBackup() = MeterBackup(
     id, name, referenceNumber, providerId, targetLimit, previousReading,
-    currentReading, createdAt, updatedAt, sortOrder,
+    currentReading, createdAt, updatedAt, sortOrder, closedDateEpochDay,
 )
 
 private fun MeterBackup.toEntity() = MeterEntity(
     id, name, referenceNumber, providerId, targetLimit, previousReading,
-    currentReading, createdAt, updatedAt, sortOrder,
+    currentReading, createdAt, updatedAt, sortOrder, closedDateEpochDay,
 )
 
 private fun HistoryEntity.toBackup() = HistoryBackup(
