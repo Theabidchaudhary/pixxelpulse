@@ -1,8 +1,8 @@
 package com.orwyx.unitcalculator.ui.screens.meters
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitPointerEventScope
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -135,14 +135,17 @@ fun MetersScreen(
                     .animateItem()
                     .pointerInput(state.reorderMode) {
                         if (!state.reorderMode) {
-                            awaitEachGesture {
-                                awaitFirstDown(requireUnconsumed = false)
+                            while (true) {
+                                awaitPointerEventScope { awaitFirstDown(requireUnconsumed = false) }
                                 val job = launch {
                                     delay(3_000L)
                                     viewModel.enterReorderMode()
                                 }
-                                waitForUpOrCancellation()
-                                job.cancel()
+                                try {
+                                    awaitPointerEventScope { waitForUpOrCancellation() }
+                                } finally {
+                                    job.cancel()
+                                }
                             }
                         }
                     },
