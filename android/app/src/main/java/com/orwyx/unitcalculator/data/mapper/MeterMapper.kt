@@ -10,11 +10,11 @@ import java.time.LocalDate
 fun MeterEntity.toDomain(): Meter = Meter(
     id = id, name = name, referenceNumber = referenceNumber, providerId = providerId,
     targetLimit = targetLimit, previousReading = previousReading, currentReading = currentReading,
-    createdAt = createdAt, updatedAt = updatedAt,
+    createdAt = createdAt, updatedAt = updatedAt, sortOrder = sortOrder,
     closedDate = if (closedDateEpochDay == 0L) null else LocalDate.ofEpochDay(closedDateEpochDay),
 )
 
-fun Meter.toEntity(sortOrder: Int = 0): MeterEntity = MeterEntity(
+fun Meter.toEntity(): MeterEntity = MeterEntity(
     id = id, name = name, referenceNumber = referenceNumber, providerId = providerId,
     targetLimit = targetLimit, previousReading = previousReading, currentReading = currentReading,
     createdAt = createdAt, updatedAt = updatedAt, sortOrder = sortOrder,

@@ -23,7 +23,7 @@ interface MeterDao {
     @Query("SELECT COUNT(*) FROM meters")
     suspend fun count(): Int
 
-    @Query("SELECT * FROM meters")
+    @Query("SELECT * FROM meters ORDER BY sortOrder ASC, createdAt ASC")
     suspend fun getAllOnce(): List<MeterEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -40,4 +40,13 @@ interface MeterDao {
 
     @Query("DELETE FROM meters WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("UPDATE meters SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, sortOrder: Int)
+
+    @Query("UPDATE meters SET closedDateEpochDay = :epochDay WHERE id = :id")
+    suspend fun updateClosedDate(id: Long, epochDay: Long)
+
+    @Query("UPDATE meters SET closedDateEpochDay = 0")
+    suspend fun clearAllClosedDates()
 }

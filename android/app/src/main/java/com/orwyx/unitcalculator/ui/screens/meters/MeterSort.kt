@@ -2,8 +2,8 @@ package com.orwyx.unitcalculator.ui.screens.meters
 
 import com.orwyx.unitcalculator.domain.model.Meter
 
-/** Sort options for the meter list, each with a display label and a comparator. */
 enum class MeterSort(val label: String) {
+    SEQUENCE("My order"),
     NAME("Name"),
     REMAINING("Remaining units"),
     HIGHEST_CONSUMPTION("Highest consumption"),
@@ -12,6 +12,7 @@ enum class MeterSort(val label: String) {
     OLDEST("Oldest");
 
     fun sort(meters: List<Meter>): List<Meter> = when (this) {
+        SEQUENCE -> meters.sortedBy { it.sortOrder }
         NAME -> meters.sortedBy { it.name.lowercase() }
         REMAINING -> meters.sortedBy { it.remainingUnits }
         HIGHEST_CONSUMPTION -> meters.sortedByDescending { it.consumedUnits }
@@ -21,7 +22,6 @@ enum class MeterSort(val label: String) {
     }
 }
 
-/** Filters meters by a query matched against name or reference number. */
 fun List<Meter>.filterByQuery(query: String): List<Meter> {
     if (query.isBlank()) return this
     val q = query.trim().lowercase()

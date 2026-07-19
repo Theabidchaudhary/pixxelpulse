@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     fun observeSettings(): Flow<AppSettings>
+    suspend fun getSettingsOnce(): AppSettings
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setReadingDate(day: Int)
     suspend fun setDefaultTarget(target: Double)

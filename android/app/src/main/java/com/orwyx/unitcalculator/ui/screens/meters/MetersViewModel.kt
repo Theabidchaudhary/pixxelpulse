@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.orwyx.unitcalculator.core.util.BillingCycle
 import com.orwyx.unitcalculator.domain.engine.CalculationEngine
+import com.orwyx.unitcalculator.domain.engine.PlanningEngine
+import com.orwyx.unitcalculator.domain.model.AppSettings
 import com.orwyx.unitcalculator.domain.model.DashboardSummary
 import com.orwyx.unitcalculator.domain.model.Meter
+import com.orwyx.unitcalculator.domain.model.MeterPhase
 import com.orwyx.unitcalculator.domain.repository.MeterRepository
 import com.orwyx.unitcalculator.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,18 +20,26 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 import javax.inject.Inject
 
 data class MetersUiState(
     val meters: List<Meter> = emptyList(),
     val summary: DashboardSummary = DashboardSummary(),
-    val settings: com.orwyx.unitcalculator.domain.model.AppSettings = com.orwyx.unitcalculator.domain.model.AppSettings(),
+    val settings: AppSettings = AppSettings(),
     val query: String = "",
-    val sort: MeterSort = MeterSort.NAME,
+    val sort: MeterSort = MeterSort.SEQUENCE,
     val remainingDays: Int = 0,
     val isLoading: Boolean = true,
+    val reorderMode: Boolean = false,
+    val sequenceOrder: List<Long> = emptyList(),
+    val phasesById: Map<Long, MeterPhase> = emptyMap(),
 ) {
     val isEmpty: Boolean get() = !isLoading && meters.isEmpty()
+    fun sequenceNumberFor(meterId: Long): Int = sequenceOrder.indexOf(meterId) + 1
+    fun phaseFor(meterId: Long): MeterPhase? = phasesById[meterId]
 }
 
 @HiltViewModel
@@ -36,22 +47,63 @@ class MetersViewModel @Inject constructor(
     private val meterRepository: MeterRepository,
     private val settingsRepository: SettingsRepository,
     private val calculationEngine: CalculationEngine,
+    private val planningEngine: PlanningEngine,
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
-    private val sort = MutableStateFlow(MeterSort.NAME)
+    private val sort = MutableStateFlow(MeterSort.SEQUENCE)
+    private val reorderMode = MutableStateFlow(false)
 
     val uiState: StateFlow<MetersUiState> = combine(
-        meterRepository.observeMeters(), settingsRepository.observeSettings(), query, sort,
-    ) { meters, settings, q, s ->
+        meterRepository.observeMeters(),
+        settingsRepository.observeSettings(),
+        query,
+        sort,
+        reorderMode,
+    ) { meters, settings, q, s, rm ->
         val cycle = BillingCycle.of(settings.readingDate)
-        val visible = s.sort(meters.filterByQuery(q))
-        MetersUiState(meters = visible, summary = calculationEngine.summarize(meters, cycle),
-            settings = settings, query = q, sort = s, remainingDays = cycle.remainingDays, isLoading = false)
-    }.stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5_000), initialValue = MetersUiState())
+        val phases = planningEngine.computePhases(meters, cycle)
+        MetersUiState(
+            meters = s.sort(meters.filterByQuery(q)),
+            summary = calculationEngine.summarize(meters, cycle),
+            settings = settings,
+            query = q,
+            sort = s,
+            remainingDays = cycle.remainingDays,
+            isLoading = false,
+            reorderMode = rm,
+            sequenceOrder = meters.map { it.id },
+            phasesById = phases.associateBy { it.meter.id },
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = MetersUiState(),
+    )
 
     fun onQueryChange(value: String) { query.value = value }
     fun onSortChange(value: MeterSort) { sort.value = value }
+
+    fun enterReorderMode() { reorderMode.value = true }
+    fun exitReorderMode() { reorderMode.value = false }
+
+    fun moveUp(meterId: Long) = viewModelScope.launch {
+        val ordered = uiState.value.sequenceOrder.toMutableList()
+        val idx = ordered.indexOf(meterId)
+        if (idx > 0) {
+            ordered.add(idx - 1, ordered.removeAt(idx))
+            meterRepository.reorderMeters(ordered)
+        }
+    }
+
+    fun moveDown(meterId: Long) = viewModelScope.launch {
+        val ordered = uiState.value.sequenceOrder.toMutableList()
+        val idx = ordered.indexOf(meterId)
+        if (idx < ordered.lastIndex) {
+            ordered.add(idx + 1, ordered.removeAt(idx))
+            meterRepository.reorderMeters(ordered)
+        }
+    }
 
     fun updateCurrentReading(meter: Meter, rawReading: String, allowDecimals: Boolean) {
         val parsed = rawReading.toDoubleOrNull() ?: return
@@ -71,5 +123,32 @@ class MetersViewModel @Inject constructor(
 
     fun setMeterClosedDate(meter: Meter, date: LocalDate?) {
         viewModelScope.launch { meterRepository.setClosedDate(meter.id, date) }
+    }
+
+    fun deleteMeter(id: Long) = viewModelScope.launch { meterRepository.delete(id) }
+
+    fun resetMeter(meter: Meter, settings: AppSettings) = viewModelScope.launch {
+        val cycle = BillingCycle.of(settings.readingDate)
+        val avgDaily = calculationEngine.averageDailyUsage(meter, cycle)
+        meterRepository.resetMonth(
+            id = meter.id,
+            monthLabel = currentMonthLabel(cycle.start),
+            avgDailyUsage = avgDaily,
+            closedAt = System.currentTimeMillis(),
+        )
+    }
+
+    fun resetAllMeters(settings: AppSettings) = viewModelScope.launch {
+        val cycle = BillingCycle.of(settings.readingDate)
+        meterRepository.resetAllMeters(
+            monthLabel = currentMonthLabel(cycle.start),
+            closedAt = System.currentTimeMillis(),
+        )
+    }
+
+    private fun currentMonthLabel(start: LocalDate): String {
+        val ym = YearMonth.from(start)
+        val month = ym.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
+        return "$month ${ym.year}"
     }
 }

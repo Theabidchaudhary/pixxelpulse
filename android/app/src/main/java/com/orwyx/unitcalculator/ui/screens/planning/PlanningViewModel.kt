@@ -7,6 +7,7 @@ import com.orwyx.unitcalculator.domain.engine.ForecastEngine
 import com.orwyx.unitcalculator.domain.engine.PlanningEngine
 import com.orwyx.unitcalculator.domain.model.DayPlan
 import com.orwyx.unitcalculator.domain.model.Forecast
+import com.orwyx.unitcalculator.domain.model.MeterPhase
 import com.orwyx.unitcalculator.domain.model.MeterWindow
 import com.orwyx.unitcalculator.domain.repository.MeterRepository
 import com.orwyx.unitcalculator.domain.repository.SettingsRepository
@@ -30,6 +31,8 @@ data class PlanningUiState(
     val summaryConsumed: Double = 0.0,
     val days: List<DayPlan> = emptyList(),
     val meterWindows: List<MeterWindow> = emptyList(),
+    val meterPhases: List<MeterPhase> = emptyList(),
+    val phaseSwitchDays: Set<Int> = emptySet(),
     val forecast: Forecast = Forecast(),
     val hasMeters: Boolean = false,
 ) {
@@ -56,6 +59,8 @@ class PlanningViewModel @Inject constructor(
         val summaryTarget = activeAndPending.sumOf { it.targetLimit }
         val summaryConsumed = activeAndPending.sumOf { it.consumedUnits }
         val windows = planningEngine.computeMeterWindows(meters, cycle)
+        val phases = planningEngine.computePhases(meters, cycle)
+        val switchDays = phases.dropLast(1).map { it.endDay }.toSet()
         PlanningUiState(
             cycleStart = cycle.start, cycleEnd = cycle.end,
             elapsedDays = cycle.elapsedDays, totalDays = cycle.totalDays,
@@ -64,6 +69,8 @@ class PlanningViewModel @Inject constructor(
             summaryTarget = summaryTarget, summaryConsumed = summaryConsumed,
             days = planningEngine.buildCalendar(totalTarget, totalConsumed, cycle, meters),
             meterWindows = windows,
+            meterPhases = phases,
+            phaseSwitchDays = switchDays,
             forecast = forecastEngine.forecast(totalConsumed, totalTarget, cycle),
             hasMeters = meters.isNotEmpty(),
         )

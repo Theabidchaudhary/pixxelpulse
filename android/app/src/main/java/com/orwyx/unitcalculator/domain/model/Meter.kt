@@ -12,9 +12,12 @@ data class Meter(
     val currentReading: Double,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
+    val sortOrder: Int = 0,
     val closedDate: LocalDate? = null,
 ) {
     val provider: ElectricityProvider get() = ElectricityProvider.fromId(providerId)
+    val isLocked: Boolean get() = closedDate != null
+
     val consumedUnits: Double get() = (currentReading - previousReading).coerceAtLeast(0.0)
     val remainingUnits: Double get() = targetLimit - consumedUnits
     val usedFraction: Float get() = if (targetLimit <= 0.0) 0f else (consumedUnits / targetLimit).toFloat()

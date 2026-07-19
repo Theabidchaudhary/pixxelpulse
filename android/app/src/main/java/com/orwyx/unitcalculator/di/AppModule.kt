@@ -1,6 +1,7 @@
 package com.orwyx.unitcalculator.di
 
 import android.content.Context
+import com.orwyx.unitcalculator.core.notification.MeterAlertNotifier
 import com.orwyx.unitcalculator.data.prefs.SettingsDataStore
 import com.orwyx.unitcalculator.domain.engine.CalculationEngine
 import com.orwyx.unitcalculator.domain.engine.ForecastEngine
@@ -37,4 +38,9 @@ object AppModule {
     @Provides
     @Singleton
     fun providePlanningEngine(): PlanningEngine = PlanningEngine()
+
+    @Provides
+    @Singleton
+    fun provideMeterAlertNotifier(@ApplicationContext context: Context): MeterAlertNotifier =
+        MeterAlertNotifier(context)
 }
