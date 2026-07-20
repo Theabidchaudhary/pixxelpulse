@@ -48,6 +48,7 @@ import com.orwyx.unitcalculator.ui.components.SummaryCard
 import com.orwyx.unitcalculator.ui.theme.StatusDeepGreen
 import com.orwyx.unitcalculator.ui.theme.StatusOrange
 import com.orwyx.unitcalculator.ui.theme.StatusRed
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -134,16 +135,18 @@ fun MetersScreen(
                     .animateItem()
                     .pointerInput(state.reorderMode) {
                         if (!state.reorderMode) {
-                            while (true) {
-                                awaitPointerEventScope { awaitFirstDown(requireUnconsumed = false) }
-                                val job = launch {
-                                    delay(3_000L)
-                                    viewModel.enterReorderMode()
-                                }
-                                try {
-                                    awaitPointerEventScope { waitForUpOrCancellation() }
-                                } finally {
-                                    job.cancel()
+                            coroutineScope {
+                                while (true) {
+                                    awaitPointerEventScope { awaitFirstDown(requireUnconsumed = false) }
+                                    val job = launch {
+                                        delay(3_000L)
+                                        viewModel.enterReorderMode()
+                                    }
+                                    try {
+                                        awaitPointerEventScope { waitForUpOrCancellation() }
+                                    } finally {
+                                        job.cancel()
+                                    }
                                 }
                             }
                         }
