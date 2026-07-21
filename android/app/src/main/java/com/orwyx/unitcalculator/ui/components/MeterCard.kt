@@ -1,5 +1,11 @@
 package com.orwyx.unitcalculator.ui.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,15 +19,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -43,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
@@ -74,10 +77,6 @@ fun MeterCard(
     isClosed: Boolean,
     modifier: Modifier = Modifier,
     reorderMode: Boolean = false,
-    canMoveUp: Boolean = false,
-    canMoveDown: Boolean = false,
-    onMoveUp: () -> Unit = {},
-    onMoveDown: () -> Unit = {},
     onClick: () -> Unit,
     onCurrentReadingSubmit: (Meter, String) -> Unit,
     onToggleActive: () -> Unit,
@@ -85,31 +84,22 @@ fun MeterCard(
 ) {
     var showCloseDatePicker by rememberSaveable(meter.id) { mutableStateOf(false) }
 
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            NumberBadge(sequenceNumber)
-            if (reorderMode) {
-                Spacer(Modifier.height(4.dp))
-                IconButton(
-                    onClick = onMoveUp, enabled = canMoveUp,
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(Icons.Rounded.KeyboardArrowUp, "Move up", tint = MaterialTheme.colorScheme.primary)
-                }
-                IconButton(
-                    onClick = onMoveDown, enabled = canMoveDown,
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(Icons.Rounded.KeyboardArrowDown, "Move down", tint = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-        Spacer(Modifier.width(10.dp))
+    val infiniteTransition = rememberInfiniteTransition(label = "wiggle")
+    val wiggleRotation by infiniteTransition.animateFloat(
+        initialValue = if (sequenceNumber % 2 == 0) -2f else 2f,
+        targetValue = if (sequenceNumber % 2 == 0) 2f else -2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(150, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "wiggle",
+    )
 
-        NeumorphicCard(modifier = Modifier.weight(1f), onClick = onClick) {
+    Box(modifier = modifier.rotate(if (reorderMode) wiggleRotation else 0f)) {
+        NeumorphicCard(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = if (reorderMode) ({}) else onClick,
+        ) {
             Column {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -122,11 +112,19 @@ fun MeterCard(
                             if (isActive) { Spacer(Modifier.size(8.dp)); ActivePill() }
                             if (isClosed) { Spacer(Modifier.size(8.dp)); ClosedPill() }
                         }
-                        Text(meter.provider.shortName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Meter $sequenceNumber",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     StatusBadge(meter.status)
                     Spacer(Modifier.size(8.dp))
-                    PowerButton(isActive = isActive, isClosed = isClosed, onClick = onToggleActive)
+                    PowerButton(
+                        isActive = isActive,
+                        isClosed = isClosed,
+                        onClick = if (reorderMode) ({}) else onToggleActive,
+                    )
                 }
 
                 Spacer(Modifier.height(6.dp))
@@ -135,7 +133,7 @@ fun MeterCard(
                     text = if (revealed) meter.referenceNumber else Formatters.maskedReference(meter.referenceNumber),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.clickable { revealed = !revealed },
+                    modifier = Modifier.clickable(enabled = !reorderMode) { revealed = !revealed },
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -156,10 +154,10 @@ fun MeterCard(
                 CurrentReadingRow(
                     meter = meter,
                     allowDecimals = allowDecimals,
-                    isClosed = isClosed,
+                    isClosed = isClosed || reorderMode,
                     onSubmit = onCurrentReadingSubmit,
-                    onCalendarClick = { showCloseDatePicker = true },
-                    onClearClosedDate = { onSetClosedDate(null) },
+                    onCalendarClick = { if (!reorderMode) showCloseDatePicker = true },
+                    onClearClosedDate = { if (!reorderMode) onSetClosedDate(null) },
                 )
             }
         }
@@ -170,24 +168,6 @@ fun MeterCard(
             initialDate = meter.closedDate,
             onConfirm = { date -> onSetClosedDate(date); showCloseDatePicker = false },
             onDismiss = { showCloseDatePicker = false },
-        )
-    }
-}
-
-@Composable
-private fun NumberBadge(number: Int) {
-    Box(
-        modifier = Modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = number.toString(),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
     }
 }
@@ -320,7 +300,7 @@ private fun CurrentReadingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        CloseDateIconButton(closedDate = meter.closedDate, enabled = true, onClick = onCalendarClick, onClear = onClearClosedDate)
+        CloseDateIconButton(closedDate = meter.closedDate, enabled = !isClosed, onClick = onCalendarClick, onClear = onClearClosedDate)
         OutlinedTextField(
             value = fieldValue, onValueChange = { fieldValue = it },
             label = { Text("Current reading") }, singleLine = true,

@@ -53,18 +53,24 @@ class MetersViewModel @Inject constructor(
     private val query = MutableStateFlow("")
     private val sort = MutableStateFlow(MeterSort.SEQUENCE)
     private val reorderMode = MutableStateFlow(false)
+    private val pendingOrder = MutableStateFlow<List<Long>?>(null)
 
     val uiState: StateFlow<MetersUiState> = combine(
         meterRepository.observeMeters(),
         settingsRepository.observeSettings(),
-        query,
-        sort,
-        reorderMode,
-    ) { meters, settings, q, s, rm ->
+        combine(query, sort) { q, s -> q to s },
+        combine(reorderMode, pendingOrder) { rm, po -> rm to po },
+    ) { meters, settings, qs, rp ->
+        val q = qs.first
+        val s = qs.second
+        val rm = rp.first
+        val po = rp.second
         val cycle = BillingCycle.of(settings.readingDate)
         val phases = planningEngine.computePhases(meters, cycle)
+        val orderedIds = po ?: meters.map { it.id }
+        val metersById = meters.associateBy { it.id }
         MetersUiState(
-            meters = s.sort(meters.filterByQuery(q)),
+            meters = if (rm) orderedIds.mapNotNull { metersById[it] } else s.sort(meters.filterByQuery(q)),
             summary = calculationEngine.summarize(meters, cycle),
             settings = settings,
             query = q,
@@ -72,7 +78,7 @@ class MetersViewModel @Inject constructor(
             remainingDays = cycle.remainingDays,
             isLoading = false,
             reorderMode = rm,
-            sequenceOrder = meters.map { it.id },
+            sequenceOrder = orderedIds,
             phasesById = phases.associateBy { it.meter.id },
         )
     }.stateIn(
@@ -84,24 +90,37 @@ class MetersViewModel @Inject constructor(
     fun onQueryChange(value: String) { query.value = value }
     fun onSortChange(value: MeterSort) { sort.value = value }
 
-    fun enterReorderMode() { reorderMode.value = true }
-    fun exitReorderMode() { reorderMode.value = false }
+    fun enterReorderMode() {
+        pendingOrder.value = uiState.value.sequenceOrder.toList()
+        reorderMode.value = true
+    }
 
-    fun moveUp(meterId: Long) = viewModelScope.launch {
-        val ordered = uiState.value.sequenceOrder.toMutableList()
-        val idx = ordered.indexOf(meterId)
+    fun exitReorderMode() {
+        pendingOrder.value = null
+        reorderMode.value = false
+    }
+
+    fun savePendingOrder() = viewModelScope.launch {
+        pendingOrder.value?.let { order -> meterRepository.reorderMeters(order) }
+        pendingOrder.value = null
+        reorderMode.value = false
+    }
+
+    fun moveUp(meterId: Long) {
+        val current = pendingOrder.value?.toMutableList() ?: return
+        val idx = current.indexOf(meterId)
         if (idx > 0) {
-            ordered.add(idx - 1, ordered.removeAt(idx))
-            meterRepository.reorderMeters(ordered)
+            current.add(idx - 1, current.removeAt(idx))
+            pendingOrder.value = current
         }
     }
 
-    fun moveDown(meterId: Long) = viewModelScope.launch {
-        val ordered = uiState.value.sequenceOrder.toMutableList()
-        val idx = ordered.indexOf(meterId)
-        if (idx < ordered.lastIndex) {
-            ordered.add(idx + 1, ordered.removeAt(idx))
-            meterRepository.reorderMeters(ordered)
+    fun moveDown(meterId: Long) {
+        val current = pendingOrder.value?.toMutableList() ?: return
+        val idx = current.indexOf(meterId)
+        if (idx < current.lastIndex) {
+            current.add(idx + 1, current.removeAt(idx))
+            pendingOrder.value = current
         }
     }
 

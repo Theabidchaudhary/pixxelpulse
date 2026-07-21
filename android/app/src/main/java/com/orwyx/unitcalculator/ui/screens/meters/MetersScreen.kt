@@ -1,9 +1,10 @@
 package com.orwyx.unitcalculator.ui.screens.meters
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,17 +23,20 @@ import androidx.compose.material.icons.rounded.ElectricMeter
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.TrendingUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,107 +66,119 @@ fun MetersScreen(
 
     var meterToReset by remember { mutableStateOf<Meter?>(null) }
     var showResetAll by remember { mutableStateOf(false) }
+    val itemHeights = remember { mutableStateMapOf<Long, Int>() }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().imePadding(),
-        contentPadding = PaddingValues(
-            start = 20.dp, end = 20.dp,
-            top = contentPadding.calculateTopPadding() + 8.dp,
-            bottom = contentPadding.calculateBottomPadding() + 120.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        if (state.isEmpty) {
-            item {
-                EmptyState(
-                    icon = Icons.Rounded.ElectricMeter,
-                    title = "No meters yet",
-                    message = "Tap the + button to add your first electricity meter.",
-                )
-            }
-            return@LazyColumn
-        }
-
-        item { SectionHeader("Overview") }
-        item { DashboardRow(state, onResetAll = { showResetAll = true }) }
-
-        if (state.reorderMode) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "Long-press to reorder · use ↑↓ arrows",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().imePadding(),
+            contentPadding = PaddingValues(
+                start = 20.dp, end = 20.dp,
+                top = contentPadding.calculateTopPadding() + 8.dp,
+                bottom = contentPadding.calculateBottomPadding() + 120.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            if (state.isEmpty) {
+                item {
+                    EmptyState(
+                        icon = Icons.Rounded.ElectricMeter,
+                        title = "No meters yet",
+                        message = "Tap the + button to add your first electricity meter.",
                     )
-                    TextButton(onClick = viewModel::exitReorderMode) { Text("Done") }
+                }
+                return@LazyColumn
+            }
+
+            item { SectionHeader("Overview") }
+            item { DashboardRow(state, onResetAll = { showResetAll = true }) }
+
+            if (!state.reorderMode) {
+                item {
+                    SearchSortBar(
+                        query = state.query,
+                        onQueryChange = viewModel::onQueryChange,
+                        sort = state.sort,
+                        onSortChange = viewModel::onSortChange,
+                    )
                 }
             }
-        } else {
-            item {
-                SearchSortBar(
-                    query = state.query,
-                    onQueryChange = viewModel::onQueryChange,
-                    sort = state.sort,
-                    onSortChange = viewModel::onSortChange,
+
+            item { SectionHeader("Meters") }
+
+            items(state.meters, key = { it.id }) { meter ->
+                val seqNum = state.sequenceNumberFor(meter.id)
+                val phase = state.phaseFor(meter.id)
+
+                MeterCard(
+                    meter = meter,
+                    sequenceNumber = seqNum,
+                    phase = phase,
+                    remainingDays = state.remainingDays,
+                    allowDecimals = state.settings.allowDecimals,
+                    isActive = state.settings.activeMeterId == meter.id,
+                    isClosed = meter.closedDate != null,
+                    modifier = Modifier
+                        .animateItem()
+                        .onGloballyPositioned { coords -> itemHeights[meter.id] = coords.size.height }
+                        .pointerInput(state.reorderMode) {
+                            if (!state.reorderMode) {
+                                coroutineScope {
+                                    while (true) {
+                                        awaitPointerEventScope { awaitFirstDown(requireUnconsumed = false) }
+                                        val job = launch {
+                                            delay(1_500L)
+                                            viewModel.enterReorderMode()
+                                        }
+                                        try {
+                                            awaitPointerEventScope { waitForUpOrCancellation() }
+                                        } finally {
+                                            job.cancel()
+                                        }
+                                    }
+                                }
+                            } else {
+                                while (true) {
+                                    var accumulated = 0f
+                                    detectDragGestures(
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            accumulated += dragAmount.y
+                                            val threshold = (itemHeights[meter.id] ?: 300) * 0.5f
+                                            when {
+                                                accumulated > threshold -> {
+                                                    viewModel.moveDown(meter.id)
+                                                    accumulated = 0f
+                                                }
+                                                accumulated < -threshold -> {
+                                                    viewModel.moveUp(meter.id)
+                                                    accumulated = 0f
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        },
+                    reorderMode = state.reorderMode,
+                    onClick = { onOpenMeter(meter.id) },
+                    onCurrentReadingSubmit = { m, raw ->
+                        viewModel.updateCurrentReading(m, raw, state.settings.allowDecimals)
+                    },
+                    onToggleActive = { viewModel.toggleActiveMeter(meter) },
+                    onSetClosedDate = { date -> viewModel.setMeterClosedDate(meter, date) },
                 )
             }
         }
 
-        item { SectionHeader("Meters") }
-
-        items(state.meters, key = { it.id }) { meter ->
-            val seqNum = state.sequenceNumberFor(meter.id)
-            val phase = state.phaseFor(meter.id)
-            val seqList = state.sequenceOrder
-            val seqIdx = seqList.indexOf(meter.id)
-
-            MeterCard(
-                meter = meter,
-                sequenceNumber = seqNum,
-                phase = phase,
-                remainingDays = state.remainingDays,
-                allowDecimals = state.settings.allowDecimals,
-                isActive = state.settings.activeMeterId == meter.id,
-                isClosed = meter.closedDate != null,
+        if (state.reorderMode) {
+            Button(
+                onClick = viewModel::savePendingOrder,
                 modifier = Modifier
-                    .animateItem()
-                    .pointerInput(state.reorderMode) {
-                        if (!state.reorderMode) {
-                            coroutineScope {
-                                while (true) {
-                                    awaitPointerEventScope { awaitFirstDown(requireUnconsumed = false) }
-                                    val job = launch {
-                                        delay(3_000L)
-                                        viewModel.enterReorderMode()
-                                    }
-                                    try {
-                                        awaitPointerEventScope { waitForUpOrCancellation() }
-                                    } finally {
-                                        job.cancel()
-                                    }
-                                }
-                            }
-                        }
-                    },
-                reorderMode = state.reorderMode,
-                canMoveUp = state.reorderMode && seqIdx > 0,
-                canMoveDown = state.reorderMode && seqIdx < seqList.lastIndex,
-                onMoveUp = { viewModel.moveUp(meter.id) },
-                onMoveDown = { viewModel.moveDown(meter.id) },
-                onClick = { onOpenMeter(meter.id) },
-                onCurrentReadingSubmit = { m, raw ->
-                    viewModel.updateCurrentReading(m, raw, state.settings.allowDecimals)
-                },
-                onToggleActive = { viewModel.toggleActiveMeter(meter) },
-                onSetClosedDate = { date -> viewModel.setMeterClosedDate(meter, date) },
-            )
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = contentPadding.calculateBottomPadding() + 80.dp),
+            ) {
+                Text("Save Order")
+            }
         }
     }
 
